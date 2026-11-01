@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>東港創客小工具</title>
+<style>
+:root{--bg:#e6dccb;--surface:#f6f1e7;--line:#d2c3a8;--ink:#2a271f;--muted:#6c634f;--accent:#b5561c}
+@media (prefers-color-scheme: dark){:root{--bg:#171b16;--surface:#262c24;--line:#3b4337;--ink:#ece7da;--muted:#a6a894;--accent:#e2803d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+main{max-width:720px;margin:0 auto;padding:40px 16px 56px}
+h1{font-size:1.6rem;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 28px}
+.card{display:flex;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:inherit;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.card svg{flex:none;width:96px;height:64px}
+.card b{display:block;font-size:1.1rem}
+.card span{color:var(--muted);font-size:.92rem}
+.tag{display:inline-block;font-style:normal;font-size:.72rem;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:0 8px;margin-bottom:4px}
+.soon{margin-top:28px;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+  <h1>東港創客小工具</h1>
+  <p class="sub">小朋友打字或畫圖，網站自動做成 3D 列印或雷切的檔案。</p>
+  <a class="card" href="tuna/">
+    <svg viewBox="0 0 104 64" aria-hidden="true"><path d="M6 32 C16 16 38 12 60 15 C70 17 77 25 80 32 C77 39 70 47 60 49 C38 52 16 48 6 32 Z M76 28 Q86 22 98 4 Q92 20 91 32 Q92 44 98 60 Q86 42 76 36 Z" fill="var(--accent)"/><circle cx="17" cy="29" r="2.6" fill="var(--surface)"/></svg>
+    <div><i class="tag">3D 列印</i><b>黑鮪魚名牌吊飾</b><span>打名字，做成雙色的黑鮪魚吊飾</span></div>
+  </a>
+  <p class="soon">更多小工具陸續增加中。</p>
+</main>
+</body>
+</html>
