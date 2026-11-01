@@ -2610,7 +2610,8 @@ const Viewer = (() => {
   FR_ASPECT.tuna = ASPECT;
   /* name box inside the body, eye and gill (0–100 units) */
   /* 一行：身體中間的長條；兩行（4 個字以上的中文名字，像印章那樣 2×2）：身體最高的那一段 */
-  const NAME_BOX = { x0: 28, x1: 71, y0: 40, y1: 60 }, BOX2 = { x0: 32, x1: 64, y0: 36.5, y1: 63.5 }, LH = 1.06, EYE = [17.5, 46.5, 2.6], GILL = "M24 39 Q20 50 24 61";
+  const NAME_BOX = { x0: 28.8, x1: 71, y0: 40, y1: 60 }, BOX2 = { x0: 32, x1: 64, y0: 36.5, y1: 63.5 }, LH = 1.06, EYE = [19, 47.6, 2.4], GILL = "M25.5 42.5 Q22.8 50 25.5 57.5";
+  /* 眼睛和鰓離外框要超過 3.2 mm（吊飾引擎會把太靠近外框的凸起切掉）：55 mm 的小吊飾也一樣，眼睛才會是圓的 */
   /* 0.4 mm 噴嘴的規則（每個字分開、用實際 mm 大小檢查）：
        筆畫至少 0.6 mm → 切片軟體會印成一條實心的線；更細的（例如 0.4 mm）常常變成斷斷續續或整段消失
        筆畫之間至少 0.5 mm → 更窄的縫印出來會被擠滿，筆畫黏在一起
@@ -2794,7 +2795,7 @@ const Viewer = (() => {
   function render() {
     const r = root(); r.innerHTML = ""; applyTheme();
     const dark = (store.get("theme", "") || (window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")) === "dark";
-    const bar = h("header", { class: "bar tuna-bar" }, h("div", { class: "title" }, h("span", { class: "tag3d" }, "3D"), h("h1", null, "黑鮪魚名牌吊飾")), h("span", { class: "tuna-sub" }, "東港三寶・換色吊飾"),
+    const bar = h("header", { class: "bar tuna-bar" }, h("div", { class: "title" }, h("span", { class: "tag3d" }, "3D"), h("h1", null, "黑鮪魚名牌吊飾")), h("span", { class: "tuna-sub" }, "東港在地・雙色吊飾"),
       h("button", { class: "iconbtn", "aria-label": dark ? "換成大地色" : "換成深色", onclick: () => { store.set("theme", dark ? "light" : "dark"); render(); } }, dark ? "☀" : "☾"));
     const inp = h("input", { id: "nameIn", class: "tuna-name", maxlength: "8", placeholder: "打你的名字", autocomplete: "off", "aria-label": "名字", value: S.name, oninput: e => { S.name = e.target.value; schedule(); } });
     const opts = h("section", { class: "pane tuna-opts", "aria-label": "設計" },
