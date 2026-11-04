@@ -2919,12 +2919,17 @@ const Viewer = (() => {
     if (use3d) Viewer.set(meshes, colors()); else flat.innerHTML = topView();
     const c = colors(), sw = (col, t) => h("span", null, h("i", { class: "sw", style: `background:${col}` }), t);
     legend.append(sw(c.base, "底色"), sw(c.top, "凸起來、換色的部分（名字、眼睛、外框）"));
-    const est = OUT.printEstimate(meshes, { print: 1 }), fact = (k, v) => h("div", { class: "fact" }, h("small", null, k), h("b", null, v));
-    facts.append(fact("作品大小", `${PL.fmt(res.size[0])}×${PL.fmt(res.size[1])} mm`), fact("列印時間（粗估）", `約 ${est.minutes} 分`), fact("換色高度", `${PL.fmt(res.pause)} mm`), fact("一盤 6 件・2 台印 12 件", `約 ${Math.round(est.minutes * 6 / 60 * 10) / 10} 小時`));
+    const est = OUT.printEstimate(meshes, { print: 1 }), fact = (k, v) => h("div", { class: "fact" }, h("small", null, k), h("b", null, v)), box = outBox();
+    facts.append(fact("作品實際大小", `${box[0]}×${box[1]}×${box[2]} mm`), fact("列印時間（粗估）", `約 ${est.minutes} 分`), fact("換色高度", `${PL.fmt(res.pause)} mm`), fact("一盤 6 件・2 台印 12 件", `約 ${Math.round(est.minutes * 6 / 60 * 10) / 10} 小時`));
     const L = fitInfo.level, LV = { ok: ["good", "很清楚"], fair: ["mid", "還可以"], tight: ["bad", "太擠"], thin: ["bad", "筆畫太細"] }[L];
     facts.append(h("div", { class: "fact " + LV[0] }, h("small", null, "字印出來清不清楚（0.4 mm 噴嘴）"), h("b", null, LV[1])));
     paintCheck();
     for (const t of res.info3d || []) msgs.append(h("p", { class: "msg info" }, t));
+  }
+  /* 檔案裡模型的實際長寬高（mm）：尖尖的魚鰭會被修圓、掛環會多出來，所以不能用設定值 */
+  function outBox() {
+    const b = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9]; for (const m of meshes || []) { const q = OUT.meshBounds(m.tris); for (let k = 0; k < 3; k++) { b[k] = Math.min(b[k], q[k]); b[k + 3] = Math.max(b[k + 3], q[k + 3]); } }
+    return [0, 1, 2].map(k => PL.fmt(b[k + 3] - b[k]));
   }
   /* 給小朋友看的檢查結果：放在下載鈕正上方，按下載前一定看得到 */
   const HAN = /^[\u3400-\u9fff\uf900-\ufaff]+$/;
@@ -2999,9 +3004,12 @@ const Viewer = (() => {
       clearTimeout(timer); if (dirty) build();
       if (fontNow.state === "wait") { st.textContent = "等字型下載，最多 8 秒…"; await fontSettled(); clearTimeout(timer); if (dirty || fontNow.key + fontNow.state !== builtFont) build(); }
       if (!res || res.empty) { st.className = "status err"; st.textContent = (res && res.empty) || "檔案還沒做好，請再按一次。"; return; }
-      const who = S.name.trim().replace(/[\\/:*?"<>|\s]+/g, ""), base = `黑鮪魚吊飾_${who}_${stamp()}`;
-      const ms = meshes || res.parts3d.map(p => OUT.partMesh(p)), tris = []; for (const m of ms) for (const t of m.tris) tris.push(t);
-      const files = [{ name: `黑鮪魚吊飾_${who}.stl`, data: OUT.stl(tris) }, { name: "換色說明.txt", data: `換色高度：${PL.fmt(res.pause)} mm\r\n層高 0.2 mm 時，在第 ${Math.round(res.pause / .2) + 1} 層開始前暫停換線。\r\n` }];
+      if (!meshes) meshes = res.parts3d.map(p => Object.assign(OUT.partMesh(p), { dx: p.dx || 0, dy: p.dy || 0, name: p.name }));
+      const who = S.name.trim().replace(/[\\/:*?"<>|\s]+/g, ""), col = COLORS[S.col][2], [colBase, , colTop] = [...col], L = fitInfo.level, tagL = needsCare() ? (L === "thin" ? "_字太細" : "_字太擠") : "";
+      const base = `黑鮪魚吊飾_${who}_${col}${tagL}_${stamp()}`, box = outBox(), layer = Math.round(res.pause / .2) + 1, tris = []; for (const m of meshes) for (const t of m.tris) tris.push(t);
+      const clear = { ok: "很清楚", fair: "還可以", tight: "太擠，請老師先看一下", thin: "筆畫太細，請老師先看一下" }[L], fontName = FONTS2.find(q => q[0] === S.font)[1] + (res.font === "ok" ? "" : "（沒載到網路字型，用電腦內建的字）");
+      const note = [`名字：${S.name.trim()}`, `顏色：${col}（先印${colBase}色，再換${colTop}色）`, `實際大小：${box[0]} × ${box[1]} × ${box[2]} mm`, `字的樣子：${fontName}`, `字清不清楚：${clear}`, `換色高度：${PL.fmt(res.pause)} mm`, `層高 0.2 mm 時，在第 ${layer} 層開始前暫停換線。`].join("\r\n") + "\r\n";
+      const files = [{ name: `黑鮪魚吊飾_${who}_${col}.stl`, data: OUT.stl(tris) }, { name: "換色說明.txt", data: "\ufeff" + note }];
       const r = await saveFile(base + ".zip", OUT.zip(files));
       if (r === "saved") { st.className = "status ok"; st.textContent = "檔案送出了：" + base + ".zip" + (res.font === "ok" ? "" : "（這份用的是電腦內建的字）"); toast("下載好了！"); dlSig = sig(); }
       else if (r === "declined") st.textContent = "已取消下載。";
