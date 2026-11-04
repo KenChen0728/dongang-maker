@@ -1,13 +1,13 @@
-<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>黑鮪魚名牌吊飾</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="打上名字，做成黑鮪魚造型的 3D 換色吊飾。">
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>黑鮪魚名牌吊飾</title>
+<meta name="description" content="打上名字，做成黑鮪魚造型的 3D 雙色吊飾。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@900&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <style>
 /* Layout: a maker's bench. Home = a wall of tools grouped by machine; maker page = drawing sheet on the left, "what the machine will make" + options + download on the right; stacks into 3 steps on phones. */
 :root{
@@ -19,9 +19,9 @@
   --wood:#cfa874; --wood-2:#b98f5a; --burn:#4b2c13; --cut:#ff6248; --score:#6f9bff; --fil:#ece6da; --fil2:#e2803d; --clay:#c98a69;
   --warn-bg:#3a3120; --warn-ink:#f2d690; --info-bg:#22302a; --info-ink:#bfe0cd; --bad:#ff8a73;
   --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px -14px rgba(0,0,0,.6);
-  --f-display:"Chiron GoRound TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --f-display:"PingFang TC","Noto Sans CJK TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-body:"PingFang TC","Noto Sans CJK TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
   --r:12px; --r-sm:8px; --tap:44px;
 }
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
@@ -314,6 +314,8 @@ textarea#textIn{font-size:1.4rem;min-height:84px;resize:vertical}
 .tuna-recs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.tuna-recs .btn{margin:0}
 
 </style>
+</head>
+<body>
 <div id="app"><p style="padding:24px">載入中…</p></div>
 <noscript><p style="padding:24px">這個網站需要開啟 JavaScript。</p></noscript>
 <script>
@@ -2631,6 +2633,50 @@ const Viewer = (() => {
   }
   const toast = t => { const o = document.querySelector(".toast"); if (o) o.remove(); const e = h("div", { class: "toast", role: "status" }, t); document.body.append(e); setTimeout(() => e.remove(), 2600); };
 
+  /* ---------- 字型：畫面不等字型；字型好了再換上去，連不到就明講 ---------- */
+  const FONT_CSS = {
+    sans: ["Noto Sans TC", "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap"],
+    round: ["Chiron GoRound TC", "https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap"],
+    kai: ["LXGW WenKai TC", "https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@700&display=swap"]
+  };
+  const FONT_WAIT = 8000; /* 等字型最多 8 秒，超過就當作連不到（之後才到也會自動換上去） */
+  const cssState = {}, cssWait = {};
+  function loadFontCss() {
+    for (const id in FONT_CSS) cssWait[id] = new Promise(done => {
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT_CSS[id][1]; cssState[id] = "wait";
+      l.onload = () => { cssState[id] = "ok"; done(true); if (id === S.font && fontNow.state !== "ok") { fontNow = { key: "", state: "wait" }; schedule(0); } };
+      l.onerror = () => { cssState[id] = "fail"; done(false); };
+      document.head.append(l);
+    });
+  }
+  const familyReady = id => cssState[id] === "ok" && [...document.fonts].some(q => q.family.replace(/["']/g, "") === FONT_CSS[id][0]);
+  /* 現在選的字、現在打的名字，字型到了沒：ok 到了／wait 下載中／none 連不到（用電腦內建的字） */
+  let fontNow = { key: "", state: "wait" };
+  function checkFont(f, text) {
+    if (!document.fonts || !document.fonts.check) { fontNow = { key: "", state: "none" }; return; }
+    const key = f.id + "|" + text, specs = (WEIGHTS[f.id] || [f.w]).map(w => `${w} 40px ${f.css}`);
+    const loaded = () => familyReady(f.id) && specs.every(q => { try { return document.fonts.check(q, text); } catch (e) { return true; } });
+    if (loaded()) { fontNow = { key, state: "ok" }; return; }
+    if (fontNow.key === key) return; /* 這一組已經在等，或已經判定連不到 */
+    const job = fontNow = { key, state: "wait" };
+    const settle = st => { if (fontNow !== job || job.state === st) return; job.state = st; GCACHE.clear(); MCACHE.clear(); schedule(0); };
+    setTimeout(() => { if (fontNow === job && job.state === "wait") paintFontNote(); }, 400); /* 很快就到的字不要閃提示 */
+    const work = Promise.resolve(cssWait[f.id]).then(ok => ok ? Promise.all(specs.map(q => document.fonts.load(q, text))).then(() => loaded() ? "ok" : "none", () => "none") : "none");
+    work.then(settle);
+    setTimeout(() => { if (job.state === "wait") settle("none"); }, FONT_WAIT);
+  }
+  /* 按下載時：字型還在路上就等一下，等到有結果才打包，檔案才會和畫面一樣 */
+  async function fontSettled() {
+    const job = fontNow; if (job.state !== "wait") return;
+    while (fontNow === job && job.state === "wait") await new Promise(r => setTimeout(r, 80));
+  }
+  function paintFontNote(quiet) {
+    const n = document.getElementById("fontNote"), st = fontNow.state; if (!n) return;
+    if (quiet && st === "wait") return;
+    const t = st === "wait" ? "這種字正在下載，等一下字的樣子會變。" : st === "none" ? "連不到網路字型，現在用電腦內建的字，三種字可能長得一樣。" : "";
+    n.textContent = t; n.hidden = !t;
+  }
+
   /* ---------- 3. 狀態 ---------- */
   const FONTS2 = [["round", "圓圓的"], ["sans", "粗粗的"], ["kai", "毛筆字"]];
   const SIZES = [[55, "小"], [65, "中"], [75, "大"], [85, "特大"]];
@@ -2639,7 +2685,7 @@ const Viewer = (() => {
   const S = Object.assign({ name: "", font: "round", size: 65, hang: "0", rim: true, eye: true, col: 1 }, store.get("opts", {}));
   S.name = "";
   const save = () => store.set("opts", { font: S.font, size: S.size, hang: S.hang, rim: S.rim, eye: S.eye, col: S.col });
-  let res = null, meshes = null, view = "3d", viewerOk = 0, dl = null, dlReady = !(window.claude && window.claude.use), fontPx = 0, fitInfo = { level: "ok" }, rec = null, recJob = null, recTimer = 0, twoLines = false;
+  let builtFont = "", dirty = true, dlBusy = false, dlSig = "", res = null, meshes = null, view = "3d", viewerOk = 0, dl = null, dlReady = !(window.claude && window.claude.use), fontPx = 0, fitInfo = { level: "ok" }, rec = null, recJob = null, recTimer = 0, twoLines = false;
   /* 一個字、一種粗細、實際 mm 大小 → {thin, merged}（佔這個字的比例），有快取 */
   const MCACHE = new Map();
   /* 每個字依實際大小畫成點陣（很細的縫也看得到），再用 mm 門檻檢查 */
@@ -2767,7 +2813,7 @@ const Viewer = (() => {
       if (fp2 > fontPx * 1.05) { lines = L2; box = BOX2; fontPx = fp2; }
     }
     twoLines = lines.length > 1;
-    if (document.fonts && document.fonts.check) for (const w of WEIGHTS[f.id] || [f.w]) { const spec = `${w} 40px ${f.css}`; try { if (!document.fonts.check(spec, name)) document.fonts.load(spec, name); } catch (e) {} }
+    checkFont(f, name);
     const emPerMM = fontPx / W; fitInfo = pickWeight(name, f, emPerMM * S.size);
     rec = null; recJob = fitInfo.level !== "ok" && S.name.trim() ? { name, f, emPerMM, size: S.size, fit: fitInfo } : null;
     x.font = `${fitInfo.weight} ${fontPx}px ${f.css}`; x.textAlign = "center"; x.textBaseline = "middle";
@@ -2781,12 +2827,12 @@ const Viewer = (() => {
     const p = Object.assign(PL.defaults(ENG.tag.params), { frame: "tuna", size: S.size, fit: "canvas", loop: S.hang !== "none", hang: S.hang === "none" ? "0" : S.hang, rim: S.rim, thick: 0, gap: 0, speck: .3 });
     const t0 = performance.now(); let r;
     try { r = ENG.tag.build(p, source()); } catch (e) { console.error(e); r = { empty: "做檔案時出了問題：" + e.message }; }
-    r.ms = Math.round(performance.now() - t0); res = r; meshes = null; show();
+    r.ms = Math.round(performance.now() - t0); r.font = fontNow.state; res = r; meshes = null; dirty = false; builtFont = fontNow.key + fontNow.state; show();
     /* 建議大小比較花時間，畫面先更新，再慢慢算 */
     clearTimeout(recTimer);
     if (recJob) { const j = recJob; recTimer = setTimeout(() => { if (recJob !== j) return; rec = recommend(j.name, j.f, j.emPerMM, j.size, j.fit); recJob = null; show(); }, 40); }
   }
-  let timer = 0; const schedule = (ms) => { clearTimeout(timer); const b = document.getElementById("busy"); if (b) b.hidden = false; timer = setTimeout(build, ms == null ? 180 : ms); };
+  let timer = 0; const schedule = (ms) => { dirty = true; clearTimeout(timer); const b = document.getElementById("busy"); if (b) b.hidden = false; timer = setTimeout(build, ms == null ? 180 : ms); };
 
   /* ---------- 5. 畫面 ---------- */
   const root = () => document.getElementById("app");
@@ -2801,6 +2847,7 @@ const Viewer = (() => {
     const opts = h("section", { class: "pane tuna-opts", "aria-label": "設計" },
       h("h2", null, h("b", null, "1"), "打名字"), inp, h("p", { class: "tips" }, "名字會放在黑鮪魚的身體中間。2～3 個字最清楚，4 個字會自動排成兩行。"),
       seg("字的樣子", FONTS2, S.font, v => { S.font = v; save(); render(); schedule(0); }),
+      h("p", { class: "tips fontnote", id: "fontNote", role: "status", hidden: true }),
       seg("大小", SIZES.some(z => z[0] === S.size) ? SIZES : SIZES.concat([[S.size, S.size + " mm"]]).sort((p, q) => p[0] - q[0]), S.size, v => setSize(+v)),
       seg("掛環", HANGS, S.hang, v => { S.hang = v; save(); render(); schedule(0); }),
       h("label", { class: "switch" }, h("input", { type: "checkbox", checked: S.rim ? true : null, onchange: e => { S.rim = e.target.checked; save(); schedule(0); } }), "外框線"),
@@ -2825,6 +2872,8 @@ const Viewer = (() => {
   function show() {
     const pv = document.getElementById("preview"); if (!pv) return;
     const busy = document.getElementById("busy"); busy.hidden = true;
+    paintFontNote(true);
+    if (dlSig && dlSig !== sig()) { dlSig = ""; const d = document.getElementById("dlStatus"); d.className = "status err"; d.textContent = fontNow.state === "ok" && !dirty ? "畫面和剛剛下載的不一樣了，要的話再按一次下載。" : "你改過了，要再按一次下載。"; }
     const empty = document.getElementById("pvEmpty"), flat = document.getElementById("flat"), glh = document.getElementById("glhost"), legend = document.getElementById("legend"), facts = document.getElementById("facts"), msgs = document.getElementById("msgs");
     legend.innerHTML = ""; facts.innerHTML = ""; msgs.innerHTML = "";
     if (!res) { empty.hidden = false; empty.textContent = "準備中…"; glh.hidden = true; flat.hidden = true; return; }
@@ -2878,27 +2927,45 @@ const Viewer = (() => {
     const a = h("a", { href: URL.createObjectURL(new Blob([data], { type: "application/zip" })), download: filename, style: "display:none" }); document.body.append(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 3000); return "saved";
   }
+  const sig = () => JSON.stringify([S.name.trim(), S.font, S.size, S.hang, S.rim, S.eye, S.col, fontNow.state]);
+  /* 按下載時：先把還沒算完的變更算完（檔名和內容才會一樣），字型還在路上就等它；連按只算一次 */
   async function download() {
-    const st = document.getElementById("dlStatus"); if (!res || res.empty) return;
-    if (!S.name.trim()) { toast("先打你的名字喔！"); document.getElementById("nameIn").focus(); return; }
+    if (dlBusy) return;
+    const st = document.getElementById("dlStatus"), btn = document.getElementById("dlBtn"), inp = document.getElementById("nameIn");
+    if (inp.value !== S.name) { S.name = inp.value; dirty = true; }
+    if (!S.name.trim()) { toast("先打你的名字喔！"); inp.focus(); return; }
+    dlBusy = true; btn.disabled = true; const label = btn.textContent; btn.textContent = "準備檔案中…";
     st.className = "status"; st.textContent = "準備檔案中…";
-    const who = S.name.trim().replace(/[\\/:*?"<>|\s]+/g, ""), base = `黑鮪魚吊飾_${who}_${stamp()}`;
-    const ms = meshes || res.parts3d.map(p => OUT.partMesh(p)), tris = []; for (const m of ms) for (const t of m.tris) tris.push(t);
-    const files = [{ name: `黑鮪魚吊飾_${who}.stl`, data: OUT.stl(tris) }, { name: "換色說明.txt", data: `換色高度：${PL.fmt(res.pause)} mm\r\n層高 0.2 mm 時，在第 ${Math.round(res.pause / .2) + 1} 層開始前暫停換線。\r\n` }];
-    const r = await saveFile(base + ".zip", OUT.zip(files));
-    if (r === "saved") { st.className = "status ok"; st.textContent = "已下載：" + base + ".zip"; toast("下載好了！"); }
-    else if (r === "declined") st.textContent = "已取消下載。";
-    else if (r === "rate_limited") st.textContent = "上一個下載還沒確認，等一下再按。";
-    else { st.className = "status err"; st.textContent = "這個畫面不能下載（" + r + "）。請老師改用離線版開啟。"; }
+    try {
+      await new Promise(r => requestAnimationFrame(() => setTimeout(r))); /* 讓「準備中」先畫出來 */
+      clearTimeout(timer); if (dirty) build();
+      if (fontNow.state === "wait") { st.textContent = "等字型下載，最多 8 秒…"; await fontSettled(); clearTimeout(timer); if (dirty || fontNow.key + fontNow.state !== builtFont) build(); }
+      if (!res || res.empty) { st.className = "status err"; st.textContent = (res && res.empty) || "檔案還沒做好，請再按一次。"; return; }
+      const who = S.name.trim().replace(/[\\/:*?"<>|\s]+/g, ""), base = `黑鮪魚吊飾_${who}_${stamp()}`;
+      const ms = meshes || res.parts3d.map(p => OUT.partMesh(p)), tris = []; for (const m of ms) for (const t of m.tris) tris.push(t);
+      const files = [{ name: `黑鮪魚吊飾_${who}.stl`, data: OUT.stl(tris) }, { name: "換色說明.txt", data: `換色高度：${PL.fmt(res.pause)} mm\r\n層高 0.2 mm 時，在第 ${Math.round(res.pause / .2) + 1} 層開始前暫停換線。\r\n` }];
+      const r = await saveFile(base + ".zip", OUT.zip(files));
+      if (r === "saved") { st.className = "status ok"; st.textContent = "檔案送出了：" + base + ".zip" + (res.font === "ok" ? "" : "（這份用的是電腦內建的字）"); toast("下載好了！"); dlSig = sig(); }
+      else if (r === "declined") st.textContent = "已取消下載。";
+      else if (r === "rate_limited") st.textContent = "上一個下載還沒確認，等一下再按。";
+      else { st.className = "status err"; st.textContent = "這個畫面不能下載（" + r + "）。請老師改用離線版開啟。"; }
+    } finally {
+      setTimeout(() => { dlBusy = false; const b = document.getElementById("dlBtn"); if (b) { b.disabled = false; b.textContent = label; } }, 1500);
+    }
   }
   window.TUNA = { S, build, res: () => res };
-  render(); build();
-  /* 中文字型是分好幾包、用到才下載：字型一載好就把量過的結果清掉重算（不然會用到備用字型的量測） */
-  if (document.fonts && document.fonts.load) {
-    let t = 0; document.fonts.addEventListener("loadingdone", () => { clearTimeout(t); t = setTimeout(() => { GCACHE.clear(); MCACHE.clear(); schedule(0); }, 120); });
-    const loads = []; for (const f of FONTS) for (const w of WEIGHTS[f.id] || [f.w]) loads.push(document.fonts.load(`${w} 40px ${f.css}`, "王小明陳則翰名字"));
-    Promise.allSettled(loads).then(() => { GCACHE.clear(); MCACHE.clear(); schedule(0); });
-  }
+  render();
+  /* 先把畫面畫出來，再算第一次、再載字型，網路或電腦慢都不會白畫面 */
+  requestAnimationFrame(() => setTimeout(() => {
+    if (document.fonts && document.fonts.load) loadFontCss();
+    build();
+    if (!document.fonts || !document.fonts.load) return;
+    /* 中文字型是分好幾包、用到才下載：現在這組字型的狀態一變，就把量過的結果清掉重算（不然會用到備用字型的量測） */
+    let t = 0; document.fonts.addEventListener("loadingdone", () => { clearTimeout(t); t = setTimeout(() => { checkFont(FONTS.find(q => q.id === S.font) || FONTS[0], S.name.trim() || "名字"); if (fontNow.key + fontNow.state !== builtFont) { GCACHE.clear(); MCACHE.clear(); schedule(0); } }, 120); });
+    Promise.all(Object.values(cssWait)).then(() => {
+      for (const [id] of FONTS2) { const f = FONTS.find(q => q.id === id); for (const w of WEIGHTS[id] || [f.w]) document.fonts.load(`${w} 40px ${f.css}`, "王小明陳則翰名字").catch(() => {}); }
+    });
+  }));
   window.TUNA.pick = (n, id, em) => pickWeight(n, FONTS.find(q => q.id === id), em);
   window.TUNA.rules = o => { if (o) { if (o.stroke) STROKE_MIN = o.stroke; if (o.gap) GAP_MIN = o.gap; if (o.near != null) NEAR = o.near; if (o.corner != null) CORNER = o.corner; if (o.pxmm) PX_MM = o.pxmm; if (o.thinOK) THIN_OK = o.thinOK; if (o.gapOK) GAP_OK = o.gapOK; if (o.gapWarn) GAP_WARN = o.gapWarn; MCACHE.clear(); GCACHE.clear(); } return { STROKE_MIN, GAP_MIN, NEAR, CORNER, THIN_OK, GAP_OK, GAP_WARN }; };
   window.TUNA.debugChar = (ch, id, w, em) => { const A = analyse(ch, FONTS.find(q => q.id === id), w, em), cv = document.createElement("canvas"); cv.width = A.G.nx; cv.height = A.G.ny;
