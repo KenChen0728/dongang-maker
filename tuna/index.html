@@ -188,6 +188,9 @@ canvas.sheet{display:block;max-width:100%;max-height:max(340px,min(calc(100vh - 
 .msg{border-radius:10px;padding:8px 12px;font-size:.88rem;margin:0}
 .msg.warn{background:var(--warn-bg);color:var(--warn-ink)}
 .msg.info{background:var(--info-bg);color:var(--info-ink)}
+.msg.good{background:var(--leaf-soft);color:var(--ink)}
+.msg.plain{background:var(--surface);color:var(--muted)}
+.btn.careful{background:var(--warn-bg);border:2px solid var(--warn-ink);color:var(--warn-ink);font-weight:700}
 
 /* options */
 .opts{display:flex;flex-direction:column;gap:12px}
@@ -1612,11 +1615,11 @@ const PL = (() => {
     o = o || {}; const warn = [];
     const minPx = (p.speck || 0) * G.ppm * G.ppm, thr = 0.08 * G.ppm * G.ppm; let removed = 0;
     if (minPx > 0) R.components(m, G.nx, G.ny, l => { if (l.length < minPx) { if (l.length >= thr) removed++; return true; } return false; });
-    if (removed) warn.push(`有 ${removed} 個小點被當成雜點刪掉了（例如眼睛）。把圖案放大，或請老師把「清除雜點」調小。`);
+    if (removed) warn.push(`有 ${removed} 個小點太小印不出來，已經拿掉了。放大就能留住它們。`);
     const holesBefore = o.skipHoleCheck ? 0 : R.holeCount(G, m, .8);
     let cur = R.dilate(G, m, (p.thick || 0) + (p.gap || 0)); if (p.gap > 0) cur = R.erode(G, cur, p.gap);
     if (allow) for (let i = 0; i < cur.length; i++) if (!allow[i]) cur[i] = 0;
-    if (!o.skipHoleCheck && holesBefore >= 2) { const after = R.holeCount(G, cur, .8); if (after < holesBefore * .6) warn.push("作品比較小，有些空隙被填平、細節不見了。可以把作品調大，或把圖案畫得簡單一點。"); }
+    if (!o.skipHoleCheck && holesBefore >= 2) { const after = R.holeCount(G, cur, .8); if (after < holesBefore * .6) warn.push("作品比較小，有些空隙被填平了。可以放大，或把名字打短一點。"); }
     return { cur, warn };
   }
   /* inscribed circle of a mask: centre + radius (mm) */
@@ -2798,6 +2801,37 @@ const Viewer = (() => {
   if (window.claude && window.claude.use) window.claude.use("downloads").then(d => { dl = d; dlReady = true; }).catch(() => { dlReady = true; });
 
   /* ---------- 4. 名字 → 黑白圖 → 吊飾 ---------- */
+  /* 吊飾引擎只留「離外框夠遠、又不在掛環旁邊」的筆畫（第 1 個條件見 ENG.tag.build）。
+     先把這塊「不能放字的地方」算出來（畫紙座標），名字超出去就縮小，筆畫才不會被切掉 */
+  const ZONE = new Map();
+  function noGoZone(W, H) {
+    const key = [S.size, S.hang, S.rim].join("|"); let z = ZONE.get(key); if (z) return z;
+    const A = { w: S.size, h: S.size * ASPECT }, G = R.grid(A.w + 24, A.h + 24, 10), sh = GM.frameMask(G, "tuna", A.w, A.h, 1.0), dep = R.depth(G, sh);
+    const edge = S.rim ? 3.2 : 1.6, L = S.hang === "none" ? null : PL.loopAt(G, sh, +S.hang), k = Math.min(A.w / W, A.h / H);
+    z = new Uint8Array(W * H);
+    for (let sy = 0, i = 0; sy < H; sy++) for (let sx = 0; sx < W; sx++, i++) {
+      const gx = Math.floor(R.toGx(G, (sx + .5 - W / 2) * k) + .5), gy = Math.floor(R.toGy(G, (sy + .5 - H / 2) * k) + .5), c = gy * G.nx + gx;
+      if (gx < 0 || gy < 0 || gx >= G.nx || gy >= G.ny || dep[c] <= edge || (L && L.keep[c])) z[i] = 1;
+    }
+    if (ZONE.size > 12) ZONE.delete(ZONE.keys().next().value);
+    ZONE.set(key, z); return z;
+  }
+  const FITS = new Map(); let probe = null;
+  /* 回傳縮放比（1 = 不用縮）和最後還超出多少；用最粗的字試排，比較細的字一定放得下 */
+  function fitName(W, H, f, lines, draw, px0) {
+    const key = [lines.join("/"), f.id, S.size, S.hang, S.rim, px0, fontNow.state].join("|"); let r = FITS.get(key); if (r) return r;
+    if (!probe) { const cv = document.createElement("canvas"); cv.width = W; cv.height = H; probe = cv.getContext("2d", { willReadFrequently: true }); }
+    const zone = noGoZone(W, H), wMax = (WEIGHTS[f.id] || [f.w])[0], TOL = .0002;
+    const over = k => { probe.clearRect(0, 0, W, H); probe.fillStyle = "#000"; draw(probe, wMax, px0 * k); const d = probe.getImageData(0, 0, W, H).data; let ink = 0, bad = 0; for (let i = 0; i < zone.length; i++) if (d[4 * i + 3] >= 128) { ink++; if (zone[i]) bad++; } return ink ? bad / ink : 0; };
+    r = { k: 1, left: 0 }; const o1 = over(1);
+    if (o1 > TOL) {
+      const oMin = over(.6);
+      if (oMin > TOL) r = { k: .6, left: oMin };
+      else { let lo = .6, hi = 1; for (let i = 0; i < 6; i++) { const mid = (lo + hi) / 2; if (over(mid) > TOL) hi = mid; else lo = mid; } r = { k: lo, left: 0 }; }
+    }
+    if (FITS.size > 200) FITS.delete(FITS.keys().next().value);
+    FITS.set(key, r); return r;
+  }
   function source() {
     const W = 1000, H = Math.round(1000 * ASPECT), cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const x = cv.getContext("2d", { willReadFrequently: true }), U = W / BW, X = v => (v - BX0) * U, Y = v => (v - BY0) * U;
@@ -2814,11 +2848,11 @@ const Viewer = (() => {
     }
     twoLines = lines.length > 1;
     checkFont(f, name);
-    const emPerMM = fontPx / W; fitInfo = pickWeight(name, f, emPerMM * S.size);
+    const drawName = (c, w, px) => { c.font = `${w} ${px}px ${f.css}`; c.textAlign = "center"; c.textBaseline = "middle"; const cx = X((box.x0 + box.x1) / 2), cy = Y((box.y0 + box.y1) / 2) + px * .04; lines.forEach((t, i) => c.fillText(t, cx, cy + (i - (lines.length - 1) / 2) * px * LH)); };
+    const fit = fitName(W, H, f, lines, drawName, fontPx); fontPx *= fit.k;
+    const emPerMM = fontPx / W; fitInfo = pickWeight(name, f, emPerMM * S.size); fitInfo.left = fit.left;
     rec = null; recJob = fitInfo.level !== "ok" && S.name.trim() ? { name, f, emPerMM, size: S.size, fit: fitInfo } : null;
-    x.font = `${fitInfo.weight} ${fontPx}px ${f.css}`; x.textAlign = "center"; x.textBaseline = "middle";
-    const cx = X((box.x0 + box.x1) / 2), cy = Y((box.y0 + box.y1) / 2) + fontPx * .04;
-    lines.forEach((t, i) => x.fillText(t, cx, cy + (i - (lines.length - 1) / 2) * fontPx * LH));
+    drawName(x, fitInfo.weight, fontPx);
     const d = x.getImageData(0, 0, W, H).data, a = new Uint8Array(W * H); let x0 = W, y0 = H, x1 = -1, y1 = -1;
     for (let i = 0; i < a.length; i++) if (d[4 * i] < 128) { a[i] = 1; const px = i % W, py = (i - px) / W; if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py; }
     return { w: W, h: H, data: a, bbox: x1 < 0 ? null : { x0, y0, x1: x1 + 1, y1: y1 + 1 } };
@@ -2826,7 +2860,7 @@ const Viewer = (() => {
   function build() {
     const p = Object.assign(PL.defaults(ENG.tag.params), { frame: "tuna", size: S.size, fit: "canvas", loop: S.hang !== "none", hang: S.hang === "none" ? "0" : S.hang, rim: S.rim, thick: 0, gap: 0, speck: .3 });
     const t0 = performance.now(); let r;
-    try { r = ENG.tag.build(p, source()); } catch (e) { console.error(e); r = { empty: "做檔案時出了問題：" + e.message }; }
+    try { r = ENG.tag.build(p, source()); if (r.empty) r.empty = "這些字畫不出來，換別的字試試看。"; } catch (e) { console.error(e); r = { empty: "做檔案時出了問題：" + e.message }; }
     r.ms = Math.round(performance.now() - t0); r.font = fontNow.state; res = r; meshes = null; dirty = false; builtFont = fontNow.key + fontNow.state; show();
     /* 建議大小比較花時間，畫面先更新，再慢慢算 */
     clearTimeout(recTimer);
@@ -2845,10 +2879,10 @@ const Viewer = (() => {
       h("button", { class: "iconbtn", "aria-label": dark ? "換成大地色" : "換成深色", onclick: () => { store.set("theme", dark ? "light" : "dark"); render(); } }, dark ? "☀" : "☾"));
     const inp = h("input", { id: "nameIn", class: "tuna-name", maxlength: "8", placeholder: "打你的名字", autocomplete: "off", "aria-label": "名字", value: S.name, oninput: e => { S.name = e.target.value; schedule(); } });
     const opts = h("section", { class: "pane tuna-opts", "aria-label": "設計" },
-      h("h2", null, h("b", null, "1"), "打名字"), inp, h("p", { class: "tips" }, "名字會放在黑鮪魚的身體中間。2～3 個字最清楚，4 個字會自動排成兩行。"),
+      h("h2", null, h("b", null, "1"), "打名字"), inp, h("p", { class: "tips", id: "nameNote" }, "2～3 個字最清楚，4 個字會排成兩行。"),
       seg("字的樣子", FONTS2, S.font, v => { S.font = v; save(); render(); schedule(0); }),
       h("p", { class: "tips fontnote", id: "fontNote", role: "status", hidden: true }),
-      seg("大小", SIZES.some(z => z[0] === S.size) ? SIZES : SIZES.concat([[S.size, S.size + " mm"]]).sort((p, q) => p[0] - q[0]), S.size, v => setSize(+v)),
+      seg("大小", SIZES.some(z => z[0] === S.size) ? SIZES : SIZES.concat([[S.size, sizeName(S.size)]]).sort((p, q) => p[0] - q[0]), S.size, v => setSize(+v)),
       seg("掛環", HANGS, S.hang, v => { S.hang = v; save(); render(); schedule(0); }),
       h("label", { class: "switch" }, h("input", { type: "checkbox", checked: S.rim ? true : null, onchange: e => { S.rim = e.target.checked; save(); schedule(0); } }), "外框線"),
       h("label", { class: "switch" }, h("input", { type: "checkbox", checked: S.eye ? true : null, onchange: e => { S.eye = e.target.checked; save(); schedule(0); } }), "眼睛和鰓"));
@@ -2859,6 +2893,7 @@ const Viewer = (() => {
       h("div", { class: "preview", id: "preview" }, h("div", { id: "glhost" }), h("div", { id: "flat", hidden: true }), h("div", { class: "empty", id: "pvEmpty", hidden: true }), h("span", { class: "busy", id: "busy", hidden: true }, "計算中…"), h("button", { class: "pvreset", id: "pvReset", onclick: () => Viewer.reset() }, "轉回來")),
       h("div", { class: "legend", id: "legend" }), h("div", { class: "facts", id: "facts" }), h("div", { id: "msgs", class: "col" }));
     const dlp = h("section", { class: "pane tuna-dl", "aria-label": "下載" }, h("h2", null, h("b", null, "3"), "下載給老師"),
+      h("div", { id: "check", class: "col" }),
       h("button", { class: "btn primary big", id: "dlBtn", onclick: download }, "下載 3D 列印檔"), h("p", { class: "status", id: "dlStatus", role: "status" }),
       h("p", { class: "tips" }, (window.claude && window.claude.use) ? "下載的是 zip，裡面有 STL 和換色說明。" : "下載的是 zip，裡面有 STL 和換色說明。下載好了就舉手告訴老師。"));
     r.append(bar, h("div", { class: "tuna-grid" }, opts, prev, dlp));
@@ -2886,29 +2921,52 @@ const Viewer = (() => {
     legend.append(sw(c.base, "底色"), sw(c.top, "凸起來、換色的部分（名字、眼睛、外框）"));
     const est = OUT.printEstimate(meshes, { print: 1 }), fact = (k, v) => h("div", { class: "fact" }, h("small", null, k), h("b", null, v));
     facts.append(fact("作品大小", `${PL.fmt(res.size[0])}×${PL.fmt(res.size[1])} mm`), fact("列印時間（粗估）", `約 ${est.minutes} 分`), fact("換色高度", `${PL.fmt(res.pause)} mm`), fact("一盤 6 件・2 台印 12 件", `約 ${Math.round(est.minutes * 6 / 60 * 10) / 10} 小時`));
-    const charMM = fontPx / 1000 * res.size[0], typed = !!S.name.trim(), L = fitInfo.level;
-    const LV = { ok: ["good", "很清楚"], fair: ["mid", "還可以"], tight: ["bad", "太擠"], thin: ["bad", "筆畫太細"] }[L];
+    const L = fitInfo.level, LV = { ok: ["good", "很清楚"], fair: ["mid", "還可以"], tight: ["bad", "太擠"], thin: ["bad", "筆畫太細"] }[L];
     facts.append(h("div", { class: "fact " + LV[0] }, h("small", null, "字印出來清不清楚（0.4 mm 噴嘴）"), h("b", null, LV[1])));
-    if (L !== "ok" && typed) {
-      const now = `現在每個字約 ${PL.fmt(charMM)} mm`, short = [...S.name.trim()].length > 2 ? `也可以只寫名字不寫姓（例如「${[...S.name.trim()].slice(-2).join("")}」），字少就會變大。` : "";
-      const why = L === "fair" ? `可以印。「${fitInfo.gapCh}」有幾個很小的縫可能會黏住，但還認得出來。` :
-        L === "tight" ? `「${fitInfo.gapCh}」的筆畫太密，${now}，印出來筆畫會黏在一起。` :
-        `「${fitInfo.thinCh}」的筆畫太細，${now}，切片時細的地方會變成斷斷續續或不見。`;
-      const m = h("div", { class: "msg " + (L === "fair" ? "info" : "warn") }, h("p", null, why));
-      if (!rec) m.append(h("p", null, "正在算要放大到多少…"));
-      else if (rec.fair || rec.ok) {
-        m.append(h("p", null, (L === "fair" ? "想要更清楚，可以放大一點（列印時間會變長一點）。" : "把吊飾放大，字就會變大（列印時間會變長一點）。") + short));
-        const row = h("div", { class: "tuna-recs" });
-        if (rec.fair) row.append(h("button", { class: "btn primary", onclick: () => setSize(rec.fair) }, `放大到 ${rec.fair} mm・可以印`));
-        if (rec.ok) row.append(h("button", { class: "btn" + (rec.fair || L === "fair" ? "" : " primary"), onclick: () => setSize(rec.ok) }, `放大到 ${rec.ok} mm・很清楚`));
-        m.append(row);
-      } else m.append(h("p", null, `放到最大 ${SIZE_MAX} mm 也${L === "fair" ? "只能到「還可以」" : "還是不夠清楚"}。` + (short || (L === "fair" ? "" : "請把名字寫短一點。")) + (L === "fair" || S.font === "sans" ? "" : "或換「粗粗的」字試試看。")));
-      msgs.append(m);
-    }
-    if (twoLines && typed) msgs.append(h("p", { class: "msg info" }, `名字有 ${[...S.name.trim()].length} 個字，自動排成兩行，每個字可以比較大。`));
-    for (const w of res.warn || []) msgs.append(h("p", { class: "msg warn" }, w));
+    paintCheck();
     for (const t of res.info3d || []) msgs.append(h("p", { class: "msg info" }, t));
   }
+  /* 給小朋友看的檢查結果：放在下載鈕正上方，按下載前一定看得到 */
+  const HAN = /^[\u3400-\u9fff\uf900-\ufaff]+$/;
+  const needsCare = () => !!S.name.trim() && (fitInfo.level === "tight" || fitInfo.level === "thin" || fitInfo.left > .002);
+  function syncDlBtn() {
+    const b = document.getElementById("dlBtn"); if (!b || dlBusy) return;
+    const care = needsCare(); b.classList.toggle("primary", !care); b.classList.toggle("careful", care);
+    b.textContent = care ? "還是要下載（先問老師）" : "下載 3D 列印檔";
+  }
+  function paintCheck() {
+    const box = document.getElementById("check"); if (!box) return; box.innerHTML = "";
+    const name = S.name.trim(), L = fitInfo.level, msg = (cls, ...kids) => h("div", { class: "msg " + cls }, kids);
+    if (!name) box.append(msg("plain", h("p", null, "打好名字，這裡會告訴你字清不清楚。")));
+    else if (L === "ok") box.append(msg("good", h("p", null, "字很清楚，可以下載。")));
+    else {
+      const short = HAN.test(name) && [...name].length > 2 ? `也可以只打名字（例如「${[...name].slice(-2).join("")}」），字會變大。` : "";
+      const why = L === "fair" ? `可以印。「${fitInfo.gapCh}」有幾個小縫可能會黏住。` : L === "tight" ? `字太擠了。「${fitInfo.gapCh}」印出來筆畫會黏在一起。` : `字太細了。「${fitInfo.thinCh}」印出來會斷掉。`;
+      const m = msg(L === "fair" ? "info" : "warn", h("p", null, why));
+      if (!rec) m.append(h("p", null, "正在算要放大到多少…"));
+      else if (rec.fair || rec.ok) {
+        m.append(h("p", null, (L === "fair" ? "想更清楚，可以放大。" : "把吊飾放大，字就會變大。") + short));
+        const row = h("div", { class: "tuna-recs" }), lb = (mm, t) => `放大到${sizeName(mm)}・${t}`;
+        if (rec.fair) row.append(h("button", { class: "btn primary", onclick: () => setSize(rec.fair) }, lb(rec.fair, "可以印")));
+        if (rec.ok) row.append(h("button", { class: "btn" + (rec.fair || L === "fair" ? "" : " primary"), onclick: () => setSize(rec.ok) }, lb(rec.ok, "很清楚")));
+        m.append(row);
+      } else m.append(h("p", null, (L === "fair" ? "放到最大也只能到「還可以」。" : "放到最大也不夠清楚。") + (short || (L === "fair" ? "" : "請把名字打短一點。")) + (L === "fair" || S.font === "sans" ? "" : "或換「粗粗的」字試試看。")));
+      box.append(m);
+    }
+    if (fitInfo.left > .002 && name) box.append(msg("warn", h("p", null, "有一點筆畫太靠近邊邊，會被切掉。請打短一點。")));
+    for (const w of res && res.warn || []) box.append(msg("warn", h("p", null, w)));
+    const note = document.getElementById("nameNote"); if (note) note.textContent = [...S.name].length >= 8 ? "最多 8 個字。" : twoLines && name ? `名字有 ${[...name].length} 個字，排成兩行，字比較大。` : "2～3 個字最清楚，4 個字會排成兩行。";
+    syncDlBtn();
+  }
+  /* 大小的名字：小、中、大、特大以外，用檔案實際的寬度（公分）來說 */
+  const OUTW = new Map();
+  function outWidth(mm) {
+    const key = mm + "|" + S.hang; let w = OUTW.get(key); if (w) return w;
+    const A = { w: mm, h: mm * ASPECT }, G = R.grid(A.w + 24, A.h + 24, 10), sh = GM.frameMask(G, "tuna", A.w, A.h, 1.0), L = S.hang === "none" ? null : PL.loopAt(G, sh, +S.hang), m = L ? R.or(sh, L.disk) : sh;
+    let x0 = G.nx, x1 = -1; for (let y = 0, i = 0; y < G.ny; y++) for (let x = 0; x < G.nx; x++, i++) if (m[i]) { if (x < x0) x0 = x; if (x > x1) x1 = x; }
+    w = (x1 - x0 + 1) / G.ppm; OUTW.set(key, w); return w;
+  }
+  const sizeName = mm => { const z = SIZES.find(q => q[0] === mm); return z ? `「${z[1]}」` : `約 ${PL.fmt(outWidth(mm) / 10)} 公分寬`; };
   function topView() {
     const f2 = OUT.f2, c = colors(), all = []; for (const p of res.parts3d) for (const so of p.solids || []) all.push(...so.loops);
     const b = GM.bounds(all), m = 3, sw = Math.max(b.w, b.h) / 400;
@@ -2934,7 +2992,7 @@ const Viewer = (() => {
     const st = document.getElementById("dlStatus"), btn = document.getElementById("dlBtn"), inp = document.getElementById("nameIn");
     if (inp.value !== S.name) { S.name = inp.value; dirty = true; }
     if (!S.name.trim()) { toast("先打你的名字喔！"); inp.focus(); return; }
-    dlBusy = true; btn.disabled = true; const label = btn.textContent; btn.textContent = "準備檔案中…";
+    dlBusy = true; btn.disabled = true; btn.textContent = "準備檔案中…";
     st.className = "status"; st.textContent = "準備檔案中…";
     try {
       await new Promise(r => requestAnimationFrame(() => setTimeout(r))); /* 讓「準備中」先畫出來 */
@@ -2950,7 +3008,7 @@ const Viewer = (() => {
       else if (r === "rate_limited") st.textContent = "上一個下載還沒確認，等一下再按。";
       else { st.className = "status err"; st.textContent = "這個畫面不能下載（" + r + "）。請老師改用離線版開啟。"; }
     } finally {
-      setTimeout(() => { dlBusy = false; const b = document.getElementById("dlBtn"); if (b) { b.disabled = false; b.textContent = label; } }, 1500);
+      setTimeout(() => { dlBusy = false; const b = document.getElementById("dlBtn"); if (b) { b.disabled = false; syncDlBtn(); } }, 1500);
     }
   }
   window.TUNA = { S, build, res: () => res };
