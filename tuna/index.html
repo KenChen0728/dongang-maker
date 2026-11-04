@@ -116,6 +116,8 @@ button:active:not(:disabled){filter:brightness(.92)}
 .barbtn{flex:none;min-height:48px;min-width:48px;padding:0 12px;border-radius:12px;background:transparent;border:2px solid rgba(255,255,255,.5);color:#fff;font-weight:700}
 .bar h1+.sub+.barbtn{margin-left:auto}
 .steps{display:none;gap:8px}
+.inapp{order:10;flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#fff3cd;color:#3d2e00;border-radius:10px;padding:6px 12px;font-weight:700}
+.inapp .barbtn{color:#3d2e00;border-color:#3d2e00}
 .steps button{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:var(--tap);padding:4px 6px;border-radius:12px;background:rgba(255,255,255,.1);border:2px solid transparent;color:#fff;font-weight:700}
 .steps button b{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.22);font-family:var(--mono);font-size:1rem}
 .steps button[aria-current="step"]{background:var(--edge);color:#1d1006}
@@ -230,10 +232,10 @@ details.more>div{display:flex;flex-direction:column;gap:8px;padding:0 12px 12px}
   .mini{display:block;flex:1 1 0;min-height:0;border-radius:12px;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,var(--surface-2),var(--panel) 75%);border:1px solid var(--line)}
   .mini svg{display:block;width:100%;height:100%;padding:8px}
 }
-@media (max-width:399px){.seg.colors button{flex-direction:column;gap:2px;padding:4px}.steps button{flex-direction:column;gap:0;font-size:.9375rem}.steps button b{width:22px;height:22px;font-size:.875rem}}
+@media (max-width:399px){.seg.colors button{flex-direction:column;gap:2px;padding:4px}.steps button{flex-direction:column;gap:0}.steps button b{width:24px;height:24px}}
 @media (max-width:339px){.bar .brandfish{display:none}}
 /* 確認要下載的是什麼：第 3 步也看得到魚 */
-@media (max-width:699px){
+@media (max-width:699px) and (min-height:601px){
   .tuna-dl .mini{display:block;flex:1 1 0;min-height:0;border-radius:12px;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,var(--surface-2),var(--panel) 75%);border:1px solid var(--line)}
   .tuna-dl .mini svg{display:block;width:100%;height:100%;padding:8px}
 }
@@ -481,7 +483,14 @@ const R = (() => {
   return { grid, cx, cy, toGx, toGy, each, maskBy, discs, bandX, empty, count, and, or, sub, maskDraw, polyPath, polyMask, edt, dilate, erode, depth, band, smoothMask, components, fillHoles, splitLargest, pieces, removeSmall, holeCount, bbox, centroid, areaMM, mirrorX, trace, rdp };
 })();
 
-/* ===== polygon triangulation (algorithm after mapbox/earcut, ISC license) — used when the CDN copy is unavailable ===== */
+/* ===== polygon triangulation，改寫自 mapbox/earcut =====
+   ISC License. Copyright (c) 2016, Mapbox.
+   Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
+   provided that the above copyright notice and this permission notice appear in all copies.
+   THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+   WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR
+   CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+   NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
 const EARCUT = (() => {
   function earcut(data, holeIndices, dim) {
     dim = dim || 2;
@@ -968,7 +977,7 @@ const OUT = (() => {
     return { tris, tones };
   }
   function stl(tris) {
-    const buf = new ArrayBuffer(84 + 50 * tris.length), dv = new DataView(buf), hdr = "linework-helper";
+    const buf = new ArrayBuffer(84 + 50 * tris.length), dv = new DataView(buf), hdr = "dongang-maker tuna";
     for (let i = 0; i < hdr.length; i++) dv.setUint8(i, hdr.charCodeAt(i));
     dv.setUint32(80, tris.length, true); let o = 84;
     for (const [a, b, c] of tris) {
@@ -1018,11 +1027,11 @@ const OUT = (() => {
   const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
   function crc32(d) { let c = 0xFFFFFFFF; for (let i = 0; i < d.length; i++) c = CRC[(c ^ d[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
   function zip(files) {
-    const parts = [], cds = []; let off = 0; const enc = new TextEncoder();
+    const parts = [], cds = []; let off = 0; const enc = new TextEncoder(), d = new Date(), dosT = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), dosD = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
     for (const f of files) {
       const nm = enc.encode(f.name), data = typeof f.data === "string" ? enc.encode(f.data) : f.data, crc = crc32(data), sz = data.length;
-      const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true);
-      const ch = new DataView(new ArrayBuffer(46)); ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+      const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, dosT, true); lh.setUint16(12, dosD, true); lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true);
+      const ch = new DataView(new ArrayBuffer(46)); ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(12, dosT, true); ch.setUint16(14, dosD, true); ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
       parts.push(lh.buffer, nm, data); cds.push(ch.buffer, nm); off += 30 + nm.length + sz;
     }
     let cdSize = 0; for (const p of cds) cdSize += p.byteLength;
@@ -1048,482 +1057,13 @@ const OUT = (() => {
   return { triangulate, solid, heightfield, extrudeXZ, partMesh, stl, meshVolume, meshBounds, dLoops, f2, layout, laserSVG, partBounds, zip, printEstimate, laserEstimate };
 })();
 
-/* ===== stickers: simple shapes in a 0–100 box. part kinds: s solid, h hole, l detail line (cut when solid), x extra line (always ink) ===== */
-const STK = (() => {
-  const C = (x, y, r) => `M${x + r} ${y}A${r} ${r} 0 1 1 ${x - r} ${y}A${r} ${r} 0 1 1 ${x + r} ${y}Z`;
-  const E = (x, y, rx, ry) => `M${x + rx} ${y}A${rx} ${ry} 0 1 1 ${x - rx} ${y}A${rx} ${ry} 0 1 1 ${x + rx} ${y}Z`;
-  const star = (cx, cy, R, r, n) => { let d = ""; for (let i = 0; i < 2 * n; i++) { const a = -Math.PI / 2 + i * Math.PI / n, q = i % 2 ? r : R; d += (i ? "L" : "M") + (cx + q * Math.cos(a)).toFixed(1) + " " + (cy + q * Math.sin(a)).toFixed(1); } return d + "Z"; };
-  const rays = (cx, cy, r0, r1, n) => { let d = ""; for (let i = 0; i < n; i++) { const a = i * 2 * Math.PI / n; d += `M${(cx + r0 * Math.cos(a)).toFixed(1)} ${(cy + r0 * Math.sin(a)).toFixed(1)}L${(cx + r1 * Math.cos(a)).toFixed(1)} ${(cy + r1 * Math.sin(a)).toFixed(1)}`; } return d; };
-  const heart = "M50 88 C20 66 6 50 6 32 C6 18 18 8 30 8 C40 8 46 14 50 22 C54 14 60 8 70 8 C82 8 94 18 94 32 C94 50 80 66 50 88 Z";
-  const snow = (() => { let d = ""; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3, c = Math.cos(a), s = Math.sin(a), P = (r, o) => [50 + r * c - o * s, 50 + r * s + o * c].map(v => v.toFixed(1)).join(" "); d += `M50 50L${P(40, 0)}M${P(26, 0)}L${P(36, 9)}M${P(26, 0)}L${P(36, -9)}`; } return d; })();
-  const L = {
-    fish: { n: "魚", c: "海洋", p: [["s", "M14 50 C30 24 64 24 78 50 C64 76 30 76 14 50 Z"], ["s", "M74 50 L95 30 L91 50 L95 70 Z"], ["h", C(30, 45, 4.5)], ["l", "M44 34 Q52 50 44 66", 4]] },
-    whale: { n: "鯨魚", c: "海洋", p: [["s", "M8 60 C8 38 40 32 62 44 C70 48 76 50 80 46 L86 32 C88 28 94 28 96 32 L90 42 L98 46 C96 50 88 52 84 54 C78 74 46 82 26 76 C14 72 8 68 8 60 Z"], ["h", C(24, 55, 3.5)], ["l", "M10 64 Q22 68 36 64", 3], ["x", "M30 30 Q30 20 23 13 M30 30 Q30 20 37 13 M30 30 L30 16", 4]] },
-    octopus: { n: "章魚", c: "海洋", p: [["s", C(50, 36, 24)], ["s", "M27 40 L73 40 L71 60 L29 60 Z"], ["x", "M32 56 Q24 76 12 78 M42 60 Q38 80 30 90 M50 60 L50 92 M58 60 Q62 80 70 90 M68 56 Q76 76 88 78", 7], ["h", C(41, 40, 4)], ["h", C(59, 40, 4)]] },
-    crab: { n: "螃蟹", c: "海洋", p: [["s", E(50, 60, 26, 17)], ["s", C(20, 30, 11)], ["s", C(80, 30, 11)], ["h", "M20 30 L10 18 L24 20 Z"], ["h", "M80 30 L90 18 L76 20 Z"], ["x", "M30 52 L22 38 M70 52 L78 38 M26 64 L10 72 M28 70 L14 82 M74 64 L90 72 M72 70 L86 82 M43 46 L40 34 M57 46 L60 34", 5], ["s", C(40, 32, 4.5)], ["s", C(60, 32, 4.5)], ["l", "M42 64 Q50 70 58 64", 3]] },
-    shell: { n: "貝殼", c: "海洋", p: [["s", "M50 86 L16 44 C16 20 36 10 50 10 C64 10 84 20 84 44 Z"], ["s", "M40 84 L60 84 L57 94 L43 94 Z"], ["l", "M50 84 L28 22 M50 84 L40 13 M50 84 L60 13 M50 84 L72 22", 3.5]] },
-    starfish: { n: "海星", c: "海洋", p: [["s", star(50, 54, 46, 20, 5)], ["h", C(50, 52, 3)], ["h", C(50, 30, 2.5)], ["h", C(72, 46, 2.5)], ["h", C(28, 46, 2.5)], ["h", C(36, 70, 2.5)], ["h", C(64, 70, 2.5)]] },
-    turtle: { n: "烏龜", c: "海洋", p: [["s", "M18 64 C18 34 80 34 80 64 Z"], ["s", C(88, 56, 8.5)], ["s", E(30, 68, 8, 6)], ["s", E(68, 68, 8, 6)], ["s", "M20 60 L8 66 L20 66 Z"], ["l", "M49 40 L49 63 M33 46 L39 63 M65 46 L59 63 M24 54 L74 54", 3.5], ["h", C(91, 54, 2)]] },
-    boat: { n: "帆船", c: "海洋", p: [["s", "M10 64 L90 64 L78 80 L22 80 Z"], ["x", "M50 64 L50 12", 4], ["s", "M54 14 L54 58 L86 58 Z"], ["s", "M46 24 L46 58 L20 58 Z"], ["x", "M6 90 Q16 84 26 90 T46 90 T66 90 T86 90 T96 90", 4]] },
-    wave: { n: "海浪", c: "海洋", p: [["s", "M4 82 C4 50 28 26 52 30 C72 34 78 56 64 62 C54 66 46 58 52 50 C38 50 34 72 52 78 C72 84 90 70 96 54 L96 82 Z"]] },
-    anchor: { n: "船錨", c: "海洋", p: [["x", "M50 22 L50 88 M34 34 L66 34 M14 58 C14 80 34 90 50 90 C66 90 86 80 86 58", 7], ["s", C(50, 14, 9)], ["h", C(50, 14, 4)], ["s", "M8 62 L20 54 L22 66 Z"], ["s", "M92 62 L80 54 L78 66 Z"]] },
-    cat: { n: "貓咪", c: "動物", p: [["s", "M20 42 L22 12 L40 28 C46 26 54 26 60 28 L78 12 L80 42 C86 54 84 74 70 82 C60 88 40 88 30 82 C16 74 14 54 20 42 Z"], ["h", E(38, 52, 5, 6.5)], ["h", E(62, 52, 5, 6.5)], ["h", "M45 63 L55 63 L50 69 Z"], ["l", "M50 69 Q46 76 40 73 M50 69 Q54 76 60 73", 3], ["x", "M26 66 L4 61 M26 72 L6 76 M74 66 L96 61 M74 72 L94 76", 3]] },
-    dog: { n: "小狗", c: "動物", p: [["s", E(50, 56, 27, 30)], ["s", "M26 34 C10 34 6 62 16 72 C24 62 26 48 32 40 Z"], ["s", "M74 34 C90 34 94 62 84 72 C76 62 74 48 68 40 Z"], ["h", C(40, 50, 4.5)], ["h", C(60, 50, 4.5)], ["h", E(50, 66, 7, 5)], ["l", "M50 71 L50 77 M50 77 Q44 82 40 78 M50 77 Q56 82 60 78", 3]] },
-    rabbit: { n: "兔子", c: "動物", p: [["s", C(50, 64, 25)], ["s", "M36 46 C28 26 30 4 38 4 C46 4 47 26 45 44 Z"], ["s", "M64 46 C72 26 70 4 62 4 C54 4 53 26 55 44 Z"], ["h", "M38 38 C35 26 35 13 38 13 C41 13 42 26 41 38 Z"], ["h", "M62 38 C65 26 65 13 62 13 C59 13 58 26 59 38 Z"], ["h", C(41, 60, 4)], ["h", C(59, 60, 4)], ["h", C(50, 70, 3)], ["l", "M50 73 Q46 79 41 76 M50 73 Q54 79 59 76", 3]] },
-    bear: { n: "小熊", c: "動物", p: [["s", C(24, 30, 12)], ["s", C(76, 30, 12)], ["s", C(50, 57, 31)], ["h", C(24, 30, 5.5)], ["h", C(76, 30, 5.5)], ["h", C(39, 50, 4.5)], ["h", C(61, 50, 4.5)], ["h", E(50, 68, 13, 10)], ["s", E(50, 63, 5, 3.8)], ["x", "M50 66 L50 72 M44 74 Q50 77 56 74", 3]] },
-    pig: { n: "小豬", c: "動物", p: [["s", "M24 34 L20 12 L42 26 Z"], ["s", "M76 34 L80 12 L58 26 Z"], ["s", E(50, 56, 31, 28)], ["h", E(50, 64, 13, 9)], ["s", E(45, 64, 2.6, 3.8)], ["s", E(55, 64, 2.6, 3.8)], ["h", C(37, 48, 4)], ["h", C(63, 48, 4)]] },
-    bird: { n: "小鳥", c: "動物", p: [["s", "M20 60 C20 38 40 28 58 34 C66 22 82 22 86 34 L96 38 L86 42 C86 60 72 78 48 78 C34 78 22 72 20 60 Z"], ["s", "M24 58 L4 50 L8 62 L4 72 L26 66 Z"], ["l", "M36 52 C44 62 58 63 67 54", 4], ["h", C(76, 34, 3.5)], ["x", "M46 78 L44 92 M56 78 L58 92", 3]] },
-    butterfly: { n: "蝴蝶", c: "動物", p: [["s", "M50 50 C30 12 4 16 8 40 C10 54 34 56 50 50 Z"], ["s", "M50 50 C70 12 96 16 92 40 C90 54 66 56 50 50 Z"], ["s", "M50 53 C34 58 16 72 25 84 C34 94 48 74 50 57 Z"], ["s", "M50 53 C66 58 84 72 75 84 C66 94 52 74 50 57 Z"], ["h", C(27, 36, 5.5)], ["h", C(73, 36, 5.5)], ["s", E(50, 52, 4, 22)], ["x", "M48 32 Q42 18 35 13 M52 32 Q58 18 65 13", 3]] },
-    paw: { n: "腳印", c: "動物", p: [["s", E(50, 66, 19, 16)], ["s", E(25, 42, 8.5, 10.5)], ["s", E(42, 28, 8.5, 10.5)], ["s", E(58, 28, 8.5, 10.5)], ["s", E(75, 42, 8.5, 10.5)]] },
-    sun: { n: "太陽", c: "自然", p: [["s", C(50, 50, 19)], ["x", rays(50, 50, 26, 42, 8), 7]] },
-    moon: { n: "月亮", c: "自然", p: [["s", "M58 10 A40 40 0 1 0 90 66 A31 31 0 1 1 58 10 Z"]] },
-    star: { n: "星星", c: "自然", p: [["s", star(50, 54, 46, 20, 5)]] },
-    cloud: { n: "雲", c: "自然", p: [["s", C(32, 58, 17) + C(52, 44, 21) + C(72, 57, 16) + "M32 58 L72 58 L72 75 L32 75 Z"]] },
-    flower: { n: "花", c: "自然", p: [["s", (() => { let d = ""; for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 5; d += C(+(50 + 17 * Math.cos(a)).toFixed(1), +(42 + 17 * Math.sin(a)).toFixed(1), 13); } return d; })()], ["h", C(50, 42, 7.5)], ["x", "M50 60 Q47 78 50 95", 6], ["s", "M50 82 C57 69 73 68 78 72 C70 81 58 85 50 82 Z"]] },
-    leaf: { n: "葉子", c: "自然", p: [["s", "M12 88 C12 40 40 12 88 12 C88 60 60 88 12 88 Z"], ["l", "M18 82 L74 26 M38 62 L38 42 M52 48 L52 32 M38 62 L58 62 M52 48 L68 48", 3]] },
-    tree: { n: "大樹", c: "自然", p: [["s", C(50, 36, 29)], ["s", "M44 60 L56 60 L58 93 L42 93 Z"]] },
-    pine: { n: "松樹", c: "自然", p: [["s", "M50 4 L72 34 L28 34 Z"], ["s", "M50 20 L80 54 L20 54 Z"], ["s", "M50 38 L88 76 L12 76 Z"], ["s", "M44 74 L56 74 L56 94 L44 94 Z"]] },
-    mushroom: { n: "香菇", c: "自然", p: [["s", "M8 52 C8 20 92 20 92 52 Z"], ["s", "M37 52 L63 52 L65 86 C65 93 35 93 35 86 Z"], ["h", C(30, 38, 6)], ["h", C(54, 32, 5)], ["h", C(72, 43, 5)]] },
-    drop: { n: "水滴", c: "自然", p: [["s", "M50 6 C50 6 20 48 20 64 C20 82 34 93 50 93 C66 93 80 82 80 64 C80 48 50 6 50 6 Z"], ["l", "M35 66 Q35 79 46 83", 4]] },
-    snowflake: { n: "雪花", c: "自然", p: [["x", snow, 6]] },
-    mountain: { n: "山", c: "自然", p: [["s", "M4 86 L36 28 L52 54 L66 36 L96 86 Z"], ["h", "M36 28 L45 44 L39 41 L33 47 L28 42 Z"]] },
-    rainbow: { n: "彩虹", c: "自然", p: [["x", "M8 82 A42 42 0 0 1 92 82 M22 82 A28 28 0 0 1 78 82 M36 82 A14 14 0 0 1 64 82", 8]] },
-    heart: { n: "愛心", c: "生活", p: [["s", heart]] },
-    smile: { n: "笑臉", c: "生活", p: [["s", C(50, 50, 42)], ["h", E(36, 40, 5, 7.5)], ["h", E(64, 40, 5, 7.5)], ["h", "M26 56 Q50 86 74 56 Q50 70 26 56 Z"]] },
-    house: { n: "房子", c: "生活", p: [["s", "M8 48 L50 10 L92 48 Z"], ["s", "M20 46 L80 46 L80 90 L20 90 Z"], ["h", "M44 90 L44 66 L56 66 L56 90 Z"], ["h", "M27 56 L38 56 L38 67 L27 67 Z"], ["h", "M62 56 L73 56 L73 67 L62 67 Z"]] },
-    car: { n: "汽車", c: "生活", p: [["s", "M6 68 L6 54 L22 50 L33 34 L67 34 L79 50 L94 54 L94 68 Z"], ["h", "M37 38 L48 38 L48 50 L28 50 Z"], ["h", "M52 38 L63 38 L72 50 L52 50 Z"], ["s", C(28, 68, 11)], ["s", C(72, 68, 11)], ["h", C(28, 68, 4.5)], ["h", C(72, 68, 4.5)]] },
-    plane: { n: "飛機", c: "生活", p: [["s", "M50 6 C55 6 56 12 56 18 L56 40 L94 58 L94 67 L56 56 L56 78 L68 87 L68 94 L50 88 L32 94 L32 87 L44 78 L44 56 L6 67 L6 58 L44 40 L44 18 C44 12 45 6 50 6 Z"]] },
-    rocket: { n: "火箭", c: "生活", p: [["s", "M50 4 C66 18 68 46 64 70 L36 70 C32 46 34 18 50 4 Z"], ["s", "M36 50 L20 74 L36 70 Z"], ["s", "M64 50 L80 74 L64 70 Z"], ["h", C(50, 34, 8)], ["s", "M41 73 L59 73 L50 95 Z"]] },
-    crown: { n: "皇冠", c: "生活", p: [["s", "M12 74 L16 28 L34 50 L50 18 L66 50 L84 28 L88 74 Z"], ["s", "M12 79 L88 79 L88 88 L12 88 Z"], ["h", C(50, 60, 4.5)], ["h", C(31, 63, 3.5)], ["h", C(69, 63, 3.5)]] },
-    note: { n: "音符", c: "生活", p: [["s", E(32, 78, 13, 10)], ["s", E(76, 70, 13, 10)], ["x", "M44 76 L44 18 M88 68 L88 12", 6], ["s", "M41 15 L91 8 L91 22 L41 29 Z"]] },
-    balloon: { n: "氣球", c: "生活", p: [["s", "M50 6 C72 6 82 26 78 44 C74 60 60 70 50 70 C40 70 26 60 22 44 C18 26 28 6 50 6 Z"], ["s", "M45 70 L55 70 L50 77 Z"], ["x", "M50 77 Q41 85 50 95", 3], ["l", "M33 30 Q35 19 44 16", 4]] },
-    icecream: { n: "冰淇淋", c: "生活", p: [["s", "M30 52 L70 52 L50 95 Z"], ["l", "M38 60 L60 77 M44 54 L64 68 M62 60 L40 77", 3], ["s", "M26 54 C20 26 80 26 74 54 Z"], ["s", C(50, 17, 6.5)]] },
-    gift: { n: "禮物", c: "生活", p: [["s", "M12 40 L88 40 L88 57 L12 57 Z"], ["s", "M18 57 L82 57 L82 92 L18 92 Z"], ["h", "M45 40 L55 40 L55 92 L45 92 Z"], ["x", "M50 40 C40 22 24 26 32 37 C36 42 46 41 50 40 C54 41 64 42 68 37 C76 26 60 22 50 40", 5]] },
-    candy: { n: "糖果", c: "生活", p: [["s", "M30 50 L8 34 L13 50 L8 66 Z"], ["s", "M70 50 L92 34 L87 50 L92 66 Z"], ["s", C(50, 50, 23)], ["l", "M50 29 C65 33 65 48 50 50 C35 52 35 67 50 71", 4]] },
-    pencil: { n: "鉛筆", c: "生活", p: [["s", "M14 86 L21 66 L70 17 L83 30 L34 79 Z"], ["l", "M21 66 L34 79 M63 24 L76 37", 3.5]] },
-    bolt: { n: "閃電", c: "生活", p: [["s", "M58 4 L20 56 L46 56 L37 96 L80 40 L54 40 L67 4 Z"]] },
-    snowman: { n: "雪人", c: "生活", p: [["s", C(50, 70, 23)], ["s", C(50, 36, 16)], ["s", "M35 22 L65 22 L65 18 L58 18 L58 3 L42 3 L42 18 L35 18 Z"], ["h", C(44, 33, 2.8)], ["h", C(56, 33, 2.8)], ["h", C(50, 62, 3)], ["h", C(50, 74, 3)], ["l", "M43 41 Q50 46 57 41", 3]] },
-    lantern: { n: "燈籠", c: "生活", p: [["s", "M30 22 L70 22 C83 36 83 64 70 78 L30 78 C17 64 17 36 30 22 Z"], ["s", "M38 13 L62 13 L62 22 L38 22 Z"], ["s", "M38 78 L62 78 L62 87 L38 87 Z"], ["l", "M50 24 L50 76 M39 25 C31 40 31 60 39 75 M61 25 C69 40 69 60 61 75", 3], ["x", "M50 87 L50 97 M50 4 L50 13", 3]] }
-  };
-  const cache = {};
-  const path = d => cache[d] || (cache[d] = new Path2D(d));
-  /* isolated: the context is a private layer, so outlines can be cut with destination-out */
-  function draw(c, id, style, color, isolated) {
-    const s = L[id]; if (!s) return; c.save(); c.lineCap = "round"; c.lineJoin = "round";
-    if (style === "line" && isolated) {
-      let i = 0; const base = [];
-      while (i < s.p.length && s.p[i][0] === "s") base.push(path(s.p[i++][1]));
-      c.strokeStyle = color; c.lineWidth = 10; for (const P of base) c.stroke(P);
-      c.globalCompositeOperation = "destination-out"; c.fillStyle = "#000"; for (const P of base) c.fill(P, "nonzero");
-      c.globalCompositeOperation = "source-over";
-      for (; i < s.p.length; i++) { const [k, d, w] = s.p[i]; c.strokeStyle = color; c.lineWidth = k === "s" || k === "h" ? 5 : (w || 4); c.stroke(path(d)); }
-      c.restore(); return;
-    }
-    for (const [k, d, w] of s.p) {
-      const P = path(d);
-      if (style === "line") {
-        c.globalCompositeOperation = "source-over"; c.strokeStyle = color;
-        if (k === "s" || k === "h") { c.lineWidth = 5; c.stroke(P); } else { c.lineWidth = w || 4; c.stroke(P); }
-      } else {
-        if (k === "s") { c.globalCompositeOperation = "source-over"; c.fillStyle = color; c.fill(P, "nonzero"); }
-        else if (k === "h") { c.globalCompositeOperation = "destination-out"; c.fillStyle = "#000"; c.fill(P, "nonzero"); }
-        else if (k === "l") { c.globalCompositeOperation = "destination-out"; c.strokeStyle = "#000"; c.lineWidth = w || 4; c.stroke(P); }
-        else if (k === "x") { c.globalCompositeOperation = "source-over"; c.strokeStyle = color; c.lineWidth = w || 4; c.stroke(P); }
-      }
-    }
-    c.restore();
-  }
-  /* 東港在地：東港三寶（黑鮪魚、櫻花蝦、油魚子）＋王船、燈塔、漁船 */
-  Object.assign(L, {
-    tuna: { n: "黑鮪魚", c: "東港", p: [["s", "M6 50 C16 34 38 30 60 33 C70 35 77 43 80 50 C77 57 70 65 60 67 C38 70 16 66 6 50 Z"], ["s", "M78 50 L86 45 L97 22 Q89 50 97 78 L86 55 Z"], ["s", "M34 34 L43 19 L50 33 Z"], ["s", "M58 35 L65 25 L68 37 Z"], ["s", "M58 65 L65 75 L68 63 Z"], ["s", "M69 38 L73 33 L75 41 Z M69 62 L73 67 L75 59 Z"], ["h", C(19, 46, 3.4)], ["l", "M27 37 Q22 50 27 63", 3], ["l", "M32 53 L60 53", 2.5]] },
-    sakura: { n: "櫻花蝦", c: "東港", p: [["s", "M14 48 C18 26 48 14 70 24 C86 32 90 52 82 66 L74 68 C78 56 74 44 64 38 C48 30 32 38 26 54 Z"], ["s", "M80 64 L93 82 L71 83 L74 68 Z"], ["s", "M16 44 L3 37 L17 40 Z"], ["h", C(22, 42, 3)], ["l", "M40 24 L40 38 M52 20 L50 34 M63 22 L59 36 M74 29 L67 41 M81 41 L73 49", 3], ["x", "M12 44 Q18 12 46 5 M12 46 Q30 20 62 13", 2.5], ["x", "M30 52 L27 64 M38 46 L36 60 M46 42 L46 56 M54 40 L57 53", 3]] },
-    roe: { n: "油魚子", c: "東港", p: [["s", "M10 42 C10 31 26 26 50 27 C74 28 91 33 91 45 C91 57 74 63 50 64 C26 65 10 58 10 49 Z"], ["l", "M22 40 Q50 34 80 41", 3.5], ["s", E(24, 82, 10, 7)], ["s", E(50, 84, 10, 7)], ["s", E(76, 82, 10, 7)]] },
-    kingboat: { n: "王船", c: "東港", p: [["s", "M4 56 L96 50 C94 60 88 70 80 76 L22 78 C14 72 8 64 4 56 Z"], ["s", "M74 52 L84 36 L96 38 L96 51 Z"], ["s", "M4 57 L10 47 L20 55 Z"], ["x", "M30 55 L30 9 M54 54 L54 5 M76 50 L76 19", 3], ["s", "M32 13 L46 15 L46 47 L32 47 Z"], ["s", "M56 9 L70 11 L70 45 L56 45 Z"], ["s", "M78 22 L88 24 L88 43 L78 43 Z"], ["l", "M32 23 L46 24 M32 33 L46 34 M56 19 L70 20 M56 29 L70 30 M56 38 L70 38", 2.5], ["l", "M14 65 L86 61", 3], ["h", C(15, 61, 2.6)], ["x", "M4 89 Q14 83 24 89 T44 89 T64 89 T84 89", 4]] },
-    lighthouse: { n: "燈塔", c: "東港", p: [["s", "M38 88 L44 35 L56 35 L62 88 Z"], ["s", "M39 30 L61 30 L61 35 L39 35 Z"], ["s", "M44 18 L56 18 L56 30 L44 30 Z"], ["s", "M42 18 L50 9 L58 18 Z"], ["h", "M47 21 L53 21 L53 27 L47 27 Z"], ["l", "M42 52 L58 52 M40 70 L60 70", 5], ["s", "M30 88 L70 88 L70 95 L30 95 Z"], ["x", "M63 21 L82 14 M63 26 L84 28 M37 21 L18 14 M37 26 L16 28", 3]] },
-    trawler: { n: "漁船", c: "東港", p: [["s", "M6 62 L94 62 L84 80 L18 80 Z"], ["s", "M52 42 L76 42 L76 62 L52 62 Z"], ["h", "M56 46 L62 46 L62 53 L56 53 Z"], ["h", "M66 46 L72 46 L72 53 L66 53 Z"], ["x", "M32 62 L32 16 M32 22 L12 46 M32 22 L50 34", 3.5], ["s", "M32 16 L45 20 L32 25 Z"], ["x", "M4 90 Q14 84 24 90 T44 90 T64 90 T84 90", 4]] }
-  });
-  const cats = ["東港", "海洋", "動物", "自然", "生活"];
-  return { L, draw, cats, list: c => Object.keys(L).filter(k => !c || L[k].c === c) };
-})();
-
-/* ===== editor: hand drawing + photo + text + stickers on one sheet ===== */
+/* ===== 名字可以用的字型 ===== */
 const FONTS = [
   { id: "sans", name: "黑體", css: '"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif', w: 900 },
   { id: "round", name: "圓體", css: '"Chiron GoRound TC","Noto Sans TC","PingFang TC",sans-serif', w: 700 },
   { id: "kai", name: "楷書", css: '"LXGW WenKai TC","BiauKai","DFKai-SB","Kaiti TC",serif', w: 700 },
   { id: "serif", name: "明體", css: '"Noto Serif TC","PMingLiU","Songti TC",serif', w: 900 }
 ];
-const PENS = [{ id: "s", name: "細", w: 10 }, { id: "m", name: "中", w: 18 }, { id: "l", name: "粗", w: 28 }, { id: "xl", name: "特粗", w: 44 }];
-
-const Editor = (() => {
-  const S = { W: 800, H: 800, ink: null, ictx: null, objs: [], photo: null, tool: "pen", pen: 18, sym: "none", shape: "line", sel: -1, version: 1, undo: [], redo: [], guide: null, listeners: [], selListeners: [], pushListeners: [], fontsReady: false };
-  let cv = null, ctx = null, wrap = null, raf = 0, drag = null, shapePrev = null, strokePts = null;
-
-  function makeInk(W, H, old) {
-    const c = document.createElement("canvas"); c.width = W; c.height = H;
-    const x = c.getContext("2d", { willReadFrequently: true });
-    if (old) { const k = Math.min(W / old.width, H / old.height); x.drawImage(old, (W - old.width * k) / 2, (H - old.height * k) / 2, old.width * k, old.height * k); }
-    return [c, x];
-  }
-  function mount(el) {
-    wrap = el; cv = document.createElement("canvas"); cv.className = "sheet"; cv.setAttribute("aria-label", "畫紙"); cv.tabIndex = 0;
-    el.appendChild(cv); ctx = cv.getContext("2d");
-    cv.addEventListener("pointerdown", down); cv.addEventListener("pointermove", move);
-    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up); cv.addEventListener("lostpointercapture", up);
-    cv.addEventListener("keydown", e => { if ((e.key === "Delete" || e.key === "Backspace") && S.sel >= 0) { e.preventDefault(); delSel(); } });
-    setSize(800, 800);
-  }
-  function setSize(W, H) { S.W = W; S.H = H; [S.ink, S.ictx] = makeInk(W, H, null); if (cv) { cv.width = W; cv.height = H; cv.style.aspectRatio = W + " / " + H; } draw(); }
-  /* new paper shape. swap=true (landscape ↔ portrait): text and stickers keep their place along the long side, so a row of
-     名字＋貼紙 on a wide tag becomes a column on a tall tag instead of shrinking into the middle */
-  function setAspect(a, swap) {
-    const W = a >= 1 ? 800 : Math.round(800 * a), H = a >= 1 ? Math.round(800 / a) : 800;
-    if (W === S.W && H === S.H) return;
-    const old = S.ink, kx = W / S.W, ky = H / S.H, k = Math.min(kx, ky), ox = (W - S.W * k) / 2, oy = (H - S.H * k) / 2;
-    const flip = swap && (W > H) !== (S.W > S.H), ks = flip ? Math.min(W / S.H, H / S.W) : k;
-    [S.ink, S.ictx] = makeInk(W, H, old);
-    for (const o of allObjs()) { if (flip && o.type !== "photo") { const nx = o.y / S.H * W, ny = o.x / S.W * H; o.x = nx; o.y = ny; o.s *= ks; } else { o.x = o.x * k + ox; o.y = o.y * k + oy; o.s *= k; } }
-    S.W = W; S.H = H; cv.width = W; cv.height = H; cv.style.aspectRatio = W + " / " + H; changed();
-  }
-  const allObjs = () => S.photo ? [S.photo].concat(S.objs) : S.objs.slice();
-
-  /* ---------- history ---------- */
-  function snap() { return { ink: S.ictx.getImageData(0, 0, S.W, S.H), W: S.W, H: S.H, objs: S.objs.map(o => Object.assign({}, o)), photo: S.photo ? Object.assign({}, S.photo) : null }; }
-  function restore(s) { if (s.W !== S.W || s.H !== S.H) { S.W = s.W; S.H = s.H; [S.ink, S.ictx] = makeInk(S.W, S.H); cv.width = S.W; cv.height = S.H; cv.style.aspectRatio = S.W + " / " + S.H; } S.ictx.putImageData(s.ink, 0, 0); S.objs = s.objs.map(o => Object.assign({}, o)); S.photo = s.photo ? Object.assign({}, s.photo) : null; S.sel = -1; fireSel(); changed(); }
-  function push() { S.undo.push(snap()); if (S.undo.length > 12) S.undo.shift(); S.redo.length = 0; for (const f of S.pushListeners) f(); }
-  function undo() { const s = S.undo.pop(); if (!s) return false; S.redo.push(snap()); restore(s); return true; }
-  function redo() { const s = S.redo.pop(); if (!s) return false; S.undo.push(snap()); restore(s); return true; }
-
-  function changed() { S.version++; draw(); for (const f of S.listeners) f(S.version); }
-  const onChange = f => S.listeners.push(f), onSelect = f => S.selListeners.push(f);
-  function fireSel() { for (const f of S.selListeners) f(selected()); }
-  function selected() { if (S.sel < 0) return null; return S.sel === 999 ? S.photo : S.objs[S.sel] || null; }
-
-  /* ---------- coordinates & symmetry ---------- */
-  function pt(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * S.W / r.width, y: (e.clientY - r.top) * S.H / r.height, k: S.W / r.width }; }
-  function symPts(p) {
-    const cx = S.W / 2, cy = S.H / 2, dx = p.x - cx, dy = p.y - cy, out = [{ x: p.x, y: p.y }];
-    if (S.sym === "mirror") out.push({ x: cx - dx, y: p.y });
-    else if (S.sym === "updown") out.push({ x: p.x, y: cy - dy });
-    else if (S.sym[0] === "k") {
-      const n = +S.sym.slice(1); out.length = 0;
-      for (let i = 0; i < n; i++) { const a = i * 2 * Math.PI / n, c = Math.cos(a), s = Math.sin(a); out.push({ x: cx + dx * c - dy * s, y: cy + dx * s + dy * c }); out.push({ x: cx + (-dx) * c - dy * s, y: cy + (-dx) * s + dy * c }); }
-    }
-    return out;
-  }
-  /* ---------- pointer ---------- */
-  let activeId = null;
-  function down(e) {
-    if (activeId !== null) return; activeId = e.pointerId; e.preventDefault(); cv.setPointerCapture(e.pointerId); cv.focus({ preventScroll: true });
-    const p = pt(e);
-    if (S.tool === "pen" || S.tool === "eraser") { push(); if (S.tool === "eraser") flattenAt(p); strokePts = [p]; strokeSeg(p, p); draw(); return; }
-    if (S.tool === "fill") { push(); fillAt(p); activeId = null; changed(); return; }
-    if (S.tool === "shape") { push(); shapePrev = { a: p, b: p }; draw(); return; }
-    // select / move
-    const sel = selected();
-    if (sel) {
-      const hnd = handleHit(sel, p);
-      if (hnd === "del") { delSel(); activeId = null; return; }
-      if (hnd === "dup") { duplicateSel(); activeId = null; return; }
-      if (hnd) { push(); drag = { kind: hnd, o: sel, start: p, s0: sel.s, r0: sel.r, ang0: Math.atan2(p.y - sel.y, p.x - sel.x), d0: Math.hypot(p.x - sel.x, p.y - sel.y) }; return; }
-    }
-    const hit = hitTest(p);
-    if (hit !== -1) { S.sel = hit; fireSel(); const o = selected(); push(); drag = { kind: "move", o, start: p, x0: o.x, y0: o.y, moved: false }; draw(); return; }
-    if (S.sel !== -1) { S.sel = -1; fireSel(); draw(); }
-  }
-  function move(e) {
-    if (e.pointerId !== activeId) return; const p = pt(e);
-    if (strokePts) { const last = strokePts[strokePts.length - 1]; if (Math.hypot(p.x - last.x, p.y - last.y) < 1.2) return; if (S.tool === "eraser") flattenAt(p); strokeSeg(last, p); strokePts.push(p); requestDraw(); return; }
-    if (shapePrev) { shapePrev.b = p; if (e.shiftKey) shapePrev.shift = true; requestDraw(); return; }
-    if (drag) {
-      const o = drag.o;
-      if (drag.kind === "move") { o.x = drag.x0 + p.x - drag.start.x; o.y = drag.y0 + p.y - drag.start.y; drag.moved = true; }
-      else if (drag.kind === "scale") { const d = Math.hypot(p.x - o.x, p.y - o.y); o.s = Math.max(.05, drag.s0 * d / Math.max(4, drag.d0)); }
-      else if (drag.kind === "rot") { let a = drag.r0 + Math.atan2(p.y - o.y, p.x - o.x) - drag.ang0; const st = Math.PI / 12; const q = Math.round(a / st) * st; if (Math.abs(a - q) < .06) a = q; o.r = a; }
-      requestDraw();
-    }
-  }
-  function up(e) {
-    if (e.pointerId !== activeId) return; activeId = null;
-    if (strokePts) { strokePts = null; changed(); return; }
-    if (shapePrev) { commitShape(shapePrev); shapePrev = null; changed(); return; }
-    if (drag) { const moved = drag.kind !== "move" || drag.moved; drag = null; if (moved) changed(); else { S.undo.pop(); draw(); } }
-  }
-  /* the eraser also works on stickers, text and photos: anything it touches is first turned into plain ink (looks the same), then erased */
-  function flattenAt(p) {
-    const r = S.pen * .8 + 4; let hit = false;
-    for (const q of symPts(p)) {
-      for (let i = S.objs.length - 1; i >= 0; i--) { const o = S.objs[i], [w, h] = objSize(o), l = local(o, q); if (Math.abs(l.x) <= Math.abs(w) / 2 + r && Math.abs(l.y) <= h / 2 + r) { drawOne(S.ictx, o); S.objs.splice(i, 1); hit = true; } }
-      if (S.photo) { const o = S.photo, [w, h] = objSize(o), l = local(o, q); if (Math.abs(l.x) <= w / 2 && Math.abs(l.y) <= h / 2) { const t = tmpCanvas(), tx = t.getContext("2d"); tx.setTransform(1, 0, 0, 1, 0, 0); tx.clearRect(0, 0, S.W, S.H); drawObj(tx, o, "#000"); tx.drawImage(S.ink, 0, 0); S.ictx.clearRect(0, 0, S.W, S.H); S.ictx.drawImage(t, 0, 0); S.photo = null; hit = true; } }
-    }
-    if (hit) { S.sel = -1; fireSel(); }
-  }
-  function strokeSeg(a, b) {
-    const x = S.ictx; x.save(); x.lineCap = "round"; x.lineJoin = "round"; x.lineWidth = S.tool === "eraser" ? S.pen * 1.6 : S.pen; x.strokeStyle = S.tool === "eraser" ? "#fff" : "#000";
-    const A = symPts(a), B = symPts(b);
-    x.beginPath(); for (let i = 0; i < A.length; i++) { x.moveTo(A[i].x, A[i].y); x.lineTo(B[i].x + .01, B[i].y); } x.stroke(); x.restore();
-  }
-  function shapePath(c, sp, a, b) {
-    c.beginPath();
-    if (S.shape === "line") { c.moveTo(a.x, a.y); c.lineTo(b.x + .01, b.y); }
-    else if (S.shape === "rect") { c.rect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y)); }
-    else if (S.shape === "circle") { const rx = Math.abs(b.x - a.x) / 2, ry = Math.abs(b.y - a.y) / 2; c.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, Math.max(1, rx), Math.max(1, ry), 0, 0, Math.PI * 2); }
-    else if (S.shape === "tri") { c.moveTo((a.x + b.x) / 2, Math.min(a.y, b.y)); c.lineTo(Math.max(a.x, b.x), Math.max(a.y, b.y)); c.lineTo(Math.min(a.x, b.x), Math.max(a.y, b.y)); c.closePath(); }
-  }
-  function commitShape(sp) {
-    const x = S.ictx, A = symPts(sp.a), B = symPts(sp.b);
-    x.save(); x.lineCap = "round"; x.lineJoin = "round"; x.lineWidth = S.pen; x.strokeStyle = "#000";
-    for (let i = 0; i < A.length; i++) { shapePath(x, sp, A[i], B[i]); x.stroke(); } x.restore();
-  }
-  /* ---------- flood fill (respects photo, text and stickers as walls) ---------- */
-  function fillAt(p) {
-    const W = S.W, H = S.H, bin = binaryRaw(), black = bin.data, seeds = symPts(p);
-    // walls: black pixels grown by 2px so tiny gaps in a hand-drawn outline don't leak
-    const wall = grow(black, W, H, 2);
-    const toBlack = new Uint8Array(W * H), toWhite = new Uint8Array(W * H);
-    for (const sd of seeds) {
-      const sx = Math.round(sd.x), sy = Math.round(sd.y); if (sx < 0 || sy < 0 || sx >= W || sy >= H) continue;
-      const s0 = sy * W + sx, isBlack = black[s0] === 1, region = isBlack ? toWhite : toBlack; if (region[s0]) continue;
-      const ok = isBlack ? (i => black[i] === 1) : (i => !wall[i]);
-      if (!ok(s0)) continue;
-      const st = [s0]; region[s0] = 1;
-      while (st.length) { const q = st.pop(), x = q % W, y = (q - x) / W;
-        if (x > 0 && !region[q - 1] && ok(q - 1)) { region[q - 1] = 1; st.push(q - 1); }
-        if (x < W - 1 && !region[q + 1] && ok(q + 1)) { region[q + 1] = 1; st.push(q + 1); }
-        if (y > 0 && !region[q - W] && ok(q - W)) { region[q - W] = 1; st.push(q - W); }
-        if (y < H - 1 && !region[q + W] && ok(q + W)) { region[q + W] = 1; st.push(q + W); } }
-    }
-    const fillB = grow(toBlack, W, H, 3), id = S.ictx.getImageData(0, 0, W, H), d = id.data;
-    for (let i = 0; i < W * H; i++) { const v = fillB[i] ? 0 : toWhite[i] ? 255 : -1; if (v >= 0) { d[4 * i] = d[4 * i + 1] = d[4 * i + 2] = v; d[4 * i + 3] = 255; } }
-    S.ictx.putImageData(id, 0, 0);
-  }
-  /* square max-filter (separable) */
-  function grow(m, W, H, r) {
-    const a = new Uint8Array(W * H), b = new Uint8Array(W * H);
-    for (let y = 0; y < H; y++) { let last = -1e9; const row = y * W; for (let x = 0; x < W; x++) { if (m[row + x]) last = x; if (x - last <= r) a[row + x] = 1; } last = 1e9; for (let x = W - 1; x >= 0; x--) { if (m[row + x]) last = x; if (last - x <= r) a[row + x] = 1; } }
-    for (let x = 0; x < W; x++) { let last = -1e9; for (let y = 0; y < H; y++) { if (a[y * W + x]) last = y; if (y - last <= r) b[y * W + x] = 1; } last = 1e9; for (let y = H - 1; y >= 0; y--) { if (a[y * W + x]) last = y; if (last - y <= r) b[y * W + x] = 1; } }
-    return b;
-  }
-
-  /* ---------- objects ---------- */
-  function objSize(o) {
-    if (o.type === "text") { const f = FONTS.find(f => f.id === o.font) || FONTS[0]; const m = measure(); m.font = `${f.w} 100px ${f.css}`; const lines = String(o.text).split("\n");
-      if (o.vert) { let n = 1; for (const l of lines) n = Math.max(n, [...l].length); return [lines.length * 112 * o.s, n * 104 * o.s]; }
-      let w = 0; for (const l of lines) w = Math.max(w, m.measureText(l).width); return [Math.max(20, w) * o.s, lines.length * 112 * o.s]; }
-    if (o.type === "sticker") return [100 * o.s * (o.sx || 1), 100 * o.s];
-    if (o.type === "photo") return [o.iw * o.s, o.ih * o.s];
-    return [10, 10];
-  }
-  let _m = null; const measure = () => { if (!_m) _m = document.createElement("canvas").getContext("2d"); return _m; };
-  function local(o, p) { const dx = p.x - o.x, dy = p.y - o.y, c = Math.cos(-o.r), s = Math.sin(-o.r); return { x: dx * c - dy * s, y: dx * s + dy * c }; }
-  function hitTest(p) {
-    for (let i = S.objs.length - 1; i >= 0; i--) { const o = S.objs[i], [w, h] = objSize(o), q = local(o, p); if (Math.abs(q.x) <= w / 2 + 10 && Math.abs(q.y) <= h / 2 + 10) return i; }
-    if (S.photo && S.tool === "select") { const o = S.photo, [w, h] = objSize(o), q = local(o, p); if (Math.abs(q.x) <= w / 2 && Math.abs(q.y) <= h / 2) return 999; }
-    return -1;
-  }
-  function handles(o) {
-    const [w, h] = objSize(o), c = Math.cos(o.r), s = Math.sin(o.r), T = (x, y) => ({ x: o.x + x * c - y * s, y: o.y + x * s + y * c });
-    const r = cv ? cv.width / Math.max(1, cv.getBoundingClientRect().width) : 1, pad = 8 * r;
-    const m = 18 * r, cl = q => ({ x: Math.min(S.W - m, Math.max(m, q.x)), y: Math.min(S.H - m, Math.max(m, q.y)) });
-    return { scale: cl(T(w / 2 + pad, h / 2 + pad)), rot: cl(T(0, -h / 2 - pad - 30 * r)), del: cl(T(-w / 2 - pad, -h / 2 - pad)), dup: cl(T(w / 2 + pad, -h / 2 - pad)), w, h, pad };
-  }
-  function handleHit(o, p) { const H = handles(o), r = 24 * p.k; for (const k of ["del", "dup", "rot", "scale"]) if (Math.hypot(p.x - H[k].x, p.y - H[k].y) <= r) return k === "rot" ? "rot" : k; return null; }
-  function addObj(o) { push(); S.objs.push(o); S.sel = S.objs.length - 1; fireSel(); changed(); }
-  function addText(text, font, outline, vert) {
-    const o = { type: "text", text, font: font || "sans", outline: !!outline, vert: !!vert, x: S.W / 2, y: S.H / 2, r: 0, s: 1 };
-    fitText(o, vert ? .4 : .7, vert ? .8 : .35); addObj(o); ensureFont(o);
-  }
-  function fitText(o, kw, kh) { o.s = 1; const [w, h] = objSize(o); o.s = Math.min(S.W * kw / Math.max(1, w), S.H * kh / Math.max(1, h)); }
-  function shrinkToFit(o) { const [w, h] = objSize(o), k = Math.min(1, S.W * .9 / Math.max(1, Math.abs(w)), S.H * .9 / Math.max(1, h)); o.s *= k; }
-  function updateSel(props) { const o = selected(); if (!o) return; push(); const vertChanged = "vert" in props && !!props.vert !== !!o.vert; Object.assign(o, props); if (vertChanged) fitText(o, o.vert ? .5 : .7, o.vert ? .8 : .45); else if (o.type === "text") shrinkToFit(o); if (o.type === "text") ensureFont(o); changed(); }
-  /* the name typed in the 名字 box: one text object marked isName, refitted as the name grows */
-  let nameBurst = 0;
-  const nameObj = () => S.objs.find(o => o.type === "text" && o.isName) || null;
-  function setName(text, props, forceFit) {
-    const now = Date.now(); if (now - nameBurst > 1500) push(); nameBurst = now;
-    let o = nameObj(); const t = String(text || "").trim();
-    if (!t) { if (o) { S.objs.splice(S.objs.indexOf(o), 1); S.sel = -1; fireSel(); } changed(); return; }
-    let fresh = false;
-    if (!o) { o = { type: "text", text: t, font: "round", outline: false, x: S.W / 2, y: S.H / 2, r: 0, s: 1, isName: true }; S.objs.push(o); fresh = true; }
-    const refit = forceFit || fresh || t !== o.text || (props && "vert" in props && !!props.vert !== !!o.vert) || (props && props.font && props.font !== o.font);
-    Object.assign(o, props || {}); o.text = t; if (refit) fitText(o, o.vert ? .42 : .64, o.vert ? .84 : .5);
-    if (fresh) { if (!(props && props.vert)) fitText(o, .6, .3); else fitText(o, .4, .26); placeFree(o); }
-    ensureFont(o); changed();
-  }
-  /* a new name goes where the paper is emptiest (along the long side), not on top of the drawing */
-  function placeFree(o) {
-    const [w, h] = objSize(o), long = S.H > S.W, ink = S.ictx.getImageData(0, 0, S.W, S.H).data; let best = null;
-    for (const f of [.5, .4, .6, .3, .7, .22, .78]) {
-      const cx = long ? S.W / 2 : S.W * f, cy = long ? S.H * f : S.H / 2, x0 = Math.max(0, Math.round(cx - w / 2)), y0 = Math.max(0, Math.round(cy - h / 2)), x1 = Math.min(S.W, Math.round(cx + w / 2)), y1 = Math.min(S.H, Math.round(cy + h / 2));
-      let cost = 0; for (let y = y0; y < y1; y += 4) for (let x = x0; x < x1; x += 4) if (ink[4 * (y * S.W + x) + 3] > 100 && ink[4 * (y * S.W + x)] < 128) cost++;
-      for (const q of S.objs) { if (q === o) continue; const [qw, qh] = objSize(q), ix = Math.max(0, Math.min(x1, q.x + Math.abs(qw) / 2) - Math.max(x0, q.x - Math.abs(qw) / 2)), iy = Math.max(0, Math.min(y1, q.y + qh / 2) - Math.max(y0, q.y - qh / 2)); cost += ix * iy / 16; }
-      cost += Math.abs(f - .5) * 3; if (!best || cost < best.cost) best = { cost, cx, cy };
-    }
-    o.x = best.cx; o.y = best.cy;
-  }
-  function addSticker(id, style) { const o = { type: "sticker", id, style: style || "fill", x: S.W / 2 + (Math.random() - .5) * 60, y: S.H / 2 + (Math.random() - .5) * 60, r: 0, s: Math.min(S.W, S.H) * .32 / 100 }; addObj(o); }
-  function delSel() { if (S.sel < 0) return; push(); if (S.sel === 999) S.photo = null; else S.objs.splice(S.sel, 1); S.sel = -1; fireSel(); changed(); }
-  function duplicateSel() { const o = selected(); if (!o || o.type === "photo") return; const c = Object.assign({}, o, { x: o.x + 30, y: o.y + 30 }); addObj(c); }
-  function flipSel() { const o = selected(); if (!o || o.type !== "sticker") return; push(); o.sx = -(o.sx || 1); changed(); }
-  function orderSel(dir) { if (S.sel < 0 || S.sel === 999) return; const i = S.sel, j = i + dir; if (j < 0 || j >= S.objs.length) return; push(); const t = S.objs[i]; S.objs[i] = S.objs[j]; S.objs[j] = t; S.sel = j; changed(); }
-  function select(i) { S.sel = i; fireSel(); draw(); }
-  function ensureFont(o) {
-    if (!document.fonts || !document.fonts.load) return; const f = FONTS.find(f => f.id === o.font) || FONTS[0];
-    document.fonts.load(`${f.w} 60px ${f.css}`, o.text).then(() => { S.version++; draw(); for (const l of S.listeners) l(S.version); }).catch(() => {});
-  }
-
-  /* draw one object onto a context (black ink); holes punched transparent */
-  function drawObj(c, o, color) {
-    c.save(); c.translate(o.x, o.y); c.rotate(o.r);
-    if (o.type === "text") {
-      const f = FONTS.find(f => f.id === o.font) || FONTS[0]; c.scale(o.s, o.s); c.font = `${f.w} 100px ${f.css}`; c.textAlign = "center"; c.textBaseline = "middle";
-      const lines = String(o.text).split("\n"), put = (ch, x, y) => { if (o.outline) { c.lineWidth = 9; c.lineJoin = "round"; c.strokeStyle = color; c.strokeText(ch, x, y); } else { c.fillStyle = color; c.fillText(ch, x, y); } };
-      if (o.vert) { // 直書: characters top to bottom, lines right to left
-        let n = 1; for (const l of lines) n = Math.max(n, [...l].length);
-        lines.forEach((l, i) => { const x = ((lines.length - 1) / 2 - i) * 112; [...l].forEach((ch, k) => put(ch, x, (k - (n - 1) / 2) * 104)); });
-      } else lines.forEach((l, i) => put(l, 0, (i - (lines.length - 1) / 2) * 112));
-    } else if (o.type === "sticker") {
-      c.scale(o.s * (o.sx || 1), o.s); c.translate(-50, -50); STK.draw(c, o.id, o.style, color, true);
-    } else if (o.type === "photo" && o.bin) {
-      c.scale(o.s, o.s); c.drawImage(o.bin, -o.iw / 2, -o.ih / 2, o.iw, o.ih);
-    }
-    c.restore();
-  }
-  /* ---------- photo ---------- */
-  /* decode a photo file into a white-backed canvas (long side ≤ max px) */
-  function decodePhoto(file, cb, max) {
-    const url = URL.createObjectURL(file), img = new Image();
-    img.onload = () => { const k = Math.min(1, (max || 1100) / Math.max(img.naturalWidth, img.naturalHeight)), w = Math.max(1, Math.round(img.naturalWidth * k)), h = Math.max(1, Math.round(img.naturalHeight * k));
-      const g = document.createElement("canvas"); g.width = w; g.height = h; const gx = g.getContext("2d", { willReadFrequently: true }); gx.fillStyle = "#fff"; gx.fillRect(0, 0, w, h); gx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url); cb(g); };
-    img.onerror = () => { URL.revokeObjectURL(url); cb(null); };
-    img.src = url;
-  }
-  /* put a canvas on the sheet as the photo layer. opt.fill: cover the whole sheet exactly (a straightened worksheet) */
-  function addPhotoCanvas(g, opt) {
-    opt = opt || {}; push(); const w = g.width, h = g.height;
-    const s = opt.fill ? Math.min(S.W / w, S.H / h) : Math.min(S.W * .92 / w, S.H * .92 / h);
-    S.photo = { type: "photo", src: g, iw: w, ih: h, x: S.W / 2, y: S.H / 2, r: 0, s, thresh: opt.thresh || .72, border: opt.border !== false, speck: 1 };
-    processPhoto(); S.sel = opt.fill ? -1 : 999; fireSel(); changed();
-  }
-  function loadPhoto(file, cb) { decodePhoto(file, g => { if (!g) return cb && cb(false); addPhotoCanvas(g); cb && cb(true); }); }
-  function processPhoto() {
-    const o = S.photo; if (!o) return; const w = o.iw, h = o.ih, d = o.src.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, w, h).data, g = new Float32Array(w * h);
-    for (let i = 0; i < w * h; i++) g[i] = (.299 * d[4 * i] + .587 * d[4 * i + 1] + .114 * d[4 * i + 2]) / 255;
-    o.gray = g; const n = normalize(g, w, h), bin = new Uint8Array(w * h); for (let i = 0; i < w * h; i++) bin[i] = n[i] < o.thresh ? 1 : 0;
-    const tiny = Math.max(6, w * h * 0.00004 * o.speck);
-    R.components(bin, w, h, (list, border) => (o.border && border) || list.length < tiny);
-    const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d"), id = x.createImageData(w, h);
-    for (let i = 0; i < w * h; i++) if (bin[i]) id.data[4 * i + 3] = 255;
-    x.putImageData(id, 0, 0); o.bin = c;
-    const t = document.createElement("canvas"); t.width = w; t.height = h; const tx = t.getContext("2d"), td = tx.createImageData(w, h);
-    for (let i = 0; i < w * h; i++) { const v = Math.round(g[i] * 255); td.data[4 * i] = td.data[4 * i + 1] = td.data[4 * i + 2] = v; td.data[4 * i + 3] = 255; }
-    tx.putImageData(td, 0, 0); o.tone = t;
-  }
-  function normalize(g, w, h) {
-    const B = Math.max(8, Math.round(Math.max(w, h) / 22)), bw = Math.ceil(w / B), bh = Math.ceil(h / B), m = new Float32Array(bw * bh);
-    for (let by = 0; by < bh; by++) for (let bx = 0; bx < bw; bx++) { let mx = 0; for (let y = by * B; y < Math.min(h, by * B + B); y++) for (let x = bx * B; x < Math.min(w, bx * B + B); x++) { const v = g[y * w + x]; if (v > mx) mx = v; } m[by * bw + bx] = mx; }
-    const m2 = new Float32Array(bw * bh); for (let by = 0; by < bh; by++) for (let bx = 0; bx < bw; bx++) { let s = 0, n = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = bx + dx, Y = by + dy; if (X >= 0 && Y >= 0 && X < bw && Y < bh) { s += m[Y * bw + X]; n++; } } m2[by * bw + bx] = s / n; }
-    const out = new Float32Array(w * h);
-    for (let y = 0; y < h; y++) { const fy = Math.min(bh - 1, Math.max(0, (y + .5) / B - .5)), y0 = Math.floor(fy), y1 = Math.min(bh - 1, y0 + 1), ty = fy - y0;
-      for (let x = 0; x < w; x++) { const fx = Math.min(bw - 1, Math.max(0, (x + .5) / B - .5)), x0 = Math.floor(fx), x1 = Math.min(bw - 1, x0 + 1), tx = fx - x0;
-        const bg = (m2[y0 * bw + x0] * (1 - tx) + m2[y0 * bw + x1] * tx) * (1 - ty) + (m2[y1 * bw + x0] * (1 - tx) + m2[y1 * bw + x1] * tx) * ty; out[y * w + x] = g[y * w + x] / Math.max(.15, bg); } }
-    return out;
-  }
-  function setPhoto(props) { if (!S.photo) return; Object.assign(S.photo, props); processPhoto(); changed(); }
-
-  /* ---------- composites ---------- */
-  let binCache = { v: -1 }, grayCache = { v: -1 };
-  function compositeCanvas(mode) {
-    const c = document.createElement("canvas"); c.width = S.W; c.height = S.H; const x = c.getContext("2d", { willReadFrequently: true });
-    x.fillStyle = "#fff"; x.fillRect(0, 0, S.W, S.H);
-    if (S.photo) { if (mode === "gray" && S.photo.tone) { const o = S.photo; x.save(); x.translate(o.x, o.y); x.rotate(o.r); x.scale(o.s, o.s); x.drawImage(o.tone, -o.iw / 2, -o.ih / 2); x.restore(); } else drawObj(x, S.photo, "#000"); }
-    x.drawImage(S.ink, 0, 0);
-    for (const o of S.objs) drawOne(x, o);
-    return c;
-  }
-  function drawOne(x, o) {
-    if (o.type === "sticker") { // stickers may punch holes: render on a temp canvas
-      const t = tmpCanvas(); const tx = t.getContext("2d"); tx.setTransform(1, 0, 0, 1, 0, 0); tx.clearRect(0, 0, t.width, t.height); drawObj(tx, o, "#000"); x.drawImage(t, 0, 0);
-    } else drawObj(x, o, "#000");
-  }
-  let _tmp = null; function tmpCanvas() { if (!_tmp) _tmp = document.createElement("canvas"); if (_tmp.width !== S.W || _tmp.height !== S.H) { _tmp.width = S.W; _tmp.height = S.H; } return _tmp; }
-  function binaryRaw() {
-    if (binCache.v === S.version && binCache.W === S.W && binCache.H === S.H) return binCache;
-    const c = compositeCanvas("bin"), d = c.getContext("2d").getImageData(0, 0, S.W, S.H).data, a = new Uint8Array(S.W * S.H);
-    let x0 = S.W, y0 = S.H, x1 = -1, y1 = -1;
-    for (let i = 0; i < a.length; i++) if (d[4 * i] + d[4 * i + 1] + d[4 * i + 2] < 384) { a[i] = 1; const x = i % S.W, y = (i - x) / S.W; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-    binCache = { v: S.version, W: S.W, H: S.H, w: S.W, h: S.H, data: a, bbox: x1 < 0 ? null : { x0, y0, x1: x1 + 1, y1: y1 + 1 } };
-    return binCache;
-  }
-  function grayRaw() {
-    if (grayCache.v === S.version && grayCache.W === S.W) return grayCache;
-    const c = compositeCanvas("gray"), d = c.getContext("2d").getImageData(0, 0, S.W, S.H).data, g = new Float32Array(S.W * S.H);
-    for (let i = 0; i < g.length; i++) g[i] = (.299 * d[4 * i] + .587 * d[4 * i + 1] + .114 * d[4 * i + 2]) / 255;
-    grayCache = { v: S.version, W: S.W, H: S.H, w: S.W, h: S.H, data: g, hasPhoto: !!S.photo };
-    return grayCache;
-  }
-
-  /* ---------- display ---------- */
-  function requestDraw() { if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); }); }
-  function draw() {
-    if (!ctx) return; const W = S.W, H = S.H;
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
-    // faint 1 cm-ish grid helps kids place things
-    ctx.strokeStyle = "rgba(60,80,70,.07)"; ctx.lineWidth = 1; ctx.beginPath(); const st = Math.round(Math.min(W, H) / 16);
-    for (let x = st; x < W; x += st) { ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, H); } for (let y = st; y < H; y += st) { ctx.moveTo(0, y + .5); ctx.lineTo(W, y + .5); } ctx.stroke();
-    if (S.sym !== "none") drawSymGuides();
-    if (S.guide) try { S.guide(ctx, W, H, "under"); } catch (e) {}
-    if (S.photo) drawObj(ctx, S.photo, "#000");
-    ctx.drawImage(S.ink, 0, 0);
-    for (const o of S.objs) drawOne(ctx, o);
-    // ink layer white strokes are opaque white; re-show guide lines softly on top so kids still see the frame
-    if (S.guide) try { S.guide(ctx, W, H, "over"); } catch (e) {}
-    if (shapePrev) { const A = symPts(shapePrev.a), B = symPts(shapePrev.b); ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = S.pen; ctx.strokeStyle = "rgba(0,0,0,.55)"; for (let i = 0; i < A.length; i++) { shapePath(ctx, shapePrev, A[i], B[i]); ctx.stroke(); } ctx.restore(); }
-    const o = selected(); if (o) drawSelection(o);
-  }
-  function drawSymGuides() {
-    const W = S.W, H = S.H, cx = W / 2, cy = H / 2; ctx.save(); ctx.strokeStyle = "rgba(200,100,40,.35)"; ctx.setLineDash([8, 8]); ctx.lineWidth = 2; ctx.beginPath();
-    if (S.sym === "mirror") { ctx.moveTo(cx, 0); ctx.lineTo(cx, H); }
-    else if (S.sym === "updown") { ctx.moveTo(0, cy); ctx.lineTo(W, cy); }
-    else { const n = +S.sym.slice(1), R2 = Math.hypot(W, H); for (let i = 0; i < n; i++) { const a = i * Math.PI / n; ctx.moveTo(cx - Math.cos(a) * R2, cy - Math.sin(a) * R2); ctx.lineTo(cx + Math.cos(a) * R2, cy + Math.sin(a) * R2); } }
-    ctx.stroke(); ctx.restore();
-  }
-  function drawSelection(o) {
-    const H = handles(o), r = cv.width / Math.max(1, cv.getBoundingClientRect().width);
-    ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.r); ctx.strokeStyle = "#d4691f"; ctx.lineWidth = 2 * r; ctx.setLineDash([7 * r, 5 * r]);
-    ctx.strokeRect(-H.w / 2 - H.pad, -H.h / 2 - H.pad, H.w + 2 * H.pad, H.h + 2 * H.pad); ctx.setLineDash([]);
-    ctx.restore();
-    const knob = (p, label, fill) => { ctx.save(); ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(p.x, p.y, 15 * r, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = `700 ${16 * r}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(label, p.x, p.y + r); ctx.restore(); };
-    knob(H.del, "×", "#b8452c"); if (o.type !== "photo") knob(H.dup, "+", "#5b6b4f"); knob(H.rot, "↻", "#d4691f"); knob(H.scale, "⤡", "#d4691f");
-  }
-
-  /* ---------- clear / serialize ---------- */
-  function clear() { push(); S.ictx.clearRect(0, 0, S.W, S.H); S.objs = []; S.photo = null; S.sel = -1; fireSel(); changed(); }
-  function isEmpty() { return !binaryRaw().bbox; }
-  function serialize() {
-    try { return { W: S.W, H: S.H, ink: S.ink.toDataURL("image/png"), objs: S.objs.map(o => Object.assign({}, o)), photo: S.photo ? { url: S.photo.src.toDataURL("image/jpeg", .82), x: S.photo.x, y: S.photo.y, s: S.photo.s, r: S.photo.r, thresh: S.photo.thresh, border: S.photo.border, speck: S.photo.speck } : null }; } catch (e) { return null; }
-  }
-  function load(doc, cb) {
-    S.undo.length = 0; S.redo.length = 0; S.sel = -1; fireSel();
-    S.W = doc.W || 800; S.H = doc.H || 800; [S.ink, S.ictx] = makeInk(S.W, S.H); if (cv) { cv.width = S.W; cv.height = S.H; cv.style.aspectRatio = S.W + " / " + S.H; }
-    S.objs = (doc.objs || []).map(o => Object.assign({}, o)); S.photo = null;
-    let pending = 1; const done = () => { if (--pending === 0) { for (const o of S.objs) if (o.type === "text") ensureFont(o); changed(); cb && cb(); } };
-    if (doc.ink) { pending++; const im = new Image(); im.onload = () => { S.ictx.drawImage(im, 0, 0); done(); }; im.onerror = done; im.src = doc.ink; }
-    if (doc.photo && doc.photo.url) { pending++; const im = new Image(); im.onload = () => { const g = document.createElement("canvas"); g.width = im.width; g.height = im.height; g.getContext("2d").drawImage(im, 0, 0); S.photo = Object.assign({ type: "photo", src: g, iw: im.width, ih: im.height }, doc.photo); delete S.photo.url; processPhoto(); done(); }; im.onerror = done; im.src = doc.photo.url; }
-    if (doc.draw) { doc.draw(S.ictx, S.W, S.H); }
-    done();
-  }
-  function setTool(t) { S.tool = t; if (t !== "select" && S.sel === 999) { S.sel = -1; fireSel(); } draw(); }
-  return {
-    S, mount, setSize, setAspect, undo, redo, onChange, onSelect, selected, addText, addSticker, updateSel, delSel, duplicateSel, flipSel, orderSel, select,
-    nameObj, setName, loadPhoto, decodePhoto, addPhotoCanvas, onPush: f => S.pushListeners.push(f), drawObj, normalize, binaryRaw, grayRaw, clear, isEmpty, serialize, load, draw, setTool,
-    setPen: w => { S.pen = w; }, setSym: s => { S.sym = s; draw(); }, setShape: s => { S.shape = s; }, setGuide: g => { S.guide = g; draw(); },
-    drawing: () => activeId !== null,
-    canUndo: () => S.undo.length > 0, canRedo: () => S.redo.length > 0, push, changed, version: () => S.version
-  };
-})();
-
 /* ===== machine & material calibration (saved on this device, shareable as a short code) ===== */
 const MACHINE = (() => {
   const DEF = { matT: 3.0, slotW: 3.05, kerf: .10, clr: .25, hole: .20, stick: 3.0, pencil: 7.5, dowel: 20, magD: 10, magT: 3 };
@@ -1635,7 +1175,7 @@ const PL = (() => {
   return { seg, rng, chk, drawParams, defaults, place, clean, inscribed, loopAt, textMask, tr, solid, emptyMsg, fmt };
 })();
 
-/* ===== product engines =====
+/* ===== product engines（這一頁只留吊飾；其他作品的引擎在「線稿轉檔小幫手」） =====
    Each engine: params, area(p) (mm area the drawing sheet maps to), guide(p), build(p, src, gray) →
    { warn, size, parts3d?, laser?, info3d?, infoLaser?, pause?, asm? } (asm = data the assembly view uses) */
 const FR_ASPECT = { circle: 1, square: 1, star: .96, heart: .9, cloud: .7, shield: 1.15, rect: 1 / 2.4, hexagon: .87, flower: 1, scallop: 1, arch: 1.35, tag: .55 };
@@ -1647,17 +1187,6 @@ const FCACHE = { m: new Map(), get(k) { return this.m.get(k); }, set(k, v) { if 
   const M = MACHINE;
   const frameArea = (frame, D, vert) => { const a = frame === "follow" ? 1 : (FR_ASPECT[frame] || 1); return vert && frame === "rect" ? { w: D * a, h: D } : { w: D, h: D * a }; };
   const outlineGuide = frame => (c, A) => { c.beginPath(); if (frame === "follow") { c.rect(-A.w / 2, -A.h / 2, A.w, A.h); return { dash: true }; } GM.FRAMES[frame].path(c, A.w, A.h); return {}; };
-  const biggest = loops => loops.reduce((a, l) => Math.abs(GM.area(l)) > Math.abs(GM.area(a)) ? l : a, loops[0]);
-  const rotLoop = (l, a, cx, cy) => { const c = Math.cos(a), s = Math.sin(a); return l.map(([x, y]) => [cx + (x - cx) * c - (y - cy) * s, cy + (x - cx) * s + (y - cy) * c]); };
-  /* body silhouette from a drawing: fill holes, merge close parts, keep the largest piece */
-  function silhouette(G, cur, grow) { const s = R.fillHoles(R.dilate(G, R.fillHoles(cur, G.nx, G.ny), grow), G.nx, G.ny); const sp = R.splitLargest(s, G.nx, G.ny); return { body: sp.main, extra: R.count(sp.rest) > 0 }; }
-  /* vertical extent of a mask at x: the longest run → [top, bottom] in mm */
-  function column(G, m, x) {
-    const gx = Math.max(0, Math.min(G.nx - 1, Math.round(R.toGx(G, x)))); let best = null, start = -1;
-    for (let gy = 0; gy <= G.ny; gy++) { const on = gy < G.ny && m[gy * G.nx + gx]; if (on && start < 0) start = gy; if (!on && start >= 0) { if (!best || gy - start > best[1] - best[0]) best = [start, gy]; start = -1; } }
-    return best ? [R.cy(G, best[0]) - .5 / G.ppm, R.cy(G, best[1] - 1) + .5 / G.ppm] : null;
-  }
-  function edgeDist(G, m, cx, cy, ang) { let t = 0; const dx = Math.cos(ang), dy = Math.sin(ang); while (t < G.W) { const gx = Math.round(R.toGx(G, cx + dx * t)), gy = Math.round(R.toGy(G, cy + dy * t)); if (gx < 0 || gy < 0 || gx >= G.nx || gy >= G.ny || !m[gy * G.nx + gx]) break; t += .1; } return t; }
 
   /* ---------------- 吊飾 / 鑰匙圈 / 名牌 ---------------- */
   ENG.tag = {
@@ -1717,693 +1246,6 @@ const FCACHE = { m: new Map(), get(k) { return this.m.get(k); }, set(k, v) { if 
     }
   };
 
-  /* ---------------- 印章 ---------------- */
-  ENG.stamp = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("shape", "印面形狀", [["circle", "圓形"], ["square", "方形"]], "circle"),
-      seg("style", "刻法", [["yang", "陽刻（圖案凸起）"], ["yin", "陰刻（背景凸起）"]], "yang"),
-      rng("size", "印面大小", 25, 50, 5, 35, "mm", { kid: true, presets: [[30, "小"], [35, "中"], [45, "大"]] }),
-      chk("rim", "加外框", true, { kid: true }),
-      seg("back", "背面", [["dowel", "木棒凹槽"], ["0", "平面"]], "dowel", { kid: false, group: "machine", out: "3d" }),
-      ...drawParams({ thick: .2, gap: 0, speck: 1 })
-    ],
-    area: p => ({ w: p.size, h: p.size }),
-    guide: p => (c, A) => { c.beginPath(); if (p.shape === "square") GM.FRAMES.square.path(c, A.w, A.h); else c.ellipse(0, 0, A.w / 2, A.h / 2, 0, 0, GM.TAU); return {}; },
-    build(p, src) {
-      const D = p.size, sq = p.shape === "square", G = R.grid(D + 4, D + 4, 12), Rr = D / 2;
-      const disc = sq ? GM.frameMask(G, "square", D, D, 1.2) : R.maskBy(G, (x, y) => Math.hypot(x, y) <= Rr);
-      const dep = R.depth(G, disc), ins = p.rim ? 2.2 : 1.2, allow = new Uint8Array(disc.length), rimB = new Uint8Array(disc.length), face = new Uint8Array(disc.length);
-      for (let i = 0; i < disc.length; i++) { if (dep[i] > ins) allow[i] = 1; if (dep[i] >= .6 && dep[i] <= 1.6) rimB[i] = 1; if (dep[i] >= .6) face[i] = 1; }
-      const tgt = p.fit === "canvas" ? { x: 0, y: 0, w: D, h: D } : (sq ? { x: 0, y: 0, w: D - 2 * ins - 1, h: D - 2 * ins - 1 } : { x: 0, y: 0, r: Rr - ins - .3 });
-      const m = place(G, src, tgt, p, { mirror: true, allow });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p, allow);
-      const yin = p.style === "yin", relief = new Uint8Array(disc.length);
-      for (let i = 0; i < disc.length; i++) relief[i] = yin ? (face[i] && !cur[i] ? 1 : 0) : ((cur[i] || (p.rim && rimB[i])) ? 1 : 0);
-      const dowel = M.get().dowel, back = p.back === "dowel" ? dowel : 0, solids = [], discL = tr(G, disc), relL = tr(G, relief), recD = M.printPress(dowel);
-      if (back) { const rec = R.maskBy(G, (x, y) => Math.hypot(x, y) < recD / 2); solids.push({ loops: tr(G, R.sub(disc, rec)), z0: 0, z1: 1.5 }, { loops: discL, z0: 1.5, z1: 3.5 }); if (D < recD + 5) warn.push(`印面太小，放不下 ${dowel} mm 的木棒。把印面調到 ${Math.ceil((recD + 5) / 5) * 5} mm 以上。`); }
-      else solids.push({ loops: discL, z0: 0, z1: 3.5 });
-      solids.push({ loops: relL, z0: 3.5, z1: 5.5, tone: "top" });
-      return {
-        warn, size: [D, D], mirrored: true,
-        parts3d: [{ name: "印章", solids }],
-        laser: { parts: [{ name: "印章", cut: discL, engrave: tr(G, R.sub(disc, relief)) }] },
-        info3d: [(yin ? "陰刻：背景凸起，蓋出來是彩色底、白色圖案。" : "陽刻：圖案凸起，蓋出來就是圖案。") + "印章上的圖案是左右相反的，蓋出來才是正的。", back ? `背面有直徑 ${fmt(recD)} mm、深 1.5 mm 的凹槽放木棒（直徑 ${dowel} mm），用熱熔膠黏。印面朝上列印。` : "背面是平的，可以黏木塊。"],
-        infoLaser: ["雷射印章橡膠：黑色背景雕掉、紅色切外框，已經左右翻轉。黏在木塊上使用。"],
-        asm: { kind: "stamp", back, D, sq, imprint: tr(G, R.mirrorX(G, relief)), disc: discL }
-      };
-    }
-  };
-
-  /* ---------------- 黏土模具 ---------------- */
-  ENG.cutter = {
-    outs: ["3d"],
-    params: [
-      rng("size", "模具大小", 40, 90, 5, 60, "mm", { kid: true, presets: [[45, "小"], [60, "中"], [75, "大"]] }),
-      chk("stampPiece", "加壓紋片（把外形裡的線條壓在黏土上）", false, { kid: true }),
-      rng("height", "刀口高度", 10, 20, 1, 14, "mm", { group: "machine" }),
-      rng("wall", "刀口厚度", .8, 1.6, .2, 1.2, "mm", { group: "machine" }),
-      ...drawParams({ thick: .4, gap: .3 })
-    ],
-    area: p => ({ w: p.size, h: p.size }),
-    guide: () => null,
-    build(p, src) {
-      const S = p.size, G = R.grid(S + 22, S + 22, 7), m = place(G, src, { x: 0, y: 0, w: S, h: S }, p, { forceAuto: true });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p, null, { skipHoleCheck: true });
-      let sil = R.fillHoles(cur, G.nx, G.ny); const sp = R.splitLargest(sil, G.nx, G.ny); sil = sp.main;
-      if (R.count(sp.rest)) warn.push("外形以外的小圖案不會變成模具，只用最大的那個外形。");
-      if (R.count(sil) < R.count(cur) * 1.4) warn.push("外形線好像沒有封閉，模具會沿著線兩邊長出來。把線的頭尾接起來。");
-      // the cutter is pressed upside down, so it is built mirrored: the clay then comes out the same way round as the drawing
-      const silM = R.mirrorX(G, sil), outer = R.dilate(G, silM, p.wall), fl = R.dilate(G, silM, 4.5), wall = R.sub(outer, silM), flange = R.sub(fl, silM);
-      const silL = tr(G, sil), parts = [{ name: "模具", solids: [{ loops: tr(G, flange), z0: 0, z1: 2 }, { loops: tr(G, wall), z0: 0, z1: p.height, tone: "top" }] }];
-      const inner = R.and(cur, R.erode(G, sil, 1.8)), hasInner = R.areaMM(G, inner) > 3, info = ["刀口朝上列印，不需要支撐。壓黏土時翻過來，刀口朝下。"];
-      let stampOn = false;
-      if (p.stampPiece) {
-        if (hasInner) {
-          const plate = R.erode(G, silM, .6), lines = R.and(R.mirrorX(G, inner), plate);
-          parts.push({ name: "壓紋片", solids: [{ loops: tr(G, plate), z0: 0, z1: 2 }, { loops: tr(G, lines), z0: 2, z1: 4.5, tone: "top" }], dx: S + 14 });
-          info.push("壓紋片：先用模具壓出外形，模具先不要拿起來，把壓紋片翻面（有線條的那面朝下）放進模具裡壓一下，裡面的線條就會印在黏土上。"); stampOn = true;
-        } else warn.push("外形裡面沒有線條，所以不做壓紋片。想要的話，在外形裡畫眼睛、花紋。");
-      } else if (hasInner) info.push("外形裡面的線條（眼睛、花紋）不會做在模具上。想把它們壓在黏土上，請打開「加壓紋片」。");
-      return { warn, size: [S, S], parts3d: parts, info3d: info, asm: { kind: "clay", sil: silL, inner: stampOn ? tr(G, inner) : [], height: p.height } };
-    }
-  };
-
-  /* ---------------- 線條擺件（3D）／線條立牌（雷切） ---------------- */
-  ENG.line = {
-    outs: ["3d", "laser"],
-    params: [
-      rng("size", "作品高度", 70, 160, 10, 110, "mm", { kid: true, presets: [[80, "小"], [110, "中"], [140, "大"]] }),
-      rng("tab", "3D 插腳長度", 10, 25, 1, 14, "mm", { group: "machine", out: "3d" }),
-      ...drawParams({ thick: .8, gap: .3 })
-    ],
-    area: p => ({ w: p.size, h: p.size }),
-    guide: () => null,
-    build(p, src) {
-      const S = p.size, t = M.get().matT, L3 = p.tab, Lz = 2 * t, Lmax = Math.max(L3, Lz), G = R.grid(S + 16, S + Lmax + 20, 6), ty = -(Lmax + 4) / 2;
-      const m = place(G, src, { x: 0, y: ty, w: S, h: S }, p, { forceAuto: p.fit !== "canvas" });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p);
-      const sp = R.splitLargest(cur, G.nx, G.ny), main = sp.main;
-      let maxY = -1, xs = 0, xn = 0; for (let i = 0; i < main.length; i++) if (main[i]) { const y = (i / G.nx) | 0; if (y > maxY) { maxY = y; xs = 0; xn = 0; } if (y === maxY) { xs += i % G.nx; xn++; } }
-      const bx = R.cx(G, xs / xn), by = R.cy(G, maxY) + .5 / G.ppm;
-      const tabM = L => R.maskBy(G, (x, y) => Math.abs(x - bx) <= 4 && y >= by - 1.5 && y <= by + L);
-      const piece3 = tr(G, R.or(main, tabM(L3))), pieceL = tr(G, R.or(main, tabM(Lz)));
-      if (R.count(sp.rest)) warn.push("紅色的部分沒有連到主體，不會做出來。補一筆把它接上去。");
-      const stray = R.count(sp.rest) ? tr(G, sp.rest) : [];
-      const sw = M.printSlot(8), st = M.printSlot(3), sl = M.laserSlot(), slot = GM.rect(0, 0, 8.4, sl).reverse();
-      const base3d = { name: "底座", solids: [{ loops: [GM.rect(0, 0, 34, 24)], z0: 0, z1: 8 }, { loops: [GM.rect(0, 0, 34, 24), GM.rect(0, 0, sw, st).reverse()], z0: 8, z1: 8 + L3 }], dx: S / 2 + 30 };
-      const plate = () => GM.roundRect(0, 0, 60, 30, 4);
-      return {
-        warn, size: [S, S], stray,
-        parts3d: [{ name: "線條擺件", solids: [{ loops: piece3, z0: 0, z1: 3, tone: "top" }], stray }, base3d],
-        laser: { parts: [{ name: "立牌", cut: pieceL }, { name: "底座上層1", cut: [plate(), slot] }, { name: "底座上層2", cut: [plate(), slot.map(q => q.slice())] }, { name: "底座下層", cut: [plate()] }] },
-        info3d: [`厚 3 mm 平放列印。最下面自動加了寬 8 mm、長 ${L3} mm 的插腳，底座的槽是 ${fmt(sw)}×${fmt(st)} mm。`, "印好後可以用麥克筆或壓克力顏料上色。"],
-        infoLaser: ["立牌＋三片底座：兩片有槽的疊在上面、沒有槽的在最下面，用白膠黏好，再把立牌插進去。", `槽寬 ${fmt(sl)} mm（用機器校正的插槽寬度）。`],
-        asm: { kind: "line", bx, by, L3, Lz, t }
-      };
-    }
-  };
-
-  /* ---------------- 陀螺 ---------------- */
-  ENG.top = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("edge", "邊緣", FRAME_OPTS(["circle", "scallop", "flower", "hexagon"]), "circle"),
-      rng("size", "圓盤直徑", 36, 70, 2, 50, "mm", { kid: true, presets: [[40, "小"], [50, "中"], [60, "大"]] }),
-      rng("thickT", "3D 圓盤厚度", 2, 4, .5, 3, "mm", { group: "machine", out: "3d" }),
-      ...drawParams({ thick: .5, gap: .3, fit: "canvas" })
-    ],
-    area: p => ({ w: p.size, h: p.size }),
-    guide: p => (c, A) => { c.beginPath(); GM.FRAMES[p.edge].path(c, A.w, A.h); c.moveTo(4, 0); c.arc(0, 0, 4, 0, GM.TAU); return {}; },
-    build(p, src) {
-      const D = p.size, G = R.grid(D + 6, D + 6, 10), disc = GM.frameMask(G, p.edge, D, D, .8), stick = M.get().stick;
-      const hub = 5.5, hole3 = M.printPress(stick) / 2, holeL = M.laserPress(stick) / 2;
-      const dep = R.depth(G, disc), allow = new Uint8Array(disc.length);
-      for (let i = 0; i < disc.length; i++) { const x = R.cx(G, i % G.nx), y = R.cy(G, (i / G.nx) | 0); if (dep[i] > 1.2 && Math.hypot(x, y) > hub + .8) allow[i] = 1; }
-      const tgt = p.fit === "canvas" ? { x: 0, y: 0, w: D, h: D } : { x: 0, y: 0, r: D / 2 - 1.5 };
-      const m = place(G, src, tgt, p, { allow });
-      const { cur, warn } = R.count(m) ? clean(G, m, p, allow) : { cur: m, warn: [] };
-      const th = p.thickT, h3 = R.maskBy(G, (x, y) => Math.hypot(x, y) < hole3), hL = R.maskBy(G, (x, y) => Math.hypot(x, y) < holeL);
-      const hubM = R.maskBy(G, (x, y) => { const r = Math.hypot(x, y); return r <= hub && r >= hole3; });
-      const mass = (msk, h) => { const c = R.centroid(G, msk); return c ? [c[0] * c[2] * h, c[1] * c[2] * h, c[2] * h] : [0, 0, 0]; };
-      const b1 = mass(R.sub(disc, h3), th), b2 = mass(cur, 1), Mt = b1[2] + b2[2];
-      const off = Mt ? Math.hypot((b1[0] + b2[0]) / Mt, (b1[1] + b2[1]) / Mt) : 0;
-      const balance = { off, level: off < .25 ? "很平衡" : off < .6 ? "還可以" : "可能會晃" };
-      if (off >= .6) warn.push("圖案偏一邊，陀螺可能會晃。試試對稱畫筆（萬花筒），或把圖案畫在中間。");
-      return {
-        warn, size: [D, D], balance,
-        parts3d: [{ name: "陀螺", solids: [{ loops: tr(G, R.sub(disc, h3)), z0: 0, z1: th }, { loops: tr(G, cur), z0: th, z1: th + 1, tone: "top" }, { loops: tr(G, hubM), z0: th, z1: th + 5 }] }],
-        pause: th,
-        laser: { parts: [{ name: "陀螺", cut: tr(G, R.sub(disc, hL)), engrave: tr(G, cur) }] },
-        info3d: [`中間的孔 ${fmt(hole3 * 2)} mm（竹籤 ${stick} mm 壓進去會卡緊）。竹籤尖的那頭朝下插進去，下面露出約 1 cm。`, `換色：印到 ${fmt(th)} mm 暫停換線。`],
-        infoLaser: [`中間的孔畫 ${fmt(holeL * 2)} mm，切出來會剛好卡住 ${stick} mm 的竹籤。竹籤尖端朝下，露出約 1 cm。`],
-        asm: { kind: "top", th, stick, D }
-      };
-    }
-  };
-
-  /* ---------------- 冰箱貼 ---------------- */
-  ENG.magnet = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("frame", "形狀", FRAME_OPTS(["follow", "circle", "square", "star", "heart", "cloud", "flower"]), "follow"),
-      rng("size", "大小", 30, 70, 5, 45, "mm", { kid: true, presets: [[35, "小"], [45, "中"], [55, "大"]] }),
-      seg("mode", "磁鐵放法", [["back", "背面凹槽（印好再黏）"], ["inside", "藏在裡面（列印中暫停放）"]], "back", { kid: false, group: "machine", out: "3d" }),
-      chk("rim", "加外框線", true),
-      ...drawParams({ thick: .5, gap: .3 })
-    ],
-    area: p => frameArea(p.frame, p.size),
-    guide: p => outlineGuide(p.frame),
-    build(p, src) {
-      const tag = ENG.tag.build(Object.assign({}, p, { loop: false, baseH: 2, reliefH: 1 }), src); if (tag.empty) return tag;
-      const mc = M.get(), md = mc.magD, mt = mc.magT, pd = M.printPress(md), depth = mt + .2;
-      const baseL = tag.laser.parts[0].cut, relL = tag.parts3d[0].solids[1].loops, relLaser = tag.laser.parts[0].engrave, ins = GM.pole(baseL);
-      const pocket = GM.circle(ins.x, ins.y, pd / 2, 48), inside = p.mode === "inside", bt = inside ? depth + 1.4 : Math.max(3, depth + 1.2), withPocket = baseL.concat([pocket]);
-      const solids = inside
-        ? [{ loops: baseL, z0: 0, z1: .6 }, { loops: withPocket, z0: .6, z1: .6 + depth }, { loops: baseL, z0: .6 + depth, z1: bt }, { loops: relL, z0: bt, z1: bt + 1, tone: "top" }]
-        : [{ loops: withPocket, z0: 0, z1: depth }, { loops: baseL, z0: depth, z1: bt }, { loops: relL, z0: bt, z1: bt + 1, tone: "top" }];
-      if (ins.r < pd / 2 + 1.5) tag.warn.push("作品太小，放不下磁鐵。把大小調大一點。");
-      const info = inside ? [`列印到 ${fmt(.6 + depth)} mm 時暫停，把磁鐵（${md}×${mt} mm）放進洞裡，再繼續印。`, `換色：印到 ${fmt(bt)} mm 再暫停一次換線。`] : [`背面有直徑 ${fmt(pd)} mm、深 ${fmt(depth)} mm 的凹槽，印好後用 AB 膠或熱熔膠黏磁鐵。`, `換色：印到 ${fmt(bt)} mm 暫停換線。`];
-      /* laser: a magnet glued onto the back would stick out and the piece would wobble on the fridge.
-         So cut the same shape twice (or more): the front is engraved, the back layer(s) get a hole the magnet sits in, flush. */
-      const tl = mc.matT, nBack = Math.max(1, Math.ceil((mt - .25) / tl)), holeD = Math.round((md + .2 - mc.kerf) * 100) / 100, hole = GM.circle(ins.x, ins.y, holeD / 2, 48);
-      const lparts = [{ name: "前片（雕圖案）", cut: baseL, engrave: relLaser }];
-      for (let i = 0; i < nBack; i++) lparts.push({ name: nBack > 1 ? `後片${i + 1}（有洞）` : "後片（有洞）", cut: baseL.concat([hole]) });
-      const gap = nBack * tl - mt, infoL = [`切 ${nBack + 1} 片一樣的形狀：前片雕圖案，後片中間挖 ${fmt(holeD)} mm 的洞放磁鐵（${md}×${mt} mm）。`, "後片塗白膠疊在前片背面（邊對齊、壓緊），乾了以後在洞裡擠一點熱熔膠，把磁鐵壓進去，磁鐵會剛好和背面一樣平。"];
-      if (tag.infoLaser.length > 1) infoL.push(tag.infoLaser[1]);
-      if (gap > .4) infoL.push(`磁鐵比洞淺 ${fmt(gap)} mm，會凹進去一點，吸力會變弱：洞裡先墊一點熱熔膠再放磁鐵，或改用 ${fmt(nBack * tl)} mm 厚的磁鐵。`);
-      if (ins.r < holeD / 2 + 1.5) tag.warn.push("作品太小，放不下磁鐵。把大小調大一點。");
-      return Object.assign(tag, { parts3d: [{ name: "冰箱貼", solids }], pause: bt, info3d: info, infoLaser: infoL, laser: { parts: lparts }, asm: { kind: "magnet", x: ins.x, y: ins.y, md, mt, depth, bt, inside, nBack, holeD } });
-    }
-  };
-
-  /* ---------------- 書籤 ---------------- */
-  ENG.bookmark = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("shape", "形狀", [["rect", "長方形"], ["arch", "拱門"]], "rect"),
-      rng("w", "寬度", 30, 50, 5, 40, "mm", { kid: false }),
-      rng("h", "長度", 100, 160, 10, 130, "mm", { kid: true, presets: [[110, "短"], [130, "中"], [150, "長"]] }),
-      chk("rim", "加外框線", true, { kid: true }),
-      ...drawParams({ thick: .45, gap: .3, fit: "canvas" })
-    ],
-    area: p => ({ w: p.w, h: p.h }),
-    guide: p => (c, A) => { c.beginPath(); if (p.shape === "arch") GM.FRAMES.arch.path(c, A.w, A.h); else GM.pathPts(c, GM.roundRect(0, 0, A.w, A.h, 5)); c.moveTo(2.5, -A.h / 2 + 8); c.arc(0, -A.h / 2 + 8, 2.5, 0, GM.TAU); return {}; },
-    build(p, src) {
-      const W = p.w, H = p.h, G = R.grid(W + 6, H + 6, 8);
-      const shape = p.shape === "arch" ? GM.frameMask(G, "arch", W, H, .8) : R.polyMask(G, [GM.roundRect(0, 0, W, H, 5)]);
-      const hole = R.maskBy(G, (x, y) => Math.hypot(x, y + H / 2 - 8) < 2.5), keep = R.maskBy(G, (x, y) => Math.hypot(x, y + H / 2 - 8) < 5.5);
-      const base = R.sub(shape, hole), dep = R.depth(G, shape), allow = new Uint8Array(shape.length), rimM = new Uint8Array(shape.length);
-      for (let i = 0; i < shape.length; i++) { if (dep[i] > (p.rim ? 3.2 : 2) && !keep[i]) allow[i] = 1; if (dep[i] >= .8 && dep[i] <= 2) rimM[i] = 1; }
-      const tgt = p.fit === "canvas" ? { x: 0, y: 0, w: W, h: H } : { x: 0, y: 5, w: W - 8, h: H - 20 };
-      const m = place(G, src, tgt, p, { allow });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p, allow);
-      const ringM = R.maskBy(G, (x, y) => { const r = Math.hypot(x, y + H / 2 - 8); return r > 2.9 && r < 4.6; });
-      const rel = R.and(p.rim ? R.or(R.sub(R.or(cur, rimM), keep), ringM) : R.sub(cur, keep), base), bL = tr(G, base), rL = tr(G, rel);
-      return {
-        warn, size: [W, H],
-        parts3d: [{ name: "書籤", solids: [{ loops: bL, z0: 0, z1: 1.2 }, { loops: rL, z0: 1.2, z1: 2, tone: "top" }] }], pause: 1.2,
-        laser: { parts: [{ name: "書籤", cut: bL, engrave: rL }] },
-        info3d: ["底板 1.2 mm＋圖案 0.8 mm。印到 1.2 mm 暫停換線。上面的小洞可以綁流蘇或緞帶。"],
-        infoLaser: ["建議用 1.5–2 mm 薄木片或厚卡紙。上面的小洞可以綁緞帶。"],
-        asm: { kind: "bookmark", hole: { x: 0, y: -H / 2 + 8 } }
-      };
-    }
-  };
-
-  /* ---------------- 筆插（鉛筆裝飾） ---------------- */
-  ENG.topper = {
-    outs: ["3d"],
-    params: [
-      seg("frame", "形狀", FRAME_OPTS(["follow", "circle", "star", "heart", "cloud"]), "follow"),
-      rng("size", "大小", 26, 42, 2, 32, "mm", { kid: true, presets: [[28, "小"], [32, "中"], [38, "大"]] }),
-      chk("rim", "加外框線", true),
-      ...drawParams({ thick: .5, gap: .3 })
-    ],
-    area: p => frameArea(p.frame, p.size),
-    guide: p => outlineGuide(p.frame),
-    build(p, src) {
-      const tag = ENG.tag.build(Object.assign({}, p, { loop: false, baseH: 3, reliefH: 1 }), src); if (tag.empty) return tag;
-      const baseL = tag.laser.parts[0].cut, b = GM.bounds(baseL), cx = (b.x0 + b.x1) / 2, pencil = M.get().pencil;
-      const d = M.printPress(pencil), ro = d / 2 + 2.2, zc = ro, hl = [];
-      for (let i = 0; i <= 36; i++) { const a = Math.PI * 3 / 4 + i / 36 * (Math.PI * 1.5); hl.push([cx + d / 2 * Math.cos(a), zc + d / 2 * Math.sin(a)]); }
-      hl.push([cx, zc + d / 2 * Math.SQRT2]); // teardrop top so the hole prints without support
-      const outer = GM.roundRect(cx, zc, 2 * ro, 2 * ro, 2.5), yb = b.y1, y0 = -(yb + 14), y1 = -(yb - 6);
-      const part = tag.parts3d[0]; part.name = "筆插"; part.flat = [GM.rect(cx, (yb - 6 + yb + 14) / 2, 2 * ro, 20)];
-      part.extrudes = [{ outer, holes: [hl.slice().reverse()], y0, y1, tone: "base" }];
-      tag.info3d = [`下面有一個套筒（孔徑 ${fmt(d)} mm，給 ${pencil} mm 的鉛筆），鉛筆從下面插進去。平放列印，不需要支撐。`, "換色：印到 3 mm 暫停換線。"];
-      tag.pause = 3; tag.laser = null; tag.asm = { kind: "topper", cx, zc, y0, y1, d };
-      return tag;
-    }
-  };
-
-  /* ---------------- 透光畫（lithophane） ---------------- */
-  ENG.litho = {
-    outs: ["3d"], gray: true,
-    params: [
-      seg("ratio", "形狀", [["1", "正方形"], ["1.333", "橫的"], ["0.75", "直的"]], "1"),
-      rng("size", "寬度", 50, 100, 5, 70, "mm", { kid: true, presets: [[60, "小"], [70, "中"], [85, "大"]] }),
-      seg("look", "效果", [["line", "線條（畫的）"], ["photo", "照片（有深淺）"]], "line", { kid: true }),
-      rng("tmin", "最薄", .6, 1.2, .1, .8, "mm", { group: "machine" }),
-      rng("tmax", "最厚", 2.2, 3.6, .2, 3, "mm", { group: "machine" }),
-      chk("stand", "加一個底座", true),
-      ...drawParams({ thick: .3, gap: .2, fit: "canvas", speck: .5 })
-    ],
-    area: p => ({ w: p.size, h: p.size / +p.ratio }),
-    guide: () => (c, A) => { c.beginPath(); c.rect(-A.w / 2 + 3, -A.h / 2 + 3, A.w - 6, A.h - 6); return { dash: true }; },
-    build(p, src, gsrc) {
-      const W = p.size, H = W / +p.ratio, cell = .3, nx = Math.round(W / cell), ny = Math.round(H / cell), x0 = -W / 2, y0 = -H / 2;
-      const h = new Float32Array(nx * ny), frameT = p.tmax + .6, border = 3, warn = [];
-      if (!src.bbox && !(gsrc && gsrc.hasPhoto)) return { empty: emptyMsg(src) };
-      const iw = W - 2 * border, ih = H - 2 * border, useGray = p.look === "photo";
-      let sample;
-      if (useGray) { const sw = gsrc.w, shh = gsrc.h; sample = (x, y) => { const sx = Math.min(sw - 1, Math.max(0, Math.floor((x / iw + .5) * sw))), sy = Math.min(shh - 1, Math.max(0, Math.floor((y / ih + .5) * shh))); return gsrc.data[sy * sw + sx]; }; }
-      else {
-        const G = R.grid(iw, ih, 1 / cell * 1.0001, 4e6), m = place(G, src, { x: 0, y: 0, w: iw, h: ih }, p, {});
-        const { cur } = clean(G, m, p, null, { skipHoleCheck: true }), blur = new Float32Array(cur.length);
-        for (let y = 0; y < G.ny; y++) for (let x = 0; x < G.nx; x++) { let s = 0, n = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = x + dx, Y = y + dy; if (X >= 0 && Y >= 0 && X < G.nx && Y < G.ny) { s += cur[Y * G.nx + X]; n++; } } blur[y * G.nx + x] = s / n; }
-        sample = (x, y) => { const gx = Math.min(G.nx - 1, Math.max(0, Math.floor(R.toGx(G, x) + .5))), gy = Math.min(G.ny - 1, Math.max(0, Math.floor(R.toGy(G, y) + .5))); return 1 - blur[gy * G.nx + gx]; };
-      }
-      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-        const x = x0 + (i + .5) * cell, y = y0 + (j + .5) * cell;
-        h[j * nx + i] = (Math.abs(x) > iw / 2 || Math.abs(y) > ih / 2) ? frameT : p.tmin + (1 - sample(x, y)) * (p.tmax - p.tmin);
-      }
-      const parts = [{ name: "透光畫", hf: { nx, ny, cell, x0, y0, h, tone: "base" } }], sl = M.printSlot(frameT), Ls = Math.min(W * .7, 60);
-      if (p.stand) parts.push({ name: "底座", solids: [{ loops: [GM.roundRect(0, 0, Ls + 10, 22, 4)], z0: 0, z1: 4 }, { loops: [GM.roundRect(0, 0, Ls + 10, 22, 4), GM.rect(0, 0, Ls, sl).reverse()], z0: 4, z1: 12 }], dy: H / 2 + 22 });
-      if (!useGray && gsrc && gsrc.hasPhoto) warn.push("有照片：想要有深淺的效果，請把「效果」選成「照片」。");
-      return {
-        warn, size: [W, H], lithoPreview: { nx, ny, h, tmin: p.tmin, tmax: p.tmax, frameT },
-        parts3d: parts,
-        info3d: ["白色 PLA、100% 填充、平放列印。拿到窗戶或燈前面，厚的地方暗、薄的地方亮。", "這種作品印比較久，建議課後續印。"],
-        asm: { kind: "litho", W, H, stand: p.stand, standH: 12, dy: H / 2 + 22 }
-      };
-    }
-  };
-
-  /* ---------------- 拼圖 ---------------- */
-  ENG.puzzle = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("shape", "形狀", [["rect", "長方形"], ["circle", "圓形"], ["heart", "愛心"]], "rect"),
-      seg("grid", "片數", [["2x2", "4 片"], ["2x3", "6 片"], ["3x3", "9 片"], ["3x4", "12 片"], ["4x4", "16 片"]], "2x3", { kid: true }),
-      rng("size", "寬度", 60, 140, 10, 90, "mm", { kid: true, presets: [[70, "小"], [90, "中"], [120, "大"]] }),
-      rng("seed", "拼圖形狀變化", 1, 20, 1, 3, "", { group: "machine" }),
-      chk("spread", "3D 列印時分開排（比較不會黏住）", true, { group: "machine", out: "3d" }),
-      ...drawParams({ thick: .5, gap: .3, fit: "canvas" }).map(q => q.id === "gap" ? Object.assign({}, q, { id: "gapd" }) : q)
-    ],
-    area: p => ({ w: p.size, h: p.shape === "rect" ? p.size * .75 : p.size * (p.shape === "heart" ? .9 : 1) }),
-    guide: p => (c, A) => { c.beginPath(); if (p.shape === "rect") GM.pathPts(c, GM.roundRect(0, 0, A.w, A.h, 3)); else GM.FRAMES[p.shape].path(c, A.w, A.h); return {}; },
-    build(p, src) {
-      const pp = Object.assign({}, p, { gap: p.gapd }), A = this.area(p), G = R.grid(A.w + 8, A.h + 8, 8), gap = 2 * M.get().clr;
-      const shape = p.shape === "rect" ? R.polyMask(G, [GM.roundRect(0, 0, A.w, A.h, 3)]) : GM.frameMask(G, p.shape, A.w, A.h, 1);
-      const [rows, cols] = p.grid.split("x").map(Number), wide = A.w >= A.h, rr = wide ? rows : cols, cc = wide ? cols : rows;
-      const lines = GM.jigsawLines(A.w, A.h, rr, cc, p.seed), dep = R.depth(G, shape), allow = new Uint8Array(shape.length);
-      for (let i = 0; i < shape.length; i++) if (dep[i] > 2) allow[i] = 1;
-      const m = place(G, src, p.fit === "canvas" ? { x: 0, y: 0, w: A.w, h: A.h } : { x: 0, y: 0, w: A.w - 8, h: A.h - 8 }, pp, { allow });
-      const { cur, warn } = R.count(m) ? clean(G, m, pp, allow) : { cur: m, warn: ["還沒有圖案，拼圖會是空白的。"] };
-      const gapM = R.maskDraw(G, c => { c.lineWidth = Math.max(gap, .3); for (const l of lines) { c.beginPath(); l.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); } });
-      const pcs = R.pieces(R.sub(shape, gapM), G.nx, G.ny, 30), parts3d = [], pieces = [], cw = A.w / cc, ch = A.h / rr;
-      pcs.forEach((pc, k) => {
-        const c = R.centroid(G, pc), ci = Math.min(cc - 1, Math.max(0, Math.floor((c[0] + A.w / 2) / cw))), ri = Math.min(rr - 1, Math.max(0, Math.floor((c[1] + A.h / 2) / ch)));
-        const sp = p.spread ? 3 : 0, dx = (ci - (cc - 1) / 2) * sp, dy = (ri - (rr - 1) / 2) * sp, L = tr(G, pc), RL = tr(G, R.and(cur, pc));
-        pieces.push({ loops: L, rel: RL, c: [c[0], c[1]], ci, ri });
-        parts3d.push({ name: "拼圖" + (k + 1), solids: [{ loops: GM.move(L, dx, dy), z0: 0, z1: 2.4 }, { loops: GM.move(RL, dx, dy), z0: 2.4, z1: 3.2, tone: "top" }], merge: true });
-      });
-      const inFn = q => { const gx = Math.floor(R.toGx(G, q[0]) + .5), gy = Math.floor(R.toGy(G, q[1]) + .5); return gx >= 0 && gy >= 0 && gx < G.nx && gy < G.ny && dep[gy * G.nx + gx] > .15; };
-      const cutOpen = []; for (const l of lines) for (const s of GM.clipPolyline(l, inFn, .3)) cutOpen.push(s);
-      const outlineL = p.shape === "rect" ? [GM.roundRect(0, 0, A.w, A.h, 3)] : tr(G, shape);
-      return {
-        warn, size: [A.w, A.h], pause: 2.4, parts3d,
-        laser: { parts: [{ name: "拼圖", cut: outlineL, cutOpen, engrave: tr(G, cur) }] },
-        info3d: [`${pcs.length} 片，厚 2.4 mm＋圖案 0.8 mm，片和片之間留 ${fmt(gap)} mm。印到 2.4 mm 暫停換線。`, "第一層如果黏在一起，用美工刀輕輕分開。"],
-        infoLaser: [`${rows * cols} 片。黑色雕刻、紅色切割。`],
-        asm: { kind: "puzzle", pieces, cc, rr, A }
-      };
-    }
-  };
-
-  /* ---------------- 齒輪 ---------------- */
-  ENG.gear = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("set", "齒輪組合", [["2", "大＋小"], ["3", "大＋中＋小"]], "3", { kid: true }),
-      rng("big", "大齒輪齒數", 24, 40, 1, 32, "齒", { kid: false }),
-      rng("mid", "中齒輪齒數", 14, 30, 1, 20, "齒", { when: p => p.set === "3" }),
-      rng("small", "小齒輪齒數", 8, 16, 1, 12, "齒"),
-      rng("mod", "齒的大小（模數）", 1.5, 3.5, .25, 2.5, "mm", { group: "machine" }),
-      chk("handle", "大齒輪加搖桿孔", true, { kid: true }),
-      chk("base", "加底板", true, { kid: true }),
-      ...drawParams({ thick: .5, gap: .3, fit: "auto" })
-    ],
-    area: () => ({ w: 1, h: 1 }),
-    guide: () => null,
-    build(p, src, g, out) {
-      const md = p.mod, zs = [p.big].concat(p.set === "3" ? [p.mid] : [], [p.small]), warn = [], stick = M.get().stick;
-      const gears = []; let x = 0;
-      zs.forEach((z, i) => { const rp = md * z / 2; if (i) x += gears[i - 1].rp + rp + .25; const gg = GM.gear(md, z, 0, 0); gears.push({ z, rp, ra: gg.ra, rf: gg.rf, pts: gg.pts, x }); });
-      const mid = (gears[0].x + gears[gears.length - 1].x) / 2; gears.forEach(q => q.x -= mid);
-      const g0 = gears[0], G = R.grid(g0.ra * 2 + 4, g0.ra * 2 + 4, 9), hy = -g0.rf * .62;
-      const allow = R.maskBy(G, (x, y) => { const r = Math.hypot(x, y); return r < g0.rf - 2 && r > 6.5 && (!p.handle || Math.hypot(x, y - hy) > 4.5); });
-      const m = place(G, src, { x: 0, y: 0, r: g0.rf - 2.5 }, p, { allow }); const { cur } = R.count(m) ? clean(G, m, p, allow) : { cur: m };
-      const deco = tr(G, cur);
-      const spin3 = M.printSpin(stick) / 2, press3 = M.printPress(stick) / 2, spinL = M.laserSpin(stick) / 2, pressL = M.laserPress(stick) / 2;
-      const parts3d = [], lparts = [];
-      gears.forEach((q, i) => {
-        const holes3 = [GM.circle(0, 0, spin3, 32)], holesL = [GM.circle(0, 0, spinL, 32)];
-        if (i === 0 && p.handle) { holes3.push(GM.circle(0, hy, press3, 32)); holesL.push(GM.circle(0, hy, pressL, 32)); }
-        parts3d.push({ name: `齒輪${q.z}齒`, solids: [{ loops: [q.pts].concat(holes3), z0: 0, z1: 4 }, ...(i === 0 && deco.length ? [{ loops: deco, z0: 4, z1: 5, tone: "top" }] : []), { loops: [GM.circle(0, 0, 6, 48), GM.circle(0, 0, spin3, 32)], z0: 4, z1: 6 }], dx: q.x, dy: 0 });
-        lparts.push({ name: `齒輪${q.z}齒`, cut: [q.pts].concat(holesL), engrave: i === 0 ? deco : [] });
-      });
-      let base = null;
-      if (p.base) {
-        const x0 = gears[0].x - gears[0].ra - 8, x1 = gears[gears.length - 1].x + gears[gears.length - 1].ra + 8, hgt = gears[0].ra * 2 + 16, bw = x1 - x0, bcx = (x0 + x1) / 2;
-        const outline = GM.roundRect(0, 0, bw, hgt, 6);
-        base = { bcx, bw, hgt, dy: hgt / 2 + gears[0].ra + 10 };
-        parts3d.push({ name: "底板", solids: [{ loops: [outline].concat(gears.map(q => GM.circle(q.x - bcx, 0, press3, 32))), z0: 0, z1: 3 }], dx: bcx, dy: base.dy });
-        lparts.push({ name: "底板", cut: [outline].concat(gears.map(q => GM.circle(q.x - bcx, 0, pressL, 32))) });
-        if (bw > 280) warn.push("齒輪排起來太長，超過雷切機的範圍。少一個齒輪或把齒數調小。");
-      }
-      const ratio = (p.big / p.small).toFixed(1);
-      return {
-        warn, size: [1, 1], parts3d, laser: { parts: lparts },
-        info3d: [`大齒輪轉 1 圈，小齒輪會轉 ${ratio} 圈，而且方向相反。`, `竹籤（${stick} mm）當軸：底板的孔比較緊，把竹籤固定；齒輪的孔比較鬆，才轉得動。`],
-        infoLaser: [`大齒輪轉 1 圈，小齒輪會轉 ${ratio} 圈，而且方向相反。竹籤當軸：底板孔緊、齒輪孔鬆。`],
-        asm: { kind: "gear", gears: gears.map(q => ({ x: q.x, z: q.z })), base, handle: p.handle ? hy : null, stick }
-      };
-    }
-  };
-
-  /* ---------------- 關節動物（會動） ---------------- */
-  ENG.joint = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("cuts", "哪裡會動", [["2", "頭和尾巴"], ["1", "只有頭"]], "2", { kid: true }),
-      seg("head", "頭在哪一邊", [["left", "左邊"], ["right", "右邊"]], "left", { kid: true, when: p => p.cuts === "1" }),
-      rng("len", "身體長度", 80, 150, 10, 110, "mm", { kid: true, presets: [[90, "小"], [110, "中"], [130, "大"]] }),
-      rng("c1", "第一刀位置", 15, 48, 1, 30, "%", { kid: false }),
-      rng("c2", "第二刀位置", 52, 85, 1, 72, "%", { kid: false, when: p => p.cuts === "2" }),
-      rng("thk", "3D 每片厚度", 2.4, 4, .2, 3, "mm", { group: "machine", out: "3d" }),
-      ...drawParams({ thick: .6, gap: .4 })
-    ],
-    area: p => ({ w: p.len, h: p.len * .7 }),
-    guide: () => (c, A) => ({ text: "畫一隻動物的側面（整隻都畫），網站會切成會動的幾段" }),
-    build(p, src) {
-      const L = p.len, A = this.area(p), G = R.grid(L + 30, A.h + 30, 6), mc = M.get();
-      const m = place(G, src, { x: 0, y: 0, w: L, h: A.h }, Object.assign({}, p, { fit: "auto" }), { forceAuto: true });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p);
-      const { body, extra } = silhouette(G, cur, 1.2); if (extra) warn.push("圖案分成好幾塊，只用最大的那一塊當動物。");
-      const bb = R.bbox(G, body), w = bb.x1 - bb.x0, pct = [p.c1 / 100].concat(p.cuts === "2" ? [p.c2 / 100] : []);
-      const cutsX = (p.cuts === "1" && p.head === "right" ? [1 - pct[0]] : pct).map(f => bb.x0 + w * f).sort((a, b) => a - b);
-      const pivots = [];
-      for (const cx of cutsX) {
-        const col = column(G, body, cx); if (!col) { warn.push("切的位置沒有身體，請把動物畫大一點。"); continue; }
-        const hgt = col[1] - col[0], r = Math.max(3.5, Math.min(7, hgt * .42));
-        if (hgt < 9) warn.push("切的地方太細了（不到 9 mm），關節會很脆弱。把身體畫胖一點，或請老師移動切的位置。");
-        pivots.push({ x: cx, y: (col[0] + col[1]) / 2, r });
-      }
-      if (!pivots.length) return { empty: "沒辦法切開，請畫一隻比較完整的動物側面。" };
-      const bounds = [-1e9].concat(pivots.map(q => q.x), [1e9]), n = bounds.length - 1;
-      const inner = R.and(cur, R.erode(G, body, 1.2)), regions = [];
-      for (let k = 0; k < n; k++) {
-        let reg = R.and(body, R.bandX(G, bounds[k], bounds[k + 1]));
-        const adj = pivots.filter((q, i) => i === k - 1 || i === k);
-        reg = R.or(reg, R.discs(G, adj));
-        regions.push({ mask: R.splitLargest(reg, G.nx, G.ny).main, adj: pivots.map((q, i) => (i === k - 1 || i === k) ? i : -1).filter(i => i >= 0) });
-      }
-      // the piece with the most area is the body (bottom layer); its neighbours sit on top
-      let baseIdx = 0; regions.forEach((r, i) => { if (R.count(r.mask) > R.count(regions[baseIdx].mask)) baseIdx = i; });
-      if (n === 3) baseIdx = 1;
-      const t3 = p.thk, tl = mc.matT, pinD = 5, pinH = t3 + .3 + 1.6, slide = M.printSlide(pinD), capIn = Math.max(pinD - .1, M.printPress(pinD) - .15), brad = M.laserSpin(3);
-      const rmax = Math.max(...pivots.map(q => q.r)), names = n === 2 ? (baseIdx === 0 ? ["身體", "頭"] : ["頭", "身體"]) : ["頭", "身體", "尾巴"];
-      if (n === 2 && p.head === "right") names.reverse();
-      const parts3d = [], lparts = [], pieces = [];
-      regions.forEach((rg, k) => {
-        const isBase = k === baseIdx, dx = (k - baseIdx) * (2 * rmax + 6);
-        const holeMask = R.discs(G, isBase ? [] : rg.adj.map(i => ({ x: pivots[i].x, y: pivots[i].y, r: slide / 2 })));
-        const keep = R.discs(G, rg.adj.map(i => ({ x: pivots[i].x, y: pivots[i].y, r: pivots[i].r + 1.2 })));
-        const pieceM = R.sub(rg.mask, holeMask), deco = R.sub(R.and(inner, rg.mask), keep);
-        const L3 = tr(G, pieceM), D3 = tr(G, deco);
-        const solids = [{ loops: L3, z0: 0, z1: t3 }, { loops: D3, z0: t3, z1: t3 + .8, tone: "top" }];
-        if (isBase) for (const i of rg.adj) solids.push({ loops: [GM.circle(pivots[i].x, pivots[i].y, pinD / 2, 32)], z0: t3, z1: t3 + pinH, tone: "base" });
-        parts3d.push({ name: names[k], solids, dx, dy: 0 });
-        const lHoles = rg.adj.map(i => GM.circle(pivots[i].x, pivots[i].y, brad / 2, 32));
-        lparts.push({ name: names[k], cut: tr(G, rg.mask).concat(lHoles), engrave: D3 });
-        pieces.push({ k, isBase, name: names[k], dx, loops3: L3, deco: D3 });
-      });
-      pivots.forEach((q, i) => parts3d.push({ name: `固定帽${i + 1}`, solids: [{ loops: [GM.circle(0, 0, 5, 40), GM.circle(0, 0, capIn / 2, 32)], z0: 0, z1: 1.6 }], dx: -L / 2 + i * 14, dy: A.h / 2 + 14 }));
-      return {
-        warn, size: [L, A.h], parts3d, pause: t3,
-        laser: { parts: lparts },
-        info3d: [`${n} 片＋${pivots.length} 個固定帽。身體上有 ${pinD} mm 的軸，${names.filter((_, k) => k !== baseIdx).join("、")}的孔 ${fmt(slide)} mm，套上去再壓上固定帽。`, `每片印到 ${fmt(t3)} mm 可以暫停換色，讓眼睛和花紋變另一個顏色。`],
-        infoLaser: [`${n} 片，關節孔 ${fmt(brad)} mm，用雙腳釘（3 mm）固定，或用竹籤＋熱熔膠。`, "建議用 2–3 mm 椴木合板或厚紙板。"],
-        asm: { kind: "joint", pieces, pivots, baseIdx, t3, tl, pinD, pinH }
-      };
-    }
-  };
-
-  /* ---------------- 插片積木 ---------------- */
-  ENG.flake = {
-    outs: ["3d", "laser"],
-    params: [
-      seg("shape", "形狀", FRAME_OPTS(["circle", "square", "hexagon", "flower", "follow"]), "circle"),
-      rng("size", "大小", 36, 70, 2, 50, "mm", { kid: true, presets: [[40, "小"], [50, "中"], [60, "大"]] }),
-      seg("slots", "插槽數", [["4", "4 個"], ["6", "6 個"], ["8", "8 個"]], "6", { kid: true }),
-      rng("count", "數量", 1, 16, 1, 6, "片", { kid: true, presets: [[2, "2 片"], [6, "6 片"], [12, "12 片"]] }),
-      rng("depth", "插槽深度", 25, 45, 1, 35, "%", { kid: false }),
-      rng("thk", "3D 厚度", 2.4, 4, .2, 3, "mm", { group: "machine", out: "3d" }),
-      ...drawParams({ thick: .4, gap: .3 })
-    ],
-    area: p => ({ w: p.size, h: p.size }),
-    guide: p => p.shape === "follow" ? null : (c, A) => { c.beginPath(); GM.FRAMES[p.shape].path(c, A.w, A.h); return {}; },
-    build(p, src, g, out) {
-      const D = p.size, G = R.grid(D + 14, D + 14, 9), mc = M.get();
-      let shape, cur = R.empty(G), warn = [];
-      if (p.shape === "follow") {
-        const m = place(G, src, { x: 0, y: 0, w: D - 4, h: D - 4 }, p, { forceAuto: true });
-        if (!R.count(m)) return { empty: emptyMsg(src) };
-        ({ cur, warn } = clean(G, m, p)); shape = silhouette(G, cur, 2).body;
-      } else {
-        shape = GM.frameMask(G, p.shape, D, D, 1);
-        const dep = R.depth(G, shape), allow = new Uint8Array(shape.length); for (let i = 0; i < shape.length; i++) if (dep[i] > 2.5) allow[i] = 1;
-        const ins = inscribed(G, shape), m = place(G, src, p.fit === "canvas" ? { x: 0, y: 0, w: D, h: D } : { x: ins.x, y: ins.y, r: ins.r - 3 }, p, { allow });
-        if (R.count(m)) ({ cur, warn } = clean(G, m, p, allow));
-      }
-      const c = R.centroid(G, shape); if (!c) return { empty: emptyMsg(src) };
-      const loops = tr(G, shape); let outer = biggest(loops); const holes = loops.filter(l => l !== outer);
-      const n = +p.slots, results = { "3d": null, laser: null }, slotsInfo = [];
-      for (const kind of ["3d", "laser"]) {
-        const sw = kind === "3d" ? M.printSlot(p.thk) : M.laserSlot(); let lp = outer; const sInfo = [];
-        for (let k = 0; k < n; k++) {
-          const th = -Math.PI / 2 + k * GM.TAU / n, e = edgeDist(G, shape, c[0], c[1], th), d = e * p.depth / 100;
-          if (d < 5) { if (kind === "laser") warn.push("作品太小，插槽太淺，插起來會不穩。把大小調大。"); }
-          const a = Math.PI / 2 - th, rot = rotLoop(lp, a, c[0], c[1]), nt = GM.notch(rot, c[0], sw, d, 1);
-          if (nt) { lp = rotLoop(nt.loop, -a, c[0], c[1]); sInfo.push({ th, e, d }); } else if (kind === "laser") warn.push("有一個插槽做不出來（形狀太奇怪），試試別的形狀。");
-        }
-        results[kind] = [lp].concat(holes); if (kind === "laser") slotsInfo.push(...sInfo);
-      }
-      // keep decoration away from the slots
-      const slotMask = R.maskDraw(G, cx => { cx.lineWidth = M.laserSlot() + 3; cx.lineCap = "butt"; for (const s of slotsInfo) { cx.beginPath(); cx.moveTo(c[0] + Math.cos(s.th) * (s.e - s.d - 2), c[1] + Math.sin(s.th) * (s.e - s.d - 2)); cx.lineTo(c[0] + Math.cos(s.th) * (s.e + 2), c[1] + Math.sin(s.th) * (s.e + 2)); cx.stroke(); } });
-      const decoL = tr(G, R.sub(R.and(cur, R.erode(G, shape, 1.5)), slotMask)), cnt = Math.round(p.count);
-      const colsN = Math.ceil(Math.sqrt(cnt)), parts3d = [], lparts = [];
-      for (let i = 0; i < cnt; i++) {
-        const dx = ((i % colsN) - (colsN - 1) / 2) * (D + 4), dy = (Math.floor(i / colsN)) * (D + 4);
-        parts3d.push({ name: "插片", solids: [{ loops: GM.move(results["3d"], dx, dy), z0: 0, z1: p.thk }, { loops: GM.move(decoL, dx, dy), z0: p.thk, z1: p.thk + .6, tone: "top" }], merge: true });
-        lparts.push({ name: "插片" + (i + 1), cut: results.laser, engrave: decoL });
-      }
-      const top = slotsInfo.find(s => Math.abs(s.th + Math.PI / 2) < 1e-6), bot = slotsInfo.find(s => Math.abs(s.th - Math.PI / 2) < 1e-6);
-      return {
-        warn, size: [D, D], parts3d, pause: p.thk, laser: { parts: lparts },
-        info3d: [`${cnt} 片，每片 ${fmt(p.thk)} mm 厚，插槽寬 ${fmt(M.printSlot(p.thk))} mm（依 3D 間隙校正）。印越多片可以組越大的作品。`],
-        infoLaser: [`${cnt} 片，插槽寬 ${fmt(M.laserSlot())} mm（依雷切插槽校正）。`],
-        asm: { kind: "flake", loop3: results["3d"], loopL: results.laser, deco: decoL, c, top, bot, thk3: p.thk, tl: mc.matT }
-      };
-    }
-  };
-
-  /* ================= laser-only ================= */
-  ENG.coaster = {
-    outs: ["laser"],
-    params: [
-      seg("shape", "形狀", FRAME_OPTS(["circle", "square", "hexagon", "scallop", "flower"]), "circle"),
-      rng("size", "大小", 70, 110, 5, 90, "mm", { kid: true, presets: [[80, "小"], [90, "中"], [100, "大"]] }),
-      seg("mode", "雕刻方式", [["fill", "雕刻圖案"], ["invert", "雕刻背景"], ["score", "只描線"]], "fill", { kid: true }),
-      chk("rim", "加一圈外框", true, { kid: true }),
-      ...drawParams({ thick: .3, gap: .2, fit: "canvas" })
-    ],
-    area: p => ({ w: p.size, h: p.size * (p.shape === "hexagon" ? .87 : 1) }),
-    guide: p => (c, A) => { c.beginPath(); GM.FRAMES[p.shape].path(c, A.w, A.h); return {}; },
-    build(p, src) {
-      const A = this.area(p), G = R.grid(A.w + 6, A.h + 6, 9), shape = GM.frameMask(G, p.shape, A.w, A.h, 1), dep = R.depth(G, shape);
-      const allow = new Uint8Array(shape.length), ring = new Uint8Array(shape.length);
-      for (let i = 0; i < shape.length; i++) { if (dep[i] > (p.rim ? 6 : 3)) allow[i] = 1; if (dep[i] >= 3 && dep[i] <= 4.2) ring[i] = 1; }
-      const m = place(G, src, p.fit === "canvas" ? { x: 0, y: 0, w: A.w, h: A.h } : (() => { const s = inscribed(G, allow); return { x: s.x, y: s.y, r: s.r }; })(), p, { allow });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p, allow);
-      let eng = [], score = [];
-      if (p.mode === "fill") eng = tr(G, p.rim ? R.or(cur, ring) : cur);
-      else if (p.mode === "invert") { const ar = R.sub(R.and(shape, R.dilate(G, allow, p.rim ? 1.5 : 0)), cur); eng = tr(G, p.rim ? R.or(ar, ring) : ar); }
-      else { score = tr(G, cur).map(l => l.concat([l[0]])); if (p.rim) eng = tr(G, ring); }
-      return { warn, size: [A.w, A.h], laser: { parts: [{ name: "杯墊", cut: tr(G, shape), engrave: eng, score }] }, infoLaser: [p.mode === "score" ? "藍色是線刻（沿著線條走一圈，比較快）、紅色是切割。" : "黑色是雕刻、紅色是切割。", "先塗色再雕刻：雕刻的地方會露出木頭原色。"], asm: { kind: p.painted ? "paint" : "flat" } };
-    }
-  };
-
-  ENG.card = {
-    outs: ["laser"],
-    params: [
-      seg("fmt", "尺寸", [["p", "直的 100×148"], ["l", "橫的 148×100"], ["s", "方形 120×120"], ["m", "小卡 90×60"]], "p", { kid: true }),
-      seg("shape", "形狀", [["rect", "圓角長方形"], ["arch", "拱門"]], "rect"),
-      chk("stand", "加站立腳架", true, { kid: true }),
-      chk("rim", "加外框線", false),
-      ...drawParams({ thick: .3, gap: .2, fit: "canvas" })
-    ],
-    area: p => ({ p: { w: 100, h: 148 }, l: { w: 148, h: 100 }, s: { w: 120, h: 120 }, m: { w: 90, h: 60 } })[p.fmt],
-    guide: p => (c, A) => { c.beginPath(); if (p.shape === "arch") GM.FRAMES.arch.path(c, A.w, A.h); else GM.pathPts(c, GM.roundRect(0, 0, A.w, A.h, 6)); return {}; },
-    build(p, src) {
-      const A = this.area(p), G = R.grid(A.w + 6, A.h + 6, 8), t = M.laserSlot();
-      const shape = p.shape === "arch" ? GM.frameMask(G, "arch", A.w, A.h, .8) : R.polyMask(G, [GM.roundRect(0, 0, A.w, A.h, 6)]);
-      const sd = 13, dep = R.depth(G, shape), allow = new Uint8Array(shape.length), rimM = new Uint8Array(shape.length);
-      for (let i = 0; i < shape.length; i++) { const y = R.cy(G, (i / G.nx) | 0), x = R.cx(G, i % G.nx); if (dep[i] > 4 && !(p.stand && y > A.h / 2 - sd - 2 && Math.abs(x) < 6)) allow[i] = 1; if (dep[i] >= 2 && dep[i] <= 3) rimM[i] = 1; }
-      const m = place(G, src, p.fit === "canvas" ? { x: 0, y: 0, w: A.w, h: A.h } : { x: 0, y: -sd / 2, w: A.w - 12, h: A.h - 12 - sd }, p, { allow });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p, allow);
-      let outL = tr(G, shape); const parts = [], eng = tr(G, p.rim ? R.or(cur, rimM) : cur), fh = 2 * sd, fw = Math.min(70, A.w * .7);
-      if (p.stand) {
-        const outer = biggest(outL), nt = GM.notch(outer, 0, t, sd, 1); if (nt) outL = [nt.loop].concat(outL.filter(l => l !== outer));
-        const foot = [[-fw / 2, fh / 2], [-fw / 2 + 6, -fh / 2], [-t / 2, -fh / 2], [-t / 2, -fh / 2 + sd], [t / 2, -fh / 2 + sd], [t / 2, -fh / 2], [fw / 2 - 6, -fh / 2], [fw / 2, fh / 2]];
-        parts.push({ name: "卡片", cut: outL, engrave: eng }, { name: "腳架", cut: [foot] });
-      } else parts.push({ name: "卡片", cut: outL, engrave: eng });
-      return { warn, size: [A.w, A.h], laser: { parts }, infoLaser: ["黑色是雕刻、紅色是切割。", p.stand ? "腳架和卡片下面的缺口十字交叉插在一起，卡片就能站起來。" : "可以在背面寫字，或用緞帶掛起來。"], asm: { kind: "card", A, sd, fh, stand: p.stand, tl: M.get().matT } };
-    }
-  };
-
-  ENG.sampler = {
-    outs: ["laser"],
-    params: [rng("tile", "每格大小", 34, 54, 2, 44, "mm", { kid: false }), ...drawParams({ thick: .4, gap: .3 })],
-    area: () => ({ w: 1, h: 1 }), guide: () => null,
-    build(p, src) {
-      const T = p.tile, W = T * 3 + 16, H = T + 18, G = R.grid(T, T, 10);
-      const m = place(G, src, { x: 0, y: 0, w: T - 10, h: T - 10 }, p, { forceAuto: true }); if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p), L = tr(G, cur), xs = [-(T + 4), 0, T + 4], yC = -5;
-      const plate = GM.roundRect(0, 0, W, H, 4), frames = xs.map(x => GM.roundRect(x, yC, T, T, 3));
-      const labels = ["雕刻", "線刻", "切割"], LG = R.grid(W, H, 8), lab = R.maskDraw(LG, c => { const f = FONTS[0]; c.font = `${f.w} 5.5px ${f.css}`; c.textAlign = "center"; c.textBaseline = "middle"; labels.forEach((t, i) => c.fillText(t, xs[i], H / 2 - 6)); });
-      const engrave = GM.move(L, xs[0], yC).concat(tr(LG, lab));
-      const score = GM.move(L, xs[1], yC).map(l => l.concat([l[0]])).concat(frames.map(f => f.concat([f[0]])));
-      const cut = [plate].concat(GM.move(L, xs[2], yC));
-      return { warn, size: [W, H], laser: { parts: [{ name: "比較卡", cut, engrave, score }] }, infoLaser: ["同一個圖案三種做法：黑色雕刻（填滿）、藍色線刻（只走線）、紅色切割（切穿）。", "線刻在 Beam Studio 設成「低功率、高速度」的切割，就會只在表面留下一條線。"], asm: { kind: "flat" } };
-    }
-  };
-
-  /* ---------------- 測試工具（雷切＋3D） ---------------- */
-  ENG.tools = {
-    outs: ["laser", "3d"], noDraw: true,
-    params: [
-      seg("kind", "測試項目", [["fit", "雷切：插槽鬆緊"], ["kerf", "雷切：切縫"], ["power", "雷切：功率格"], ["hole3d", "3D：孔徑"], ["clr3d", "3D：配合間隙"]], "fit", { kid: true }),
-      rng("cols", "功率格數", 4, 12, 1, 9, "格", { when: p => p.kind === "power" })
-    ],
-    area: () => ({ w: 1, h: 1 }), guide: () => null,
-    build(p) {
-      const mc = M.get(), t = mc.matT, txt = (G, items, size) => R.maskDraw(G, c => { const f = FONTS[0]; c.font = `${f.w} ${size}px ${f.css}`; c.textAlign = "center"; c.textBaseline = "middle"; for (const [s, x, y] of items) c.fillText(s, x, y); });
-      if (p.kind === "fit") {
-        const vals = [-.2, -.1, 0, .05, .1, .15, .2, .3].map(d => +(t + d).toFixed(2)), W = 14 + vals.length * 13, H = 32;
-        let loop = GM.rect(0, 0, W, H); const items = [];
-        vals.forEach((w, i) => { const x = -W / 2 + 13 + i * 13, r = GM.notch(loop, x, w, 12, -1); if (r) loop = r.loop; items.push([w.toFixed(2), x, 4]); });
-        items.push([`板厚 ${t} 插槽測試`, 0, 11]); const lg = R.grid(W, H, 10);
-        return { warn: [], size: [W, H], laser: { parts: [{ name: "插槽測試尺", cut: [loop], engrave: tr(lg, txt(lg, items, 3.2)) }] }, infoLaser: ["拿同一批板子的小片插插看：找出「用手壓得進去、放手不會掉」的那一格，到「機器校正」把插槽寬度設成那個數字。"], asm: { kind: "flat" }, test: "fit" };
-      }
-      if (p.kind === "power") {
-        const n = p.cols, cols = Math.min(n, 3), rows = Math.ceil(n / 3), s = 14, W = cols * (s + 6) + 6, H = rows * (s + 10) + 6;
-        const colors = ["#0000FF", "#00FF00", "#FF00FF", "#00FFFF", "#FF8000", "#8000FF", "#808080", "#804000", "#008080", "#800000", "#008000", "#FFFF00"];
-        const layers = [], items = [], lg = R.grid(W, H, 10);
-        for (let i = 0; i < n; i++) { const c = i % 3, r = (i / 3) | 0, x = -W / 2 + 6 + c * (s + 6) + s / 2, y = -H / 2 + 6 + r * (s + 10) + s / 2; layers.push({ color: colors[i % colors.length], loops: [GM.rect(x, y, s, s)] }); items.push([String(i + 1), x, y + s / 2 + 4]); }
-        return { warn: [], size: [W, H], laser: { parts: [{ name: "功率測試", cut: [GM.roundRect(0, 0, W, H, 2)], layers, engrave: tr(lg, txt(lg, items, 4)) }] }, infoLaser: ["每一格是不同顏色，匯入 Beam Studio 會變成不同圖層，分別設定功率和速度，記下效果最好的設定。"], asm: { kind: "flat" } };
-      }
-      if (p.kind === "kerf") {
-        const k = 10, n = 10, sq = []; for (let i = 0; i < n; i++) sq.push(GM.rect(-((n - 1) / 2) * k + i * k, 0, k, k));
-        return { warn: [], size: [k * n, k], laser: { parts: [{ name: "切縫測試", cut: sq }] }, infoLaser: ["切下 10 個 10 mm 的方塊，排成一排緊靠著量總長，到「機器校正」填進去，網站會算出切縫。"], asm: { kind: "flat" }, test: "kerf" };
-      }
-      if (p.kind === "hole3d") {
-        const d = mc.stick, vals = [0, .1, .2, .3, .4, .5], W = 12 + vals.length * 11, H = 24, G = R.grid(W, H, 10);
-        const holes = vals.map((v, i) => GM.circle(-W / 2 + 11 + i * 11, -2, (d + v) / 2, 40)), items = vals.map((v, i) => ["+" + v.toFixed(1), -W / 2 + 11 + i * 11, 7.5]);
-        return { warn: [], size: [W, H], parts3d: [{ name: "孔徑測試片", solids: [{ loops: [GM.roundRect(0, 0, W, H, 3)].concat(holes), z0: 0, z1: 3 }, { loops: tr(G, txt(G, items, 3.4)), z0: 3, z1: 3.6, tone: "top" }] }], info3d: [`六個孔是竹籤直徑 ${d} mm 再加 0 到 0.5 mm。印好後拿竹籤插插看，找出「推得進去、會卡住不掉」的那個孔，到「機器校正」填那個數字。`], asm: { kind: "flat" }, test: "hole" };
-      }
-      const vals = [.1, .15, .2, .25, .3, .4], W = 12 + vals.length * 15, H = 30, G = R.grid(W, H, 10);
-      const holes = vals.map((v, i) => GM.rect(-W / 2 + 13 + i * 15, -3, 10 + 2 * v, 10 + 2 * v)), items = vals.map((v, i) => [v.toFixed(2), -W / 2 + 13 + i * 15, 10]);
-      return { warn: [], size: [W, H], parts3d: [{ name: "間隙測試片", solids: [{ loops: [GM.roundRect(0, 0, W, H, 3)].concat(holes), z0: 0, z1: 4 }, { loops: tr(G, txt(G, items, 3.4)), z0: 4, z1: 4.6, tone: "top" }] }, { name: "測試方塊", solids: [{ loops: [GM.rect(0, 0, 10, 10)], z0: 0, z1: 10 }], dx: 0, dy: H / 2 + 12 }], info3d: ["把 10 mm 的測試方塊插進每個方孔：找出「可以順順插進去、不會晃」的最小那格，到「機器校正」填那個數字（每邊的間隙）。"], asm: { kind: "flat" }, test: "clr" };
-    }
-  };
-
-  ENG.slotanimal = {
-    outs: ["laser"],
-    params: [
-      rng("len", "身體長度", 80, 150, 10, 110, "mm", { kid: true, presets: [[90, "小"], [110, "中"], [130, "大"]] }),
-      seg("leg", "腳的樣子", [["arch", "拱形"], ["trap", "梯形"]], "arch", { kid: true }),
-      rng("legH", "腳的高度", 24, 45, 1, 32, "mm"),
-      chk("inner", "身體裡面的線條要雕刻", true, { kid: true }),
-      ...drawParams({ thick: .6, gap: .4 }).filter(q => q.id !== "fit")
-    ],
-    area: p => ({ w: p.len, h: p.len * .7 }),
-    guide: () => (c, A) => ({ text: "畫動物的側面身體（不用畫腳），下面平平的比較好插" }),
-    build(p, src) {
-      const L = p.len, A = this.area(p), G = R.grid(L + 10, A.h + 10, 9);
-      const m = place(G, src, { x: 0, y: 0, w: L, h: A.h }, Object.assign({}, p, { fit: "auto" }), { forceAuto: true });
-      if (!R.count(m)) return { empty: emptyMsg(src) };
-      const { cur, warn } = clean(G, m, p);
-      const { body, extra } = silhouette(G, cur, 1.2); if (extra) warn.push("圖案分成好幾塊，只用最大的那一塊當身體。");
-      const loops = tr(G, body), outer = biggest(loops), b = GM.bounds([outer]), t = M.laserSlot(), s = Math.min(12, b.h * .35);
-      let out = outer; const xs = [b.x0 + b.w * .26, b.x0 + b.w * .74], got = []; let yEdge = b.y1;
-      for (const x of xs) { const r = GM.notch(out, x, t, s, 1); if (r) { out = r.loop; got.push(x); yEdge = r.yEdge; } }
-      if (got.length < 2) warn.push("身體下面太窄或不平，插槽做不好。把身體畫胖一點、下面平一點。");
-      // a body painted solid black would mean engraving the whole thing (very slow): then only cut the outline
-      const innerM = p.inner ? R.and(cur, R.erode(G, body, 1.2)) : null, solid = innerM && R.count(innerM) > R.count(body) * .55, engr = innerM && !solid ? tr(G, innerM) : [];
-      const legW = Math.max(40, Math.min(70, b.h * 1.1)), H = Math.max(p.legH, 2 * s + 6), legs = [];
-      for (let k = 0; k < 2; k++) {
-        const w = legW, top = -H / 2, bot = H / 2, gapW = w * .42, archH = H - s - 6; let leg;
-        if (p.leg === "trap") leg = [[-w / 2 + 5, top], [w / 2 - 5, top], [w / 2, bot], [gapW / 2, bot], [gapW / 2 - 3, bot - archH], [-gapW / 2 + 3, bot - archH], [-gapW / 2, bot], [-w / 2, bot]];
-        else { leg = [[-w / 2, top + 4], [-w / 2 + 4, top], [w / 2 - 4, top], [w / 2, top + 4], [w / 2, bot]]; const nA = 18; for (let i = 0; i <= nA; i++) { const a = i / nA * Math.PI; leg.push([gapW / 2 * Math.cos(a), bot - archH * Math.sin(a)]); } leg.push([-w / 2, bot]); }
-        const n2 = GM.notch(leg, 0, t, s, -1); legs.push({ name: "腳" + (k + 1), cut: [n2 ? n2.loop : leg] });
-      }
-      return { warn, size: [L, A.h], laser: { parts: [{ name: "身體", cut: [out].concat(loops.filter(l => l !== outer)), engrave: engr }].concat(legs) }, infoLaser: [`插槽寬 ${fmt(t)} mm、深 ${fmt(s)} mm（依機器校正）。身體的缺口和腳的缺口十字交叉插在一起。`, "太鬆或太緊：到「機器校正」重新設定插槽寬度。"].concat(solid ? ["整隻塗滿黑色的身體不雕刻（太花時間），只切外形。想要花紋，用線條畫就好。"] : []), asm: { kind: "slot", xs: got, yEdge, s, legH: H, t: M.get().matT } };
-    }
-  };
-
-  ENG.box = {
-    outs: ["laser"],
-    params: [
-      seg("preset", "大小", [["s", "小 60×60×40"], ["m", "中 90×70×50"], ["l", "大 120×90×60"], ["c", "自訂"]], "m", { kid: true }),
-      rng("W", "寬", 50, 200, 5, 90, "mm", { when: p => p.preset === "c" }),
-      rng("D", "深", 40, 150, 5, 70, "mm", { when: p => p.preset === "c" }),
-      rng("H", "高", 25, 120, 5, 50, "mm", { when: p => p.preset === "c" }),
-      chk("lid", "加蓋子", true, { kid: true }),
-      seg("where", "圖案刻在", [["lid", "蓋子"], ["front", "正面"]], "lid", { kid: true, when: p => p.lid }),
-      ...drawParams({ thick: .3, gap: .2, fit: "auto" })
-    ],
-    dims(p) { return p.preset === "c" ? [p.W, p.D, p.H] : ({ s: [60, 60, 40], m: [90, 70, 50], l: [120, 90, 60] })[p.preset]; },
-    area(p) { const [W, D, H] = this.dims(p); return p.where === "front" || !p.lid ? { w: W, h: H } : { w: W, h: D }; },
-    guide: () => null,
-    build(p, src) {
-      const [W, D, H] = this.dims(p), mc = M.get(), t = mc.matT, lid = p.lid, where = lid ? p.where : "front";
-      const panels = GM.box(W, D, H, t, { lid: false, finger: Math.max(8, t * 3) }), parts = [], warn = [];
-      const engrFor = (pw, ph) => {
-        const G = R.grid(pw, ph, 9), allow = R.maskBy(G, (x, y) => Math.abs(x) < pw / 2 - t - 3 && Math.abs(y) < ph / 2 - t - 3);
-        const m = place(G, src, { x: 0, y: 0, w: pw - 2 * t - 8, h: ph - 2 * t - 8 }, p, { allow }); if (!R.count(m)) return [];
-        const { cur } = clean(G, m, p, allow); return GM.move(tr(G, cur), pw / 2, ph / 2);
-      };
-      for (const pn of panels) parts.push({ name: pn.name, cut: [GM.offsetOrtho(pn.poly, mc.kerf / 2)], engrave: (where === "front" && pn.name === "正面") ? engrFor(pn.w, pn.h) : [] });
-      if (lid) {
-        const top = GM.roundRect(W / 2, D / 2, W + 2, D + 2, 3), lip = GM.rect(W / 2, D / 2, W - 2 * t - .6, D - 2 * t - .6);
-        parts.push({ name: "上蓋", cut: [top], engrave: where === "lid" ? GM.move(engrFor(W + 2, D + 2), -1, -1) : [] }, { name: "蓋子內襯", cut: [lip] });
-      }
-      if (!src.bbox) warn.push("還沒有圖案，盒子不會有雕刻。");
-      const area = parts.reduce((s, q) => { const b = OUT.partBounds(q); return s + (b.w + 4) * (b.h + 4); }, 0);
-      if (area > 290 * 200 * .9) warn.push("零件太多，可能要分兩張板子切。");
-      return { warn, size: [W, D], laser: { parts }, infoLaser: [`外尺寸 ${W}×${D}×${H} mm，板厚 ${fmt(t)} mm、切縫補償 ${fmt(mc.kerf)} mm（依機器校正）。`, "指接榫：先把四面圍起來，再放進底板，用白膠固定。", lid ? "蓋子：把內襯黏在上蓋背面正中間，蓋上去就不會滑掉。" : ""].filter(Boolean), asm: { kind: "box", W, D, H, t, lid } };
-    }
-  };
 })();
 
 /* ===== minimal WebGL viewer: static parts or animated assembly (no library) ===== */
@@ -2436,10 +1278,16 @@ const Viewer = (() => {
     cv = document.createElement("canvas"); cv.className = "gl"; cv.setAttribute("aria-label", "立體預覽，可以拖曳旋轉"); host.appendChild(cv);
     try { gl = cv.getContext("webgl", { antialias: true }) || cv.getContext("experimental-webgl"); } catch (e) { gl = null; }
     if (!gl) return false;
-    const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; };
-    prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { gl = null; return false; }
-    gl.useProgram(prog); gl.enable(gl.DEPTH_TEST); ok = true;
+    const setup = () => {
+      const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; };
+      prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
+      gl.useProgram(prog); gl.enable(gl.DEPTH_TEST); ok = true; return true;
+    };
+    if (!setup()) { gl = null; return false; }
+    /* 手機鎖定或切 App 回來，3D 畫面可能被系統收走：先改看平面，回來再接上 */
+    cv.addEventListener("webglcontextlost", e => { e.preventDefault(); ok = false; objs = []; if (Viewer.onlost) Viewer.onlost(); });
+    cv.addEventListener("webglcontextrestored", () => { if (setup() && Viewer.onback) Viewer.onback(); });
     /* gestures: one finger rotates, two fingers zoom, double tap resets. Any new primary touch starts a fresh gesture
        so a lost pointerup (common on phones) can never leave the viewer stuck in pinch mode. */
     const pts = new Map(); let drag = null, pinch = null, lastTap = 0, tapStart = null;
@@ -2655,11 +1503,6 @@ const Viewer = (() => {
     const work = Promise.resolve(cssWait[f.id]).then(ok => ok ? Promise.all(specs.map(q => document.fonts.load(q, text))).then(() => loaded() ? "ok" : "none", () => "none") : "none");
     work.then(settle);
     setTimeout(() => { if (job.state === "wait") settle("none"); }, FONT_WAIT);
-  }
-  /* 按下載時：字型還在路上就等一下，等到有結果才打包，檔案才會和畫面一樣 */
-  async function fontSettled() {
-    const job = fontNow; if (job.state !== "wait") return;
-    while (fontNow === job && job.state === "wait") await new Promise(r => setTimeout(r, 80));
   }
   function paintFontNote(quiet) {
     const n = document.getElementById("fontNote"), st = fontNow.state; if (!n) return;
@@ -2883,6 +1726,10 @@ const Viewer = (() => {
   const FISH = '<svg class="brandfish" viewBox="4 16 96 68" aria-hidden="true"><path fill="currentColor" d="M6 50 C16 34 38 30 60 33 C70 35 77 43 80 50 C77 57 70 65 60 67 C38 70 16 66 6 50 Z M76 46 Q86 40 98 18 Q92 36 91 50 Q92 64 98 82 Q86 60 76 54 Z M33 35 L43 19 L51 34 Z M58 36 L65 25 L69 38 Z M58 64 L65 75 L69 62 Z M30 65 L36 74 L42 67 Z"/></svg>';
   const fontLabel = (id, l) => { const f = FONTS.find(q => q.id === id); return h("span", { style: `font-family:${f.css.replace(/"/g, "'")}` }, l); };
   let step = 1;
+  /* LINE、Facebook 內建瀏覽器常常不能下載檔案，一打開就請他換瀏覽器 */
+  const UA = navigator.userAgent, IN_LINE = /\bLine\//i.test(UA), IN_APP = IN_LINE || /FBAN|FBAV|FB_IAB|Instagram|MicroMessenger/i.test(UA);
+  const inAppBar = () => h("div", { class: "inapp", role: "status" }, h("span", null, (IN_LINE ? "你現在在 LINE 裡面，可能不能下載。" : "你現在在 App 裡面，可能不能下載。") + "請改用 Safari 或 Chrome 打開這一頁。"),
+    IN_LINE ? h("button", { class: "barbtn", type: "button", onclick: () => { location.href = location.pathname + "?openExternalBrowser=1"; } }, "用瀏覽器打開") : null);
   const stepMode = () => !!(window.matchMedia && matchMedia("(max-width:699px),(max-height:560px)").matches);
   function goStep(n) {
     step = Math.max(1, Math.min(3, n)); const pg = document.querySelector(".page"); pg.dataset.step = step; pg.scrollTop = 0;
@@ -2903,7 +1750,8 @@ const Viewer = (() => {
     const bar = h("header", { class: "bar" }, fish, h("h1", null, "黑鮪魚名牌吊飾"), h("span", { class: "sub" }, "東港在地・雙色吊飾"),
       h("button", { class: "barbtn", id: "helpBtn", type: "button", onclick: () => openHelp() }, "怎麼用"),
       h("button", { class: "barbtn", id: "teachBtn", type: "button", onclick: openTeacher }, "老師看"),
-      h("nav", { class: "steps", "aria-label": "步驟" }, [[1, "打名字"], [2, "看成品"], [3, "下載"]].map(([n, t]) => h("button", { type: "button", "data-step": n, onclick: () => goStep(n) }, h("b", null, n), h("span", null, t)))));
+      h("nav", { class: "steps", "aria-label": "步驟" }, [[1, "打名字"], [2, "看成品"], [3, "下載"]].map(([n, t]) => h("button", { type: "button", "data-step": n, onclick: () => goStep(n) }, h("b", null, n), h("span", null, t)))),
+      IN_APP ? inAppBar() : null);
     const inp = h("input", { id: "nameIn", class: "tuna-name", maxlength: "8", placeholder: "打你的名字", autocomplete: "off", "aria-label": "名字", value: S.name, oninput: e => { S.name = e.target.value; schedule(); },
       onkeydown: e => { if (e.key !== "Enter" || e.isComposing || e.keyCode === 229) return; e.preventDefault(); if (stepMode()) nextStep(); else $("dlBtn").focus(); } });
     const swatch = ([b, t, l]) => [h("i", { class: "sw2", style: `background:${b};box-shadow:inset 0 0 0 3px ${b},inset 0 0 0 8px ${t}` }), h("span", null, l)];
@@ -2934,12 +1782,14 @@ const Viewer = (() => {
     const host = $("glhost");
     if (!viewerOk) viewerOk = Viewer.mount(host) ? 1 : -1; else if (viewerOk === 1 && Viewer._cv) host.append(Viewer._cv);
     if (viewerOk === 1 && !Viewer._cv) Viewer._cv = host.querySelector("canvas");
+    Viewer.onlost = () => { glLost = true; shownMeshes = null; show(); };
+    Viewer.onback = () => { glLost = false; shownMeshes = null; show(); };
     if (viewerOk !== 1) { view = "flat"; syncSegs(); const b3 = prev.querySelector('[data-v="3d"]'); if (b3) { b3.disabled = true; b3.title = "這台電腦不能看立體"; } }
     goStep(step); show();
   }
   function setSize(v) { S.size = v; save(); schedule(0); syncSegs(); }
   function colors() { const [b, t] = COLORS[S.col]; return { base: b, top: t }; }
-  let shownMeshes = null, shownCol = -1;
+  let shownMeshes = null, shownCol = -1, glLost = false;
   function show() {
     const pv = $("preview"); if (!pv) return;
     const busy = $("busy"); busy.hidden = true;
@@ -2952,7 +1802,7 @@ const Viewer = (() => {
     if (res.empty) { empty.hidden = false; empty.textContent = res.empty; glh.hidden = true; flat.hidden = true; paintCheck(); return; }
     empty.hidden = true;
     if (!meshes) meshes = res.parts3d.map(p => Object.assign(OUT.partMesh(p), { dx: p.dx || 0, dy: p.dy || 0, name: p.name }));
-    const use3d = view === "3d" && viewerOk === 1; glh.hidden = !use3d; flat.hidden = use3d; $("pvReset").hidden = !use3d;
+    const use3d = view === "3d" && viewerOk === 1 && !glLost; glh.hidden = !use3d; flat.hidden = use3d; $("pvReset").hidden = !use3d;
     if (use3d) { if (shownMeshes !== meshes || shownCol !== S.col) { Viewer.set(meshes, colors()); shownMeshes = meshes; shownCol = S.col; } } else flat.innerHTML = topView();
     paintMini(); paintCheck(); paintTeacher(); syncTouch();
   }
@@ -3069,7 +1919,7 @@ const Viewer = (() => {
       try { await dl.save({ filename, data }); return "saved"; } catch (e) { return (e && e.code) || "unavailable"; }
     }
     const a = h("a", { href: URL.createObjectURL(new Blob([data], { type: "application/zip" })), download: filename, style: "display:none" }); document.body.append(a); a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 3000); return "saved";
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 60000); return "saved";
   }
   const sig = () => JSON.stringify([S.name.trim(), S.font, S.size, S.hang, S.rim, S.eye, S.col, fontNow.state]);
   /* 按下載時：先把還沒算完的變更算完（檔名和內容才會一樣），字型還在路上就等它；連按只算一次 */
@@ -3077,13 +1927,13 @@ const Viewer = (() => {
     if (dlBusy) return;
     const st = document.getElementById("dlStatus"), btn = document.getElementById("dlBtn"), inp = document.getElementById("nameIn");
     if (inp.value !== S.name) { S.name = inp.value; dirty = true; }
-    if (!S.name.trim()) { toast("先打你的名字喔！"); inp.focus(); return; }
+    if (!S.name.trim()) { toast("先打你的名字喔！"); if (stepMode()) goStep(1); inp.focus(); return; }
     dlBusy = true; btn.disabled = true; btn.textContent = "準備檔案中…";
     st.className = "status"; st.textContent = "準備檔案中…";
     try {
       await new Promise(r => requestAnimationFrame(() => setTimeout(r))); /* 讓「準備中」先畫出來 */
       clearTimeout(timer); if (dirty) build();
-      if (fontNow.state === "wait") { st.textContent = "等字型下載，最多 8 秒…"; await fontSettled(); clearTimeout(timer); if (dirty || fontNow.key + fontNow.state !== builtFont) build(); }
+      if (fontNow.state === "wait") { st.textContent = "等字型下載，最多 8 秒…"; const t0 = performance.now(); while (fontNow.state === "wait" && performance.now() - t0 < FONT_WAIT + 500) await new Promise(r => setTimeout(r, 80)); clearTimeout(timer); if (dirty || fontNow.key + fontNow.state !== builtFont) build(); }
       if (!res || res.empty) { st.className = "status err"; st.textContent = (res && res.empty) || "檔案還沒做好，請再按一次。"; return; }
       if (!meshes) meshes = res.parts3d.map(p => Object.assign(OUT.partMesh(p), { dx: p.dx || 0, dy: p.dy || 0, name: p.name }));
       const who = S.name.trim().replace(/[\\/:*?"<>|\s]+/g, ""), col = COLORS[S.col][2], [colBase, , colTop] = [...col], L = fitInfo.level, tagL = needsCare() ? (L === "thin" ? "_字太細" : "_字太擠") : "";
@@ -3092,7 +1942,7 @@ const Viewer = (() => {
       const note = [`名字：${S.name.trim()}`, `顏色：${col}（先印${colBase}色，再換${colTop}色）`, `實際大小：${box[0]} × ${box[1]} × ${box[2]} mm`, `字的樣子：${fontName}`, `字清不清楚：${clear}`, `換色高度：${PL.fmt(res.pause)} mm`, `層高 0.2 mm 時，在第 ${layer} 層開始前暫停換線。`].join("\r\n") + "\r\n";
       const files = [{ name: `黑鮪魚吊飾_${who}_${col}.stl`, data: OUT.stl(tris) }, { name: "換色說明.txt", data: "\ufeff" + note }];
       const r = await saveFile(base + ".zip", OUT.zip(files));
-      if (r === "saved") { st.className = "status ok"; st.textContent = "檔案送出了，看看下載資料夾有沒有：" + base + ".zip" + (res.font === "ok" ? "" : "（這份用的是電腦內建的字）"); toast("下載好了！"); dlSig = sig(); $("nextKid").hidden = false; }
+      if (r === "saved") { st.className = "status ok"; st.textContent = "檔案送出了，看看下載資料夾有沒有：" + base + ".zip" + (res.font === "ok" ? "" : "（這份用的是電腦內建的字）") + (IN_APP ? "。沒看到就改用 Safari 或 Chrome 打開這一頁。" : ""); toast("檔案送出了！"); dlSig = sig(); $("nextKid").hidden = false; }
       else if (r === "declined") st.textContent = "已取消下載。";
       else if (r === "rate_limited") st.textContent = "上一個下載還沒確認，等一下再按。";
       else { st.className = "status err"; st.textContent = "這個畫面不能下載（" + r + "）。請老師改用離線版開啟。"; }
@@ -3152,7 +2002,7 @@ const Viewer = (() => {
     }
     document.body.append(box); first.focus();
   }
-  window.TUNA = { S, build, res: () => res };
+  const dbg = /[?&]debug=1\b/.test(location.search) ? (window.TUNA = { S, build, res: () => res }) : {};
   render();
   /* 先把畫面畫出來，再算第一次、再載字型，網路或電腦慢都不會白畫面 */
   requestAnimationFrame(() => setTimeout(() => {
@@ -3165,13 +2015,13 @@ const Viewer = (() => {
       for (const [id] of FONTS2) { const f = FONTS.find(q => q.id === id); for (const w of WEIGHTS[id] || [f.w]) document.fonts.load(`${w} 40px ${f.css}`, "王小明陳則翰名字").catch(() => {}); }
     });
   }));
-  window.TUNA.pick = (n, id, em) => pickWeight(n, FONTS.find(q => q.id === id), em);
-  window.TUNA.rules = o => { if (o) { if (o.stroke) STROKE_MIN = o.stroke; if (o.gap) GAP_MIN = o.gap; if (o.near != null) NEAR = o.near; if (o.corner != null) CORNER = o.corner; if (o.pxmm) PX_MM = o.pxmm; if (o.thinOK) THIN_OK = o.thinOK; if (o.gapOK) GAP_OK = o.gapOK; if (o.gapWarn) GAP_WARN = o.gapWarn; MCACHE.clear(); GCACHE.clear(); } return { STROKE_MIN, GAP_MIN, NEAR, CORNER, THIN_OK, GAP_OK, GAP_WARN }; };
-  window.TUNA.debugChar = (ch, id, w, em) => { const A = analyse(ch, FONTS.find(q => q.id === id), w, em), cv = document.createElement("canvas"); cv.width = A.G.nx; cv.height = A.G.ny;
+  dbg.pick = (n, id, em) => pickWeight(n, FONTS.find(q => q.id === id), em);
+  dbg.rules = o => { if (o) { if (o.stroke) STROKE_MIN = o.stroke; if (o.gap) GAP_MIN = o.gap; if (o.near != null) NEAR = o.near; if (o.corner != null) CORNER = o.corner; if (o.pxmm) PX_MM = o.pxmm; if (o.thinOK) THIN_OK = o.thinOK; if (o.gapOK) GAP_OK = o.gapOK; if (o.gapWarn) GAP_WARN = o.gapWarn; MCACHE.clear(); GCACHE.clear(); } return { STROKE_MIN, GAP_MIN, NEAR, CORNER, THIN_OK, GAP_OK, GAP_WARN }; };
+  dbg.debugChar = (ch, id, w, em) => { const A = analyse(ch, FONTS.find(q => q.id === id), w, em), cv = document.createElement("canvas"); cv.width = A.G.nx; cv.height = A.G.ny;
     const x = cv.getContext("2d"), im = x.createImageData(cv.width, cv.height), C = [[255, 255, 255], [40, 40, 40], [230, 30, 30], [30, 110, 240]];
     for (let i = 0; i < A.cls.length; i++) im.data.set([...C[A.cls[i]], 255], 4 * i); x.putImageData(im, 0, 0); return { url: cv.toDataURL(), thin: A.thin, merged: A.merged }; };
-  window.TUNA.judge = (n, id, w, em) => judge(n, FONTS.find(q => q.id === id), w, em);
-  window.TUNA.fit = () => { if (recJob) { rec = recommend(recJob.name, recJob.f, recJob.emPerMM, recJob.size, recJob.fit); recJob = null; } return Object.assign({ rec, fontPx }, fitInfo); };
+  dbg.judge = (n, id, w, em) => judge(n, FONTS.find(q => q.id === id), w, em);
+  dbg.fit = () => { if (recJob) { rec = recommend(recJob.name, recJob.f, recJob.emPerMM, recJob.size, recJob.fit); recJob = null; } return Object.assign({ rec, fontPx }, fitInfo); };
 })();
 
 </script>
