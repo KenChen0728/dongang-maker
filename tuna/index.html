@@ -268,6 +268,41 @@ details.more>div{display:flex;flex-direction:column;gap:8px;padding:0 12px 12px}
 @media (min-width:1000px) and (min-height:561px){
   .tuna-opts .opt{display:grid;grid-template-columns:5.25em minmax(0,1fr);align-items:center;gap:8px}
 }
+
+/* 怎麼用：一張一個重點，左右切換，有目錄 */
+.help{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;flex-direction:column;gap:8px;padding:max(10px,calc(var(--safe-top) + 6px)) max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.hhead{flex:none;display:flex;align-items:center;gap:8px;width:100%;max-width:960px;margin:0 auto}
+.hhead h2{flex:1;min-width:0;font-size:1.25rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hhead .btn{min-height:48px;padding:4px 14px;flex:none}
+.hmenu{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;width:100%;max-width:720px;margin:0 auto}
+.hmenu button{min-height:var(--tap);display:block;width:100%;text-align:left;padding:10px 16px;border:2px solid var(--line-2);border-radius:12px;background:var(--surface);color:var(--ink)}
+.hmenu b{display:block;font-size:1.125rem;line-height:1.3}
+.hmenu span{display:block;color:var(--muted);font-size:1rem;line-height:1.35}
+.hbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;width:100%;max-width:720px;margin:0 auto}
+.himg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.himg img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;border:1px solid var(--line-2);background:var(--panel);display:block}
+.htxt{flex:none;min-height:5.25rem}
+.htxt h3{margin:0 0 2px;font-size:1.375rem;line-height:1.3}
+.htxt p{font-size:1.125rem;line-height:1.45}
+.hnav{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;width:100%;max-width:720px;margin:0 auto}
+.hcount{color:var(--muted);font-family:var(--mono);font-size:1rem;text-align:center}
+.hdots{display:flex;justify-content:center;gap:6px;margin-top:2px}
+.hdots i{width:8px;height:8px;border-radius:50%;background:var(--line-2)}
+.hdots i.on{background:var(--ink)}
+@media (orientation:landscape) and (max-height:560px){
+  .help{gap:6px;padding-top:max(6px,calc(var(--safe-top) + 2px));padding-bottom:max(8px,env(safe-area-inset-bottom,0px))}
+  .hbody{flex-direction:row;max-width:960px;gap:16px}
+  .himg{flex:1.2 1 0}
+  .htxt{flex:1 1 0;align-self:center;min-height:0}
+  .hnav .btn{min-height:52px}
+  .hnav{max-width:960px}
+}
+@media (orientation:landscape) and (min-height:561px) and (min-width:900px){
+  .hbody{flex-direction:row;max-width:960px;gap:24px;align-items:center}
+  .himg{flex:1.3 1 0;height:100%}
+  .htxt{flex:1 1 0}
+  .hnav{max-width:960px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -2950,7 +2985,10 @@ const Viewer = (() => {
     document.body.append(sheet); close.focus();
   }
   function closeTeacher() { const s = $("teachSheet"); if (s) s.remove(); SEGS.length = segMark; if (backFocus && backFocus.focus) backFocus.focus(); }
-  addEventListener("keydown", e => { if (e.key === "Escape") { if (teacherOpen()) closeTeacher(); } });
+  addEventListener("keydown", e => {
+    if (helpS) { if (e.key === "Escape") closeHelp(); else if (helpS.group && e.key === "ArrowRight") helpGo(1); else if (helpS.group && e.key === "ArrowLeft") helpGo(-1); return; }
+    if (e.key === "Escape" && teacherOpen()) closeTeacher();
+  });
   /* 點開才算：畫面大小、安全區域、字型和 3D 的狀態，要查問題時截圖用 */
   function deviceInfo() {
     const safe = h("div", { style: "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)" }); document.body.append(safe);
@@ -3062,7 +3100,58 @@ const Viewer = (() => {
       setTimeout(() => { dlBusy = false; const b = document.getElementById("dlBtn"); if (b) { b.disabled = false; syncDlBtn(); } }, 1500);
     }
   }
-  function openHelp() {}
+  /* ---------- 怎麼用：左右切換的卡片，有目錄 ---------- */
+  const HELP = [
+    { id: "make", name: "做吊飾", desc: "從打名字到下載", cards: [
+      ["name", "打你的名字", "點一下這個框，打你的名字。2～3 個字最清楚。"],
+      ["font", "選字的樣子", "圓圓的、粗粗的、毛筆字，選你喜歡的。"],
+      ["size", "選大小", "名字的字多，就選大一點。"],
+      ["look", "看成品", "用手指或滑鼠拖一拖，魚會轉。也可以換顏色。"],
+      ["dl", "下載給老師", "按下載，再舉手告訴老師。"]] },
+    { id: "warn", name: "字不清楚怎麼辦", desc: "字太擠、字太細的時候", cards: [
+      ["warn1", "看下載鈕上面", "這裡會告訴你字清不清楚。黃色的框就是要注意。"],
+      ["warn2", "按放大", "按「放大到…」，吊飾變大，字也變大。"],
+      ["warn3", "變清楚了", "看到「字很清楚」就可以下載。還是不行就問老師。"]] },
+    { id: "more", name: "更多設定", desc: "掛繩的洞、外框線、魚的眼睛", cards: [
+      ["more1", "打開更多設定", "按一下「更多設定」，裡面還有三個選項。"],
+      ["more2", "掛繩的洞", "選洞要在背上、嘴巴，或是不要洞。"],
+      ["more3", "外框線和魚的眼睛", "不想要就按一下關掉，再按一下又會回來。"]] },
+    { id: "teacher", name: "給老師看", desc: "檔案、換色、換下一位", cards: [
+      ["t1", "老師看", "右上角的「老師看」有實際大小、列印時間和換色高度。"],
+      ["t2", "下載之後", "檔名有名字和顏色。zip 裡有 STL 和換色說明。按「換下一位」會清掉名字和設定。"],
+      ["t3", "裝置資訊", "「老師看」最下面可以點開裝置資訊，出問題時截圖就好。"]] }
+  ];
+  let helpS = null;
+  const helpEl = () => $("helpBox");
+  function openHelp() {
+    backFocus = document.activeElement;
+    helpS = stepMode() ? { group: "make", i: [0, 3, 4][step - 1] } : { group: "make", i: 0 };
+    const app = $("app"); app.inert = true; paintHelp();
+  }
+  function closeHelp() { const b = helpEl(); if (b) b.remove(); helpS = null; $("app").inert = false; if (backFocus && backFocus.focus) backFocus.focus(); }
+  function helpGo(d) { const g = HELP.find(q => q.id === helpS.group), n = helpS.i + d; if (n < 0) return; if (n >= g.cards.length) { helpS = { group: null, i: 0 }; paintHelp(); return; } helpS.i = n; paintHelp(); }
+  function paintHelp() {
+    const old = helpEl(); if (old) old.remove();
+    const close = h("button", { class: "btn", type: "button", "aria-label": "關閉說明", onclick: closeHelp }, "關閉");
+    let box, first = close;
+    if (!helpS.group) {
+      box = h("div", { class: "help", id: "helpBox", role: "dialog", "aria-modal": "true", "aria-label": "怎麼用" }, h("div", { class: "hhead" }, h("h2", null, "怎麼用"), close),
+        h("div", { class: "hmenu" }, HELP.map(g => h("button", { type: "button", onclick: () => { helpS = { group: g.id, i: 0 }; paintHelp(); } }, h("b", null, g.name), h("span", null, g.desc)))));
+      first = box.querySelector(".hmenu button");
+    } else {
+      const g = HELP.find(q => q.id === helpS.group), [img, t, d] = g.cards[helpS.i], n = g.cards.length, last = helpS.i === n - 1;
+      const prev = h("button", { class: "btn", type: "button", disabled: helpS.i === 0 ? true : null, onclick: () => helpGo(-1) }, "上一張"), next = h("button", { class: "btn primary", type: "button", onclick: () => helpGo(1) }, last ? "看完了" : "下一張");
+      const pic = h("img", { src: `help/${img}.webp`, alt: t, onerror: e => { e.target.hidden = true; } });
+      box = h("div", { class: "help", id: "helpBox", role: "dialog", "aria-modal": "true", "aria-label": "怎麼用：" + g.name }, h("div", { class: "hhead" }, h("button", { class: "btn", type: "button", onclick: () => { helpS = { group: null, i: 0 }; paintHelp(); } }, "目錄"), h("h2", null, g.name), close),
+        h("div", { class: "hbody" }, h("div", { class: "himg" }, pic), h("div", { class: "htxt" }, h("h3", null, t), h("p", null, d))),
+        h("div", { class: "hnav" }, prev, h("div", null, h("div", { class: "hcount" }, `${helpS.i + 1} / ${n}`), h("div", { class: "hdots", "aria-hidden": "true" }, g.cards.map((c, k) => h("i", { class: k === helpS.i ? "on" : null })))), next));
+      first = next; if (!last) { const pre = new Image(); pre.src = `help/${g.cards[helpS.i + 1][0]}.webp`; }
+      let sx = null, sy = null;
+      box.addEventListener("touchstart", e => { if (e.touches.length === 1) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; } }, { passive: true });
+      box.addEventListener("touchend", e => { if (sx == null) return; const c = e.changedTouches[0], dx = c.clientX - sx, dy = c.clientY - sy; sx = null; if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return; if (dx < 0) { if (!last) helpGo(1); } else helpGo(-1); });
+    }
+    document.body.append(box); first.focus();
+  }
   window.TUNA = { S, build, res: () => res };
   render();
   /* 先把畫面畫出來，再算第一次、再載字型，網路或電腦慢都不會白畫面 */
