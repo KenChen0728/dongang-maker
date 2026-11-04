@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>黑鮪魚名牌吊飾</title>
 <meta name="description" content="打上名字，做成黑鮪魚造型的 3D 雙色吊飾。">
+<meta name="theme-color" content="#16324a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="黑鮪魚吊飾">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="../icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="東港創客小工具">
+<meta property="og:title" content="黑鮪魚名牌吊飾">
+<meta property="og:description" content="打上名字，做成黑鮪魚造型的 3D 雙色吊飾。">
+<meta property="og:url" content="https://kenchen0728.github.io/dongang-maker/tuna/">
+<meta property="og:image" content="https://kenchen0728.github.io/dongang-maker/icons/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
@@ -2815,6 +2832,7 @@ const Viewer = (() => {
   const root = () => $("app");
   function applyTheme() { const t = store.get("theme", ""); if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
   /* 選項只改選中的樣子，不重畫整頁：鍵盤的焦點才不會跑掉 */
+  const VERSION = "1.1.0";
   const SEGS = [];
   function segBox(label, getOpts, getCur, pick, cls) {
     const box = h("div", { class: "seg" + (cls ? " " + cls : ""), role: "group", "aria-label": label });
@@ -2874,7 +2892,7 @@ const Viewer = (() => {
       h("div", { id: "check", class: "col" }),
       h("button", { class: "btn primary big", id: "dlBtn", type: "button", onclick: download }, "下載 3D 列印檔"), h("p", { class: "status", id: "dlStatus", role: "status" }),
       h("button", { class: "btn", id: "nextKid", type: "button", hidden: true, onclick: nextKid }, "換下一位"),
-      h("p", { class: "tips" }, "下載好了就舉手告訴老師。"), h("div", { class: "mini", id: "mini3", "aria-hidden": "true" }));
+      h("p", { class: "tips" }, "下載好了就舉手告訴老師。"), h("div", { class: "mini", id: "mini3", "aria-hidden": "true" }), h("p", { class: "foot" }, `v${VERSION}・© 2026 Ken Chen`));
     const page = h("main", { class: "page", "data-step": step }, h("div", { class: "tuna-grid" }, opts, prev, dlp));
     const nav = h("nav", { class: "nav", "aria-label": "上一步和下一步" }, h("button", { class: "btn", id: "prevBtn", type: "button", onclick: () => goStep(step - 1) }, "上一步"), h("button", { class: "btn primary", id: "nextBtn", type: "button", onclick: nextStep }, "下一步"));
     r.append(h("div", { class: "statusband" }), bar, page, nav, h("div", { class: "footband" }));
@@ -2926,11 +2944,23 @@ const Viewer = (() => {
     const theme = segBox("外觀", () => [["", "跟著電腦"], ["light", "大地色"], ["dark", "深色"]], () => store.get("theme", ""), v => { store.set("theme", v); applyTheme(); });
     const sheet = h("div", { class: "scrim", id: "teachSheet", onclick: e => { if (e.target === sheet) closeTeacher(); } }, h("div", { class: "sheet-dlg", role: "dialog", "aria-modal": "true", "aria-label": "老師看" },
       h("div", { class: "sheet-head" }, h("h2", null, "老師看"), close), h("div", { id: "teachFacts" }, teacherFacts()),
-      h("h3", null, "外觀"), theme));
+      h("h3", null, "外觀"), theme,
+      h("details", { class: "more", ontoggle: e => { if (e.target.open) $("devInfo").textContent = deviceInfo(); } }, h("summary", null, "裝置資訊（出問題時截圖給老師）"), h("div", null, h("pre", { class: "devinfo", id: "devInfo" }))),
+      h("p", { class: "foot" }, `v${VERSION}・© 2026 Ken Chen`)));
     document.body.append(sheet); close.focus();
   }
   function closeTeacher() { const s = $("teachSheet"); if (s) s.remove(); SEGS.length = segMark; if (backFocus && backFocus.focus) backFocus.focus(); }
   addEventListener("keydown", e => { if (e.key === "Escape") { if (teacherOpen()) closeTeacher(); } });
+  /* 點開才算：畫面大小、安全區域、字型和 3D 的狀態，要查問題時截圖用 */
+  function deviceInfo() {
+    const safe = h("div", { style: "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)" }); document.body.append(safe);
+    const cs = getComputedStyle(safe), inset = [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map(v => Math.round(parseFloat(v) || 0)); safe.remove();
+    const tall = u => { const d = h("div", { style: `position:fixed;top:0;left:0;width:0;visibility:hidden;height:100${u}` }); document.body.append(d); const v = Math.round(d.getBoundingClientRect().height); d.remove(); return v; };
+    const standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+    return [`版本 ${VERSION}`, `畫面 ${innerWidth}×${innerHeight}　螢幕 ${screen.width}×${screen.height}　像素比 ${window.devicePixelRatio || 1}`, `主畫面 App：${standalone ? "是" : "否"}　排版：${stepMode() ? "一次一步" : "一個畫面"}`,
+      `安全區域 上${inset[0]} 右${inset[1]} 下${inset[2]} 左${inset[3]}`, `高度 dvh ${tall("dvh")}　svh ${tall("svh")}　lvh ${tall("lvh")}`,
+      `字型 ${FONTS2.map(([id, l]) => `${l}:${familyReady(id) ? "有" : cssState[id] === "wait" ? "下載中" : "沒有"}`).join(" ")}（現在：${fontNow.state}）`, `立體預覽：${viewerOk === 1 && Viewer.ok() ? "可以" : "不行"}　上次計算 ${res ? res.ms : "-"} ms`, `瀏覽器 ${navigator.userAgent}`].join("\n");
+  }
   /* 下一位小朋友用同一台：名字清掉、設定回到一開始 */
   function nextKid() {
     Object.assign(S, { name: "", font: "round", size: 65, hang: "0", rim: true, eye: true, col: 1 }); save(); dlSig = "";

@@ -1,35 +1,96 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>東港創客小工具</title>
+<meta name="description" content="東港 Play 基地兒童創客課程用的小工具：打上名字，做成 3D 列印的檔案。">
+<meta name="theme-color" content="#16324a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="東港創客">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="東港創客小工具">
+<meta property="og:title" content="東港創客小工具">
+<meta property="og:description" content="東港 Play 基地兒童創客課程用的小工具：打上名字，做成 3D 列印的檔案。">
+<meta property="og:url" content="https://kenchen0728.github.io/dongang-maker/">
+<meta property="og:image" content="https://kenchen0728.github.io/dongang-maker/icons/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <style>
-:root{--bg:#e6dccb;--surface:#f6f1e7;--line:#d2c3a8;--ink:#2a271f;--muted:#6c634f;--accent:#b5561c}
-@media (prefers-color-scheme: dark){:root{--bg:#171b16;--surface:#262c24;--line:#3b4337;--ink:#ece7da;--muted:#a6a894;--accent:#e2803d}}
+:root{--bg:#e6dccb;--surface:#f6f1e7;--line:#9c8a6c;--ink:#2a271f;--muted:#584f3e;--accent:#b5561c;--focus:#1f5fc4;--brand:#16324a;--edge:#e2803d;--cs:light;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171b16;--surface:#262c24;--line:#5a6653;--ink:#ece7da;--muted:#bcbea9;--accent:#e2803d;--focus:#8ab4ff;--cs:dark;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171b16;--surface:#262c24;--line:#5a6653;--ink:#ece7da;--muted:#bcbea9;--accent:#e2803d;--focus:#8ab4ff;--cs:dark;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.6}
-main{max-width:720px;margin:0 auto;padding:40px 16px 56px}
-h1{font-size:1.6rem;margin:0 0 4px}
-.sub{color:var(--muted);margin:0 0 28px}
-.card{display:flex;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:inherit;transition:transform .15s,border-color .15s}
-.card:hover{transform:translateY(-2px);border-color:var(--accent)}
-.card svg{flex:none;width:96px;height:64px}
-.card b{display:block;font-size:1.1rem}
-.card span{color:var(--muted);font-size:.92rem}
-.tag{display:inline-block;font-style:normal;font-size:.72rem;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:0 8px;margin-bottom:4px}
-.soon{margin-top:28px;color:var(--muted);font-size:.9rem}
+html{-webkit-text-size-adjust:100%}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 "PingFang TC","Noto Sans CJK TC","Microsoft JhengHei",system-ui,sans-serif;overflow:hidden}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* iPhone 上下邊：和排球記錄表相同的做法，實機確認過 */
+:root{--safe-top:env(safe-area-inset-top,0px);--vgap:0px}
+.statusband{position:fixed;top:0;left:0;right:0;height:var(--safe-top);background:var(--brand);z-index:99;pointer-events:none;overflow:hidden}
+.footband{display:none}
+html{touch-action:manipulation;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior:none}
+#app{height:100vh;height:100dvh;display:flex;flex-direction:column}
+@media (display-mode:standalone){
+  :root{--safe-top:calc(env(safe-area-inset-top,0px) + min(40px,calc(env(safe-area-inset-top,0px)*99)))}
+  html{background:var(--brand);color-scheme:dark}
+  body{color-scheme:var(--cs,light)}
+  .statusband{height:max(6px,var(--safe-top))}
+  .statusband::after,.footband::before{content:"";position:absolute;left:0;right:0;height:3px;background:var(--edge)}
+  .statusband::after{bottom:0}
+  .footband::before{top:0}
+}
+@media (display-mode:standalone) and (orientation:portrait){
+  .footband{display:block;position:fixed;left:0;right:0;bottom:calc(0px - var(--vgap));height:env(safe-area-inset-bottom,0px);background:var(--brand);z-index:99;pointer-events:none;overflow:hidden}
+}
+@media (display-mode:standalone) and (orientation:landscape) and (max-height:500px){.statusband{display:none}}
+@supports (height:100lvh){
+  @media (display-mode:standalone){
+    :root{--app-h:min(100lvh,calc(100dvh + env(safe-area-inset-top,0px)*99));--vgap:calc(var(--app-h) - 100dvh)}
+    html,body,#app{height:var(--app-h)}
+    html,body{overflow:visible}
+    #app{overflow:hidden}
+  }
+}
+header{flex:none;background:var(--brand);color:#fff;padding-top:max(16px,calc(var(--safe-top) + 12px));padding-bottom:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:1.625rem;font-weight:800;margin:0;line-height:1.3}
+.page{flex:1;min-height:0;overflow:auto;padding:24px max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+.wrap{width:100%;max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px;flex:1}
+.lead{font-size:1.125rem;margin:0}
+.card{display:flex;gap:16px;align-items:center;min-height:112px;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:inherit}
+.card:hover{border-color:var(--accent)}
+.card img{flex:none;width:80px;height:80px;border-radius:18px;display:block}
+.card b{display:block;font-size:1.25rem;line-height:1.3}
+.card span{display:block;color:var(--muted);font-size:1rem;line-height:1.4}
+.soon{margin:0;color:var(--muted)}
+.foot{margin:auto 0 0;color:var(--muted);font-size:.875rem;line-height:1.4}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<main>
-  <h1>東港創客小工具</h1>
-  <p class="sub">小朋友打字或畫圖，網站自動做成 3D 列印或雷切的檔案。</p>
-  <a class="card" href="tuna/">
-    <svg viewBox="0 0 104 64" aria-hidden="true"><path d="M6 32 C16 16 38 12 60 15 C70 17 77 25 80 32 C77 39 70 47 60 49 C38 52 16 48 6 32 Z M76 28 Q86 22 98 4 Q92 20 91 32 Q92 44 98 60 Q86 42 76 36 Z" fill="var(--accent)"/><circle cx="17" cy="29" r="2.6" fill="var(--surface)"/></svg>
-    <div><i class="tag">3D 列印</i><b>黑鮪魚名牌吊飾</b><span>打名字，做成雙色的黑鮪魚吊飾</span></div>
-  </a>
-  <p class="soon">更多小工具陸續增加中。</p>
-</main>
+<div id="app">
+  <div class="statusband"></div>
+  <header><h1>東港創客小工具</h1></header>
+  <main class="page">
+    <div class="wrap">
+      <p class="lead">選一個工具，開始做你的作品。</p>
+      <a class="card" href="tuna/index.html">
+        <img src="icons/icon-180.png" alt="" width="80" height="80">
+        <div><b>黑鮪魚名牌吊飾</b><span>打名字，做成 3D 列印的雙色吊飾</span></div>
+      </a>
+      <p class="soon">更多小工具陸續增加中。</p>
+      <p class="foot">v1.1.0・© 2026 Ken Chen</p>
+    </div>
+  </main>
+  <div class="footband"></div>
+</div>
+<script>try{var t=JSON.parse(localStorage.getItem("tuna:theme")||'""');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </body>
 </html>
