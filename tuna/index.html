@@ -2012,7 +2012,7 @@ const Viewer = (() => {
     /* 中文字型是分好幾包、用到才下載：現在這組字型的狀態一變，就把量過的結果清掉重算（不然會用到備用字型的量測） */
     let t = 0; document.fonts.addEventListener("loadingdone", () => { clearTimeout(t); t = setTimeout(() => { checkFont(FONTS.find(q => q.id === S.font) || FONTS[0], S.name.trim() || "名字"); if (fontNow.key + fontNow.state !== builtFont) { GCACHE.clear(); MCACHE.clear(); schedule(0); } }, 120); });
     Promise.all(Object.values(cssWait)).then(() => {
-      for (const [id] of FONTS2) { const f = FONTS.find(q => q.id === id); for (const w of WEIGHTS[id] || [f.w]) document.fonts.load(`${w} 40px ${f.css}`, "王小明陳則翰名字").catch(() => {}); }
+      for (const [id] of FONTS2) { const f = FONTS.find(q => q.id === id); for (const w of WEIGHTS[id] || [f.w]) document.fonts.load(`${w} 40px ${f.css}`, "王小明陳大文名字").catch(() => {}); }
     });
   }));
   dbg.pick = (n, id, em) => pickWeight(n, FONTS.find(q => q.id === id), em);
