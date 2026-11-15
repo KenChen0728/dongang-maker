@@ -211,66 +211,93 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
 }
 
 /* 照片雷雕：沿用課程工具箱的樣式（hub.css），這裡只放這頁才有的東西。
-   版面：第 1 步只有兩顆大按鈕；第 2、3 步左邊預覽、右邊設定（手機上預覽在上面）。 */
+   版面（v0.2）：每一步都在一個畫面內。調整時預覽占滿畫面，設定放在跳出來的視窗：
+   手機從下面出來、可以往下滑關掉；電腦和平板的調整視窗在右邊（不擋預覽），說明類的視窗在中間，都按「關閉」。 */
 [hidden]{display:none!important}
-.pt-steps{display:flex;gap:6px;margin:6px 0 4px}
-.pt-steps button{flex:1 1 0;min-height:52px;padding:6px 8px;border:2px solid var(--line-2);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px}
+.top-in{flex-wrap:nowrap}
+.backbtn{min-width:44px;padding:6px 12px;font-size:1.05rem;gap:4px}
+.top .wide-only{display:none}
+@media (min-width:760px){.top span.wide-only{display:inline}.top .brand small.wide-only{display:block}}
+
+/* 步驟列 */
+.pt-steps{display:flex;gap:6px;margin:10px 0 4px}
+.pt-steps button{flex:1 1 0;min-height:48px;padding:6px 8px;border:2px solid var(--line-2);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px}
 .pt-steps button i{font-style:normal;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--surface-2);font-size:.9rem}
 .pt-steps button[aria-current="step"]{background:var(--pick);border-color:var(--pick);color:var(--pick-ink)}
 .pt-steps button[aria-current="step"] i{background:rgba(255,255,255,.22)}
 .pt-steps button[aria-disabled="true"]{background:var(--surface-2);border-style:dashed;color:var(--muted)}
-.start{display:grid;gap:14px;max-width:680px;margin-top:10px}
+.stephint:empty{display:none}
+body[data-step="2"] .main{padding-bottom:12px}
+
+/* 第 1 步 */
+.start{display:grid;gap:14px;max-width:680px;margin:10px auto 0}
 .start .row.big{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media (max-width:420px){.start .row.big{grid-template-columns:1fr}}
-.bigbtn{min-height:64px;font-size:1.1rem;padding:10px 20px}
-.work{display:grid;gap:16px;margin-top:10px}
-.pv{display:grid;gap:8px;min-width:0}
-.stage{display:grid;place-items:center;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);min-height:200px;touch-action:none;user-select:none;-webkit-user-select:none}
-/* 電腦、手機橫放、平板橫放：左右兩欄，預覽在左邊固定不動 */
-@media (min-width:900px),(min-width:640px) and (orientation:landscape){
-  .work{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}
-  .work .pv{position:sticky;top:84px}
-}
-@media (max-height:500px){.work .pv{top:8px}}
-/* 手機、平板直放：調整的時候預覽固定在最上面，往下滑也看得到調整後的樣子 */
-@media (max-width:899px) and (orientation:portrait),(max-width:639px){
-  .work[data-step="2"] .pv{position:sticky;top:0;z-index:15;margin:0 -16px;padding:8px 16px 10px;background:var(--bg);box-shadow:0 10px 14px -12px rgba(0,0,0,.55)}
-  .work[data-step="2"] .stage{min-height:0;padding:8px}
-  .work[data-step="3"] .pv{display:none}
-}
+.bigbtn{min-height:60px;font-size:1.08rem;padding:10px 16px}
+.warn{margin:0;padding:10px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn-ink);font-weight:700}
+
+/* 第 2 步：預覽＋工具列 */
+.editor{display:grid;gap:8px;margin-top:8px}
+@media (min-width:760px){.editor{max-width:900px;margin-inline:auto}}
+.ed-modes{display:flex;justify-content:center}
+.stage{display:grid;place-items:center;height:360px;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 .pvc{display:block;max-width:100%;cursor:grab;border-radius:6px}
 .pvc:active{cursor:grabbing}
-.hint{color:var(--muted);font-size:.88rem}
+.toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.3fr);gap:8px}
+.toolbar .btn{min-height:52px;padding:6px 8px}
+.toolbar .tool[aria-pressed="true"]{background:var(--pick);border-color:var(--pick);color:var(--pick-ink)}
+.toolbar .tool[aria-pressed="true"]::before{content:"✓ "}
+/* 手機打開調整視窗時，版頭、步驟和工具列先收起來，預覽留在視窗上面 */
+@media (max-width:759px){body.sheet-adjust .top,body.sheet-adjust .pt-steps,body.sheet-adjust .stephint,body.sheet-adjust .toolbar{display:none}}
+
+/* 跳出來的視窗 */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;flex-direction:column;gap:12px;max-height:84dvh;overflow:auto;overscroll-behavior:contain;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));background:var(--surface);color:var(--ink);border-top:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.32)}
+.sheet.side{max-height:56dvh}
+.sheet.swipe{touch-action:pan-y}
+.sheet.swipe::before{content:"";display:block;flex:none;width:40px;height:5px;border-radius:3px;background:var(--line-2);align-self:center;margin:-6px 0 -2px}
+.sheet.enter{animation:sheetUp .22s ease-out}
+@keyframes sheetUp{from{translate:0 100%}}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sheet-head h2{font-size:1.15rem}
+.sheet-head .seg{flex-wrap:nowrap}
+.sheet-body{display:grid;gap:12px}
+.btn.soft{background:var(--surface-2);border-color:var(--surface-2);flex:none}
+.srow{display:grid;grid-template-columns:3.6em minmax(0,1fr);align-items:center;gap:10px}
+.srow > b{font-size:.95rem}
 .range{display:flex;align-items:center;gap:10px}
 .range input[type=range]{flex:1;min-width:0;height:44px;accent-color:var(--pick)}
 .range output{min-width:2.4em;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
-.zoom .btn{min-height:44px;padding:6px 12px;flex:none}
-.ctl{display:grid;gap:16px;align-content:start;min-width:0}
-.ctl .grp{display:grid;gap:6px}
-.ctl .grp > b,.ctl .grp > label > b{font-size:.95rem}
-.ctl input[type=text]{max-width:320px}
+.scrim{position:fixed;inset:0;z-index:39;background:rgba(10,12,10,.5)}
+.toc{display:flex;flex-wrap:wrap;gap:6px}
+@media (min-width:760px){
+  .sheet{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 48px);border:1px solid var(--line);border-radius:14px;padding-bottom:16px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+  .sheet.enter{animation:none}
+  .sheet.side{left:auto;right:16px;top:80px;bottom:16px;transform:none;width:360px;max-height:none}
+  body.sheet-adjust .main{padding-right:392px}
+}
+@media (min-width:760px) and (max-height:500px){.sheet.side{top:16px}}
+@media (prefers-reduced-motion:reduce){.sheet.enter{animation:none}}
+
+/* 第 3 步 */
+.dl{display:grid;gap:14px;max-width:640px;margin:10px auto 0}
+.dl input[type=text]{max-width:320px}
 .facts{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0}
 .facts dt{color:var(--muted)}
 .facts dd{margin:0;font-weight:700}
-.thumb svg{display:block;width:100%;max-width:360px;max-height:220px;height:auto;margin:0 auto}
-/* 用鏡頭拍 */
-.sheet{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:auto 1fr auto;background:#111;color:#fff}
-.sheet-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--brand)}
-.sheet-bar b{margin-right:auto;font-size:1.05rem}
-.sheet-v{display:grid;place-items:center;min-height:0;overflow:hidden}
-.sheet-v video{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;background:#000}
-.sheet-v video.mirror{transform:scaleX(-1)}
-.sheet-foot{display:grid;gap:8px;justify-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
-.sheet-foot .row{justify-content:center}
-.sheet-foot .msg.bad{color:#ffb08a}
+.out-in{display:grid;gap:10px}
+@media (min-width:520px){.out-in{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);align-items:center}}
+.thumb svg{display:block;width:100%;max-width:360px;max-height:180px;height:auto;margin:0 auto}
+
+/* 拍攝照片 */
+.cam{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:auto 1fr auto;background:#111;color:#fff}
+.cam-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--brand)}
+.cam-bar b{margin-right:auto;font-size:1.05rem}
+.cam-v{display:grid;place-items:center;min-height:0;overflow:hidden}
+.cam-v video{width:100%;height:100%;object-fit:contain;background:#000}
+.cam-v video.mirror{transform:scaleX(-1)}
+.cam-foot{display:grid;gap:8px;justify-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.cam-foot .row{justify-content:center}
+.cam-foot .msg.bad{color:#ffb08a}
 .shutter{min-width:200px}
-/* 怎麼用 */
-.dlg{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(10,12,10,.55)}
-.dlg-in{width:min(680px,100%);max-height:calc(100vh - 32px);overflow:auto;display:grid;gap:12px;padding:16px;border-radius:var(--r);background:var(--bg);border:1px solid var(--line)}
-.dlg-top{justify-content:space-between}
-.dlg-top h2{font-size:1.3rem}
-@media (max-width:600px){.dlg{place-items:end stretch;padding:0}.dlg-in{width:100%;max-height:88vh;border-radius:16px 16px 0 0}}
-.warn{margin:0;padding:10px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn-ink);font-weight:700}
 
 </style>
 </head>
@@ -282,7 +309,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
 /* ===== 照片雷雕：拍照或選照片 → 裁成形狀 → 轉成雷射刻得出來的點點 → 下載雷雕檔（SVG：照片雕刻＋紅色切割線） =====
    照片只在這台電腦處理，不上傳、不存檔；記住的只有形狀、大小這些選項。 */
 (() => {
-  const VERSION = "0.1.2";
+  const VERSION = "0.2.0";
 
   /* ---------- 小工具 ---------- */
   function h(tag, attrs, ...kids) {
@@ -302,6 +329,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
     set(k, v) { try { localStorage.setItem("photo:" + k, JSON.stringify(v)); } catch (e) { /* 存不了不影響使用 */ } }
   };
   const f2 = n => String(Math.round(n * 100) / 100);
+  const mm1 = n => String(Math.round(n * 10) / 10);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const canvas = (w, hh) => { const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(hh)); return c; };
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
@@ -322,11 +350,11 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   }
 
   /* ---------- 選項 ---------- */
-  const KINDS = { charm: "吊飾", stand: "立牌", plain: "只有圖" };
+  const KINDS = { charm: "吊飾", stand: "立牌", plain: "純圖案" };
   const SHAPES = { circle: "圓形", heart: "愛心", square: "方形", rect: "長方形" };
   const SHAPES_FOR = { charm: ["circle", "heart", "square"], stand: ["rect", "square", "circle"], plain: ["circle", "heart", "square", "rect"] };
   const SIZES = [40, 50, 60, 80, 100];
-  const STYLES = { dots: "點點（細緻）", clean: "點點（清爽）", bw: "黑白（剪影）", gray: "灰階（給 Beam Studio 轉）" };
+  const STYLES = { dots: "點陣（細緻）", clean: "點陣（清晰）", bw: "黑白（剪影）", gray: "灰階（由 Beam Studio 轉換）" };
   const DEF = { kind: "charm", shape: "circle", size: 50, orient: "portrait", bright: 58, contrast: 55, fade: false, frame: false, style: "dots", dpi: 250, board: 3 };
   const O = Object.assign({}, DEF, store.get("opts", {}));
   if (!KINDS[O.kind]) O.kind = DEF.kind;
@@ -410,7 +438,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
     if (!file) return;
     const url = URL.createObjectURL(file), img = new Image();
     img.onload = () => { URL.revokeObjectURL(url); setImage(img, img.naturalWidth, img.naturalHeight, false); };
-    img.onerror = () => { URL.revokeObjectURL(url); say(startMsg, "這張照片打不開，請換一張 JPG 或 PNG 的照片。", true); };
+    img.onerror = () => { URL.revokeObjectURL(url); say(startMsg, "無法開啟這張照片，請改用 JPG 或 PNG 格式。", true); };
     img.src = url;
   }
   /* 試刻卡：10 格灰階＋漸層＋圓球，第一次刻新木板時先刻這張，看哪個亮度最好 */
@@ -428,8 +456,8 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
     x.fillStyle = gr; x.fillRect(gx, 420, N - 2 * gx, 90);
     const rg = x.createRadialGradient(330, 610, 20, 420, 690, 190); rg.addColorStop(0, "#fff"); rg.addColorStop(0.6, "#888"); rg.addColorStop(1, "#111");
     x.fillStyle = rg; x.beginPath(); x.arc(420, 690, 170, 0, Math.PI * 2); x.fill();
-    x.fillStyle = "#000"; x.font = "bold 46px sans-serif"; x.textAlign = "left"; x.fillText("試刻卡", 640, 650); x.font = "34px sans-serif"; x.fillText("看第幾格", 640, 710); x.fillText("最像原本", 640, 755);
-    O.kind = "plain"; O.shape = "square"; O.size = 50; save(); syncControls();
+    x.fillStyle = "#000"; x.font = "bold 46px sans-serif"; x.textAlign = "left"; x.fillText("試刻卡", 640, 650); x.font = "34px sans-serif"; x.fillText("比對各格", 640, 710); x.fillText("的深淺", 640, 755);
+    O.kind = "plain"; O.shape = "square"; O.size = 50; save();
     setImage(c, N, N, true);
   }
 
@@ -521,21 +549,39 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   }
 
   /* ---------- 預覽 ---------- */
-  const cv = h("canvas", { class: "pvc", tabindex: "0", role: "img", "aria-label": "預覽：拖曳可以移動照片" });
+  const cv = h("canvas", { class: "pvc", tabindex: "0", role: "img", "aria-label": "預覽：拖曳可移動照片" });
+  const stageEl = h("div", { class: "stage" }, cv);
   let mode = "wood", rafId = 0, quickMode = false, last = null, lastWood = null;
   function schedule(q) { quickMode = !!q; if (rafId) return; rafId = requestAnimationFrame(() => { rafId = 0; drawPreview(); }); }
-  const MQ_STICKY = window.matchMedia ? matchMedia("(max-width: 899px) and (orientation: portrait), (max-width: 639px)") : null;
-  let tallH = innerHeight, lastW = innerWidth;
   function stageSize(G) {
-    const sticky = step === 2 && MQ_STICKY && MQ_STICKY.matches, wrap = cv.parentElement;
-    const avail = Math.max(200, Math.min(560, (wrap ? wrap.clientWidth : 360) - (sticky ? 16 : 24)));
-    const maxH = sticky ? Math.max(150, tallH * 0.3) : Math.max(240, Math.min(560, innerHeight * 0.62));
-    let w = avail, hh = w * G.H / G.W;
-    if (hh > maxH) { hh = maxH; w = hh * G.W / G.H; }
+    const cw = Math.max(100, stageEl.clientWidth - 16), ch = Math.max(100, stageEl.clientHeight - 16);
+    let w = cw, hh = w * G.H / G.W;
+    if (hh > ch) { hh = ch; w = hh * G.W / G.H; }
     return { w: Math.round(w), h: Math.round(hh) };
   }
+  /* 雕刻後的樣子：點的地方用燒焦的顏色，其他是木頭的顏色和紋路 */
+  function woodOf(G, dpi) {
+    const R = compute(G, dpi);
+    const full = maskOf(R.nx, R.ny, R.path, 0, G.hole ? [{ x: G.hole.x * R.ppm, y: G.hole.y * R.ppm, r: G.hole.r * R.ppm }] : null);
+    const wc = canvas(R.nx, R.ny), wx = wc.getContext("2d"), im = wx.createImageData(R.nx, R.ny), px = im.data;
+    let rows = 0;
+    for (let y = 0; y < R.ny; y++) {
+      let any = false;
+      for (let x = 0; x < R.nx; x++) {
+        const i = y * R.nx + x, j = i * 4;
+        if (!full[i]) { px[j + 3] = 0; continue; }
+        const grain = 9 * Math.sin(y / R.ppm * 0.9 + 2.2 * Math.sin(x / R.ppm * 0.11)) + 4 * Math.sin(y / R.ppm * 3.1);
+        if (R.bits[i]) { any = true; px[j] = 74 + grain * 0.3; px[j + 1] = 45 + grain * 0.2; px[j + 2] = 24; }
+        else { px[j] = 232 + grain; px[j + 1] = 203 + grain; px[j + 2] = 158 + grain * 0.8; }
+        px[j + 3] = 255;
+      }
+      if (any) rows++;
+    }
+    wx.putImageData(im, 0, 0);
+    return { wc, rowsFrac: rows / R.ny };
+  }
   function drawPreview() {
-    if (!IMG || step === 1) return;
+    if (!IMG || step !== 2) return;
     const G = geom(), sz = stageSize(G), dpr = Math.min(2, devicePixelRatio || 1);
     cv.style.width = sz.w + "px"; cv.style.height = sz.h + "px"; cv.width = Math.round(sz.w * dpr); cv.height = Math.round(sz.h * dpr);
     const x = cv.getContext("2d"), s = cv.width / G.W;
@@ -550,25 +596,12 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
     } else {
       /* 預覽用和下載一樣的解析度（太大就降一點），拖曳時先用粗的 */
       const dpi = quickMode ? Math.min(O.dpi, 110) : Math.min(O.dpi, 1400 / G.W * 25.4);
-      const R = compute(G, dpi);
-      const full = maskOf(R.nx, R.ny, R.path, 0, G.hole ? [{ x: G.hole.x * R.ppm, y: G.hole.y * R.ppm, r: G.hole.r * R.ppm }] : null);
-      const wc = canvas(R.nx, R.ny), wx = wc.getContext("2d"), im = wx.createImageData(R.nx, R.ny), px = im.data;
-      for (let y = 0; y < R.ny; y++) for (let xx = 0; xx < R.nx; xx++) {
-        const i = y * R.nx + xx, j = i * 4;
-        if (!full[i]) { px[j + 3] = 0; continue; }
-        const grain = 9 * Math.sin(y / R.ppm * 0.9 + 2.2 * Math.sin(xx / R.ppm * 0.11)) + 4 * Math.sin(y / R.ppm * 3.1);
-        if (R.bits[i]) { px[j] = 74 + grain * 0.3; px[j + 1] = 45 + grain * 0.2; px[j + 2] = 24; }
-        else { px[j] = 232 + grain; px[j + 1] = 203 + grain; px[j + 2] = 158 + grain * 0.8; }
-        px[j + 3] = 255;
-      }
-      wx.putImageData(im, 0, 0); lastWood = wc;
+      const Wd = woodOf(G, dpi); lastWood = Wd.wc; if (!quickMode) last = { rowsFrac: Wd.rowsFrac };
       x.save(); x.shadowColor = "rgba(0,0,0,.28)"; x.shadowBlur = 10 * dpr; x.shadowOffsetY = 3 * dpr;
-      x.imageSmoothingEnabled = true; x.imageSmoothingQuality = "high"; x.drawImage(wc, 0, 0, cv.width, cv.height); x.restore();
-      if (!quickMode) { let rows = 0; for (let y = 0; y < R.ny; y++) { for (let xx = 0; xx < R.nx; xx++) if (R.bits[y * R.nx + xx]) { rows++; break; } } last = { rowsFrac: rows / R.ny }; }
+      x.imageSmoothingEnabled = true; x.imageSmoothingQuality = "high"; x.drawImage(Wd.wc, 0, 0, cv.width, cv.height); x.restore();
     }
-    if (!quickMode) updateFacts();
   }
-  function syncZoom() { if (zoomIn) zoomIn.value = String(Math.round(crop.z * 100)); }
+  function syncZoom() { const z = sheetEl.querySelector("input[data-zoom]"); if (z) z.value = String(Math.round(crop.z * 100)); }
   function pan(dx, dy) { const G = geom(), r = cropRect(G), k = r.sw / (parseFloat(cv.style.width) || 1); crop.cx -= dx * k; crop.cy -= dy * k; }
   const ptrs = new Map(); let pinch = null, wheelT = 0;
   const pdist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
@@ -588,10 +621,8 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
     else if (e.key === "+" || e.key === "=") { crop.z = clamp(crop.z * 1.1, 1, 6); syncZoom(); schedule(false); }
     else if (e.key === "-") { crop.z = clamp(crop.z / 1.1, 1, 6); syncZoom(); schedule(false); }
   });
-  addEventListener("resize", () => {
-    if (innerWidth !== lastW) { lastW = innerWidth; tallH = innerHeight; schedule(false); }
-    else if (Math.abs(innerHeight - tallH) > 150) { tallH = innerHeight; schedule(false); }
-  });
+  if ("ResizeObserver" in window) new ResizeObserver(() => schedule(false)).observe(stageEl);
+  addEventListener("resize", () => { layoutEditor(); schedule(false); });
 
   /* ---------- 檔案 ---------- */
   const dPoly = (pts, ox, oy) => "M" + pts.map(([x, y]) => f2(x + ox) + " " + f2(y + oy)).join("L") + "Z";
@@ -642,13 +673,13 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   }
   let busy = false;
   function doDownload(kind) {
-    if (busy || !IMG) return; busy = true; say(dlMsg, "準備檔案中…");
+    if (busy || !IMG) return; busy = true; say(dlMsg, "正在產生檔案…");
     setTimeout(() => {
       try {
         const G = geom(), c = exportCanvas(G);
-        if (kind === "png") c.toBlob(b => { busy = false; if (!b) return say(dlMsg, "做檔案時出了問題，請再按一次。", true); const n = fileName("png"); download(n, b); say(dlMsg, "已下載：" + n); }, "image/png");
-        else { const n = fileName("svg"); download(n, new Blob([buildSVG(G, c.toDataURL("image/png"))], { type: "image/svg+xml" })); busy = false; say(dlMsg, "已下載：" + n + "　下載好了就交給老師。"); }
-      } catch (e) { busy = false; say(dlMsg, "做檔案時出了問題：" + e.message, true); }
+        if (kind === "png") c.toBlob(b => { busy = false; if (!b) return say(dlMsg, "產生檔案時發生問題，請再試一次。", true); const n = fileName("png"); download(n, b); say(dlMsg, "已下載：" + n); }, "image/png");
+        else { const n = fileName("svg"); download(n, new Blob([buildSVG(G, c.toDataURL("image/png"))], { type: "image/svg+xml" })); busy = false; say(dlMsg, "已下載：" + n + "。請交由老師處理。" + (isPhone ? "（iPhone：「檔案」App 的「下載項目」；Android：「下載」資料夾）" : "")); }
+      } catch (e) { busy = false; say(dlMsg, "產生檔案時發生問題：" + e.message, true); }
     }, 30);
   }
   function estimate(G) {
@@ -664,210 +695,299 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   const root = document.getElementById("app");
   const say = (el, text, bad) => { el.textContent = text; el.className = bad ? "msg bad" : "msg"; };
   let step = 1;
+  const mq = q => (window.matchMedia ? matchMedia(q) : { matches: false });
+  const MQ_WIDE = mq("(min-width: 760px)"), MQ_TOUCH = mq("(max-width: 759px), (any-pointer: coarse)");
+  const reduced = () => mq("(prefers-reduced-motion: reduce)").matches;
+  const inApp = /\bLine\//i.test(navigator.userAgent) || /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+  const isPhone = mq("(pointer: coarse)").matches;
   const seg = (label, items, get, set) => {
     const el = h("div", { class: "seg", role: "group", "aria-label": label });
     el.redraw = () => el.replaceChildren(...items().map(([v, t]) => h("button", { type: "button", "aria-pressed": String(get() === v), onclick: () => { set(v); el.redraw(); } }, t)));
     el.redraw(); return el;
   };
   const changed = () => { save(); schedule(false); };
-  const grp = (title, ...kids) => h("div", { class: "grp" }, h("b", null, title), ...kids);
-  function range(id, label, key) {
-    const out = h("output", { for: id }, String(O[key]));
-    const inp = h("input", { id, type: "range", min: "0", max: "100", step: "1", value: String(O[key]),
+  const srow = (label, ...kids) => h("div", { class: "srow" }, h("b", null, label), h("div", { class: "sval" }, ...kids));
+  function slider(label, key) {
+    const out = h("output", null, String(O[key]));
+    const inp = h("input", { type: "range", min: "0", max: "100", step: "1", value: String(O[key]), "aria-label": label,
       oninput: e => { O[key] = +e.target.value; out.textContent = O[key]; schedule(true); }, onchange: () => { save(); schedule(false); } });
-    inp.sync = () => { inp.value = String(O[key]); out.textContent = O[key]; }; ranges.push(inp);
-    return h("div", { class: "grp" }, h("label", { for: id }, h("b", null, label)), h("div", { class: "range" }, inp, out));
+    return srow(label, h("div", { class: "range" }, inp, out));
   }
-  const ranges = [];
   const check = (label, key) => h("label", { class: "check" }, h("input", { type: "checkbox", checked: O[key], onchange: e => { O[key] = e.target.checked; changed(); } }), label);
+  const MODES = [["wood", "雕刻預覽"], ["photo", "照片與切割線"]];
+  const TOOLS = [["pos", "位置"], ["style", "款式"], ["tone", "明暗"]];
 
-  /* 第 1 步：選照片 */
+  /* ---------- 跳出來的視窗：手機從下面出來，可以往下滑關掉；電腦、平板在右邊或中間，按「關閉」 ---------- */
+  const sheetEl = h("div", { class: "sheet", role: "dialog", hidden: true });
+  const scrim = h("div", { class: "scrim", hidden: true, onclick: () => closeSheet() });
+  let sheet = null, sheetPushed = false, sheetFocus = null;
+  function openSheet(kind, tab) {
+    const first = !sheet;
+    if (first) { sheetFocus = document.activeElement; try { history.pushState({ photoLayer: "sheet" }, ""); sheetPushed = true; } catch (e) { sheetPushed = false; } }
+    sheet = { kind, tab: tab || null };
+    const adjust = kind === "adjust";  /* 調整的視窗不蓋住預覽：手機在下面、電腦在右邊，預覽照樣可以拖曳 */
+    sheetEl.classList.toggle("side", adjust); sheetEl.classList.toggle("swipe", MQ_TOUCH.matches);
+    sheetEl.setAttribute("aria-modal", adjust ? "false" : "true");
+    document.body.classList.add("sheet-open"); document.body.classList.toggle("sheet-adjust", adjust);
+    scrim.hidden = adjust;
+    renderSheet(); sheetEl.hidden = false;
+    if (first && !reduced()) { sheetEl.classList.remove("enter"); void sheetEl.offsetWidth; sheetEl.classList.add("enter"); }
+    toolbarRedraw();
+    requestAnimationFrame(() => { layoutEditor(); if (first) { const c = sheetEl.querySelector("[data-close]"); if (c) c.focus({ preventScroll: true }); } });
+  }
+  function closeSheet(fromPop) {
+    if (!sheet) return;
+    sheet = null; sheetEl.hidden = true; scrim.hidden = true;
+    sheetEl.classList.remove("enter"); sheetEl.style.translate = ""; sheetEl.style.transition = "";
+    document.body.classList.remove("sheet-open", "sheet-adjust");
+    toolbarRedraw(); requestAnimationFrame(layoutEditor);
+    if (!fromPop && sheetPushed) { sheetPushed = false; history.back(); } else sheetPushed = false;
+    if (sheetFocus && document.contains(sheetFocus) && !sheetFocus.closest("[hidden]")) sheetFocus.focus({ preventScroll: true });
+  }
+  function renderSheet() {
+    if (!sheet) return;
+    const closeBtn = h("button", { type: "button", class: "btn soft", "data-close": "", onclick: () => closeSheet() }, "關閉");
+    let head, body, label;
+    if (sheet.kind === "adjust") {
+      if (!sheet.tab) sheet.tab = "pos";
+      label = "調整：" + TOOLS.find(t => t[0] === sheet.tab)[1];
+      head = h("div", { class: "sheet-head" }, seg("設定項目", () => TOOLS, () => sheet.tab, v => { sheet.tab = v; renderSheet(); toolbarRedraw(); requestAnimationFrame(layoutEditor); }), closeBtn);
+      body = TOOL_BODY[sheet.tab]();
+    } else {
+      const [title, make] = INFO[sheet.kind]; label = title;
+      head = h("div", { class: "sheet-head" }, h("h2", null, title), closeBtn);
+      body = make();
+    }
+    sheetEl.setAttribute("aria-label", label);
+    sheetEl.replaceChildren(head, h("div", { class: "sheet-body" }, ...body));
+  }
+  const TOOL_BODY = {
+    pos: () => [
+      srow("縮放", h("div", { class: "range" }, h("input", { type: "range", min: "100", max: "600", step: "1", value: String(Math.round(crop.z * 100)), "data-zoom": "", "aria-label": "縮放",
+        oninput: e => { crop.z = +e.target.value / 100; schedule(true); }, onchange: () => schedule(false) }))),
+      srow("旋轉", h("button", { type: "button", class: "btn", onclick: rotateImage }, "旋轉 90°")),
+      h("p", { class: "note" }, "在預覽畫面上拖曳可移動照片；兩指或滑鼠滾輪可縮放。")],
+    style: () => [
+      srow("類型", seg("類型", () => Object.entries(KINDS), () => O.kind, v => { O.kind = v; if (!SHAPES_FOR[v].includes(O.shape)) O.shape = SHAPES_FOR[v][0]; changed(); renderSheet(); requestAnimationFrame(layoutEditor); })),
+      srow("形狀", seg("形狀", () => SHAPES_FOR[O.kind].map(k => [k, SHAPES[k]]), () => O.shape, v => { O.shape = v; changed(); renderSheet(); requestAnimationFrame(layoutEditor); })),
+      O.shape === "rect" ? srow("方向", seg("方向", () => [["portrait", "直式"], ["landscape", "橫式"]], () => O.orient, v => { O.orient = v; changed(); })) : null,
+      srow("寬度", seg("寬度（mm）", () => SIZES.map(n => [n, n + " mm"]), () => O.size, v => { O.size = v; changed(); }))],
+    tone: () => [slider("亮度", "bright"), slider("對比", "contrast"), check("邊緣淡化（背景雜亂時使用）", "fade"), check("加上外框", "frame")],
+  };
+  const INFO = {
+    beam: ["Beam Studio 設定", () => {
+      const res = O.dpi === 500 ? "高（500 DPI）" : "中（250 DPI）";
+      return [h("ol", { class: "list" }, ...[
+        "將下載的 SVG 拖入 Beam Studio，匯入方式選擇「依顏色」分層。",
+        `選單「編輯 → 文件設定」，雕刻解析度選擇「${res}」。`,
+        O.style === "gray" ? "點選照片，開啟「漸層」（由 Beam Studio 轉換為點陣）。" : "點選照片，關閉「漸層」（點陣已轉換完成）。",
+        "照片圖層使用「木板 - 雕刻」參數，紅線圖層使用「木板 - 3mm 切割」參數；雕刻圖層置於切割圖層上方，先雕刻再切割。",
+        "首次使用時，先雕刻一片 40 mm 試片：顏色過深時調高亮度，或在 Beam Studio 提高速度。",
+      ].map(t => h("li", null, t)))];
+    }],
+    advanced: ["進階設定", () => {
+      const G = geom(), M = machine();
+      const set = (k, v) => { O[k] = v; save(); refreshSummary(); renderSheet(); };
+      return [
+        srow("點陣", seg("點陣方式", () => Object.entries(STYLES), () => O.style, v => set("style", v))),
+        srow("解析度", seg("解析度", () => [[250, "250 DPI（建議）"], [500, "500 DPI（較精細）"]], () => O.dpi, v => set("dpi", v))),
+        srow("板厚", seg("板厚", () => [[3, "3 mm"], [5, "5 mm"]], () => O.board, v => set("board", v))),
+        h("p", { class: "note" }, O.kind === "stand"
+          ? `底座插槽寬 ${f2(G.base.slotW)} mm${G.base.bump ? `，含 ${f2(G.base.bump)} mm 凸點` : ""}（${M.found ? `取自課程工具箱「機器設定」：${M.name}` : "尚未設定機器，使用預設值"}）。`
+          : "板厚用於立牌的插腳與底座；底座插槽寬度取自課程工具箱的「機器設定」。"),
+        h("div", { class: "row" },
+          h("button", { type: "button", class: "btn", onclick: () => doDownload("png") }, "下載圖片（PNG）"),
+          h("button", { type: "button", class: "btn", onclick: () => { Object.assign(O, { bright: DEF.bright, contrast: DEF.contrast, fade: DEF.fade, frame: DEF.frame, style: DEF.style, dpi: DEF.dpi, board: DEF.board }); save(); refreshSummary(); renderSheet(); } }, "恢復預設值")),
+        h("p", { class: "note" }, "PNG 匯入 Beam Studio 後，需自行設定實際尺寸。")];
+    }],
+    help: ["使用說明", () => helpBody()],
+  };
+  /* 往下滑關掉：和按「關閉」一樣；手指先往哪邊動就算哪邊，橫的不算；裡面捲到一半時往下是捲動 */
+  let drag = null;
+  sheetEl.addEventListener("touchstart", e => {
+    if (!sheetEl.classList.contains("swipe") || e.touches.length !== 1 || e.target.closest("input, textarea, select")) return;
+    for (let q = e.target; q; q = q.parentElement) { if (q.scrollTop > 0) return; if (q === sheetEl) break; }
+    drag = { x0: e.touches[0].clientX, y0: e.touches[0].clientY, t0: Date.now(), dy: 0, lock: 0 };
+  }, { passive: true });
+  sheetEl.addEventListener("touchmove", e => {
+    if (!drag) return;
+    if (e.touches.length !== 1) { dragReset(); drag = null; return; }
+    const mx = e.touches[0].clientX - drag.x0, my = e.touches[0].clientY - drag.y0;
+    if (!drag.lock) { if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; drag.lock = my > Math.abs(mx) ? 1 : -1; }
+    if (drag.lock < 0) return;
+    drag.dy = Math.max(0, my - 8); sheetEl.style.transition = "none"; sheetEl.style.translate = `0 ${drag.dy}px`;
+  }, { passive: true });
+  function dragReset() { sheetEl.style.transition = "translate .2s ease-out"; sheetEl.style.translate = ""; }
+  function dragEnd() {
+    if (!drag) return; const d = drag; drag = null; if (d.lock <= 0) return;
+    const fast = d.dy > 40 && d.dy / (Date.now() - d.t0) > 0.5;
+    if (d.dy > Math.min(120, sheetEl.offsetHeight * 0.3) || fast) {
+      if (reduced()) { closeSheet(); return; }
+      sheetEl.style.transition = "translate .18s ease-out"; sheetEl.style.translate = `0 ${Math.max(innerWidth, innerHeight)}px`;
+      setTimeout(() => closeSheet(), 160);
+    } else dragReset();
+  }
+  sheetEl.addEventListener("touchend", dragEnd); sheetEl.addEventListener("touchcancel", dragEnd);
+  addEventListener("keydown", e => { if (e.key !== "Escape") return; if (camOpen) closeCam(); else if (sheet) closeSheet(); });
+  addEventListener("popstate", () => { if (camOpen) closeCam(true); else if (sheet) closeSheet(true); });
+
+  /* ---------- 第 1 步：照片 ---------- */
   const fileIn = h("input", { type: "file", accept: "image/*", hidden: true, onchange: e => { loadFile(e.target.files[0]); e.target.value = ""; } });
   const startMsg = h("p", { class: "msg", role: "status" });
-  const inApp = /\bLine\//i.test(navigator.userAgent) || /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
-  const isPhone = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+  const footSlot = h("div");
   const s1 = h("section", { class: "start" },
-    inApp ? h("p", { class: "warn" }, "你現在是在 LINE 或 Facebook 裡面打開，可能不能拍照或下載。請點右上角的選單，改用 Chrome 或 Safari 開啟。") : null,
+    inApp ? h("p", { class: "warn" }, "目前在 LINE 或 Facebook 的內建瀏覽器中開啟，可能無法拍照或下載。請由右上角選單改用 Chrome 或 Safari 開啟。") : null,
+    h("p", { class: "lead" }, "拍攝或選擇一張照片。系統會依選擇的形狀裁切，轉換為雷射雕刻用的點陣圖，並產生 SVG 檔。"),
     h("div", { class: "row big" },
-      h("button", { type: "button", class: "btn primary bigbtn", onclick: openCamera }, "用鏡頭拍"),
-      h("button", { type: "button", class: "btn bigbtn", onclick: () => fileIn.click() }, "選一張照片")),
+      h("button", { type: "button", class: "btn primary bigbtn", onclick: openCamera }, "拍攝照片"),
+      h("button", { type: "button", class: "btn bigbtn", onclick: () => fileIn.click() }, "選擇照片")),
     fileIn, startMsg,
-    h("section", { class: "box" }, h("h3", null, "怎麼拍刻起來最清楚"),
-      h("ul", { class: "list" }, h("li", null, "臉拍大一點，大概占照片的一半。"), h("li", null, "背景越簡單越好，站在白牆前面最好。"), h("li", null, "光線要亮，不要背光。"))),
-    h("section", { class: "box" }, h("h3", null, "第一次用新的木板"),
-      h("p", null, "先刻一張試刻卡（10 格灰階），看木頭刻出來的深淺，再決定照片的亮度要調多少。"),
-      h("div", { class: "row" }, h("button", { type: "button", class: "btn", onclick: testCard }, "做試刻卡"))),
-    h("p", { class: "note" }, "照片只在這台電腦處理，不會上傳，也不會存下來。"));
+    h("section", { class: "box" }, h("h3", null, "拍攝建議"),
+      h("ul", { class: "list" }, h("li", null, "臉部約占畫面一半。"), h("li", null, "背景單純，以白牆為佳。"), h("li", null, "光線充足，避免背光。"))),
+    h("section", { class: "box" }, h("h3", null, "試刻卡"),
+      h("p", null, "更換木板時，先雕刻試刻卡（10 階灰階），確認深淺後再調整照片亮度。"),
+      h("div", { class: "row" }, h("button", { type: "button", class: "btn", onclick: testCard }, "產生試刻卡"))),
+    footSlot);
 
-  /* 預覽（第 2、3 步共用） */
-  const zoomIn = h("input", { type: "range", min: "100", max: "600", step: "1", value: "100", "aria-label": "放大", oninput: e => { crop.z = +e.target.value / 100; schedule(true); }, onchange: () => schedule(false) });
-  const modeSeg = seg("預覽方式", () => [["wood", "刻好的樣子"], ["photo", "照片和切割線"]], () => mode, v => { mode = v; schedule(false); });
-  const pv = h("div", { class: "pv" }, modeSeg, h("div", { class: "stage" }, cv));
-  const posGrp = h("div", { class: "grp" }, h("b", null, "照片位置"),
-    h("div", { class: "range zoom" }, h("span", { class: "note" }, "放大"), zoomIn, h("button", { type: "button", class: "btn", onclick: rotateImage }, "轉 90°")),
-    h("p", { class: "hint" }, "在照片上拖曳可以移動；兩指捏合、滑鼠滾輪或滑桿可以放大。"));
+  /* ---------- 第 2 步：調整（預覽占滿畫面，設定在跳出來的視窗） ---------- */
+  const modeSeg = seg("預覽方式", () => MODES, () => mode, v => { mode = v; schedule(false); });
+  const toolbar = h("div", { class: "toolbar" });
+  function toolbarRedraw() {
+    const on = v => !!(sheet && sheet.kind === "adjust" && sheet.tab === v);
+    toolbar.replaceChildren(
+      ...TOOLS.map(([v, t]) => h("button", { type: "button", class: "btn tool", "aria-pressed": String(on(v)), onclick: () => (on(v) ? closeSheet() : openSheet("adjust", v)) }, t)),
+      h("button", { type: "button", class: "btn primary", onclick: () => go(3) }, "下一步 ›"));
+  }
+  const s2 = h("section", { class: "editor" }, h("div", { class: "ed-modes" }, modeSeg), stageEl, toolbar);
+  /* 預覽的高度＝畫面剩下的高度；手機打開設定時，預覽縮到設定視窗上面 */
+  function layoutEditor() {
+    if (step !== 2) return;
+    const top = stageEl.getBoundingClientRect().top, adj = sheet && sheet.kind === "adjust";
+    const reserve = !MQ_WIDE.matches && adj ? sheetEl.offsetHeight + 10 : toolbar.offsetHeight + 16;
+    const hh = innerHeight - top - reserve;
+    const min = MQ_WIDE.matches ? 260 : 140;
+    let px = Math.round(MQ_WIDE.matches ? clamp(hh, min, 720) : Math.max(min, hh));
+    stageEl.style.height = px + "px";
+    const over = document.documentElement.scrollHeight - innerHeight;
+    if (over > 0 && px > min) { px = Math.max(min, px - over); stageEl.style.height = px + "px"; }
+  }
 
-  /* 第 2 步：調整 */
-  let shapeSeg, orientRow;
-  const kindSeg = seg("做成", () => Object.entries(KINDS), () => O.kind, v => { O.kind = v; if (!SHAPES_FOR[v].includes(O.shape)) O.shape = SHAPES_FOR[v][0]; shapeSeg.redraw(); orientRow.hidden = O.shape !== "rect"; changed(); });
-  shapeSeg = seg("形狀", () => SHAPES_FOR[O.kind].map(k => [k, SHAPES[k]]), () => O.shape, v => { O.shape = v; orientRow.hidden = v !== "rect"; changed(); });
-  orientRow = grp("方向", seg("方向", () => [["portrait", "直的"], ["landscape", "橫的"]], () => O.orient, v => { O.orient = v; changed(); }));
-  orientRow.hidden = O.shape !== "rect";
-  const sizeSeg = seg("大小", () => SIZES.map(s => [s, s + " mm"]), () => O.size, v => { O.size = v; changed(); });
-  const c2 = h("section", { class: "ctl" },
-    posGrp, grp("做成", kindSeg), grp("形狀", shapeSeg), orientRow, grp("大小", sizeSeg),
-    range("bright", "亮度（太黑就調高）", "bright"), range("contrast", "對比（灰灰的就調高）", "contrast"),
-    h("div", { class: "grp" }, check("邊緣變淡（背景比較亂的時候用）", "fade"), check("加一圈邊框", "frame")),
-    h("div", { class: "row" }, h("button", { type: "button", class: "btn primary bigbtn", onclick: () => go(3) }, "下一步：下載")));
-
-  /* 第 3 步：下載 */
+  /* ---------- 第 3 步：下載 ---------- */
   const facts = h("dl", { class: "facts" }), thumb = h("div", { class: "thumb" }), dlMsg = h("p", { class: "msg", role: "status" });
-  const nameIn = h("input", { type: "text", id: "who", maxlength: "12", placeholder: "例如：小明", autocomplete: "off" });
-  const howList = h("ol", { class: "list" });
-  const slotNote = h("p", { class: "note" });
-  const c3 = h("section", { class: "ctl" },
-    h("div", { class: "grp" }, h("label", { for: "who" }, h("b", null, "名字（加在檔名上，老師收檔比較好認，可以不填）")), nameIn),
-    h("div", { class: "row" }, h("button", { type: "button", class: "btn primary bigbtn", onclick: () => doDownload("svg") }, "下載雷雕檔")),
+  const nameIn = h("input", { type: "text", id: "who", maxlength: "12", placeholder: "姓名或座號", autocomplete: "off" });
+  const s3 = h("section", { class: "dl" },
+    h("div", { class: "grp" }, h("label", { for: "who" }, h("b", null, "檔名標註（選填）")), nameIn),
+    h("div", { class: "row" }, h("button", { type: "button", class: "btn primary bigbtn", onclick: () => doDownload("svg") }, "下載 SVG")),
     dlMsg,
-    isPhone ? h("p", { class: "note" }, "手機下載的檔案：iPhone 在「檔案」App 的「下載項目」，Android 在「下載」資料夾。可以用 LINE 傳到老師的電腦。") : null,
-    h("section", { class: "box" }, h("h3", null, "會刻出來的東西"), thumb, facts),
-    h("section", { class: "box" }, h("h3", null, "老師：在 Beam Studio 這樣刻"), howList),
-    h("details", { class: "box teacher" }, h("summary", null, h("h3", null, "老師設定")),
-      h("div", { class: "acc-body" },
-        grp("點點的樣子", seg("點點的樣子", () => Object.entries(STYLES), () => O.style, v => { O.style = v; changed(); })),
-        grp("解析度", seg("解析度", () => [[250, "250 DPI（建議）"], [500, "500 DPI（更細，比較久）"]], () => O.dpi, v => { O.dpi = v; changed(); })),
-        grp("板子厚度（立牌的插腳和底座用）", seg("板子厚度", () => [[3, "3 mm"], [5, "5 mm"]], () => O.board, v => { O.board = v; changed(); })),
-        slotNote,
-        h("div", { class: "row" }, h("button", { type: "button", class: "btn", onclick: () => doDownload("png") }, "只下載圖片（PNG）")),
-        h("p", { class: "note" }, "PNG 匯入 Beam Studio 後，要自己把寬度改成實際大小。"))),
-    h("div", { class: "row" }, h("button", { type: "button", class: "btn", onclick: () => go(2) }, "‹ 回去調整")));
-
-  function syncControls() {
-    for (const el of [kindSeg, shapeSeg, sizeSeg]) el.redraw();
-    orientRow.hidden = O.shape !== "rect"; ranges.forEach(r => r.sync());
-  }
-  function updateFacts() {
-    if (!IMG) return;
-    const G = geom(), min = estimate(G), M = machine();
-    const size = O.kind === "stand" ? `立牌 ${f2(G.W)} × ${f2(G.Hfull)} mm＋底座 ${G.base.W} × ${G.base.D} mm` : `${f2(G.W)} × ${f2(G.H)} mm`;
+    h("div", { class: "row" },
+      h("button", { type: "button", class: "btn", onclick: () => openSheet("beam") }, "Beam Studio 設定"),
+      h("button", { type: "button", class: "btn", onclick: () => openSheet("advanced") }, "進階設定")),
+    h("section", { class: "box out" }, h("h3", null, "輸出內容"), h("div", { class: "out-in" }, thumb, facts)));
+  function refreshSummary() {
+    if (!IMG || step !== 3) return;
+    const G = geom(), Wd = woodOf(G, Math.min(O.dpi, 900 / G.W * 25.4)); lastWood = Wd.wc; last = { rowsFrac: Wd.rowsFrac };
+    const min = estimate(G), size = O.kind === "stand" ? `立牌 ${mm1(G.W)} × ${mm1(G.Hfull)} mm＋底座 ${G.base.W} × ${G.base.D} mm` : `${mm1(G.W)} × ${mm1(G.H)} mm`;
     facts.replaceChildren(
-      h("dt", null, "做成"), h("dd", null, `${SHAPES[O.shape]}${KINDS[O.kind]}${G.hole ? "（有吊孔）" : ""}`),
-      h("dt", null, "實際大小"), h("dd", null, size),
-      h("dt", null, "雕刻＋切割"), h("dd", null, `約 ${min} 分鐘（粗估）`),
-      h("dt", null, "12 個人"), h("dd", null, `約 ${Math.round(min * 12)} 分鐘`));
-    slotNote.textContent = O.kind === "stand"
-      ? `底座插槽寬 ${f2(G.base.slotW)} mm${G.base.bump ? `，有 ${f2(G.base.bump)} mm 凸點` : ""}，${M.found ? `用課程工具箱「機器設定」的數字（${M.name}的機器）` : "還沒做機器設定，先用預設值"}。`
-      : "做成立牌時，底座的插槽會用課程工具箱「機器設定」的數字。";
-    /* 縮圖：切割線＋刻好的樣子 */
-    const C = cutPaths(G, 2), wood = lastWood ? lastWood.toDataURL("image/png") : "";
-    thumb.replaceChildren(svgEl(`<svg viewBox="0 0 ${f2(C.W)} ${f2(C.H)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="下載內容的縮圖"><path d="${C.out[0]}${G.hole ? C.out[1] : ""}" fill="#ead2a8" fill-rule="evenodd" stroke="none"/>${G.base ? `<path d="${C.out[C.out.length - 2]}" fill="#ead2a8" stroke="none"/>` : ""}${wood ? `<image x="2" y="2" width="${f2(G.W)}" height="${f2(G.H)}" preserveAspectRatio="none" href="${wood}"/>` : ""}<g fill="none" stroke="#e0301e" stroke-width="0.5">${C.out.map(d => `<path d="${d}"/>`).join("")}</g></svg>`));
-    const res = O.dpi === 500 ? "高（500 DPI）" : "中（250 DPI）";
-    howList.replaceChildren(...[
-      "把下載的 SVG 拖進 Beam Studio，匯入時選「依顏色」分層。",
-      `選單「編輯 → 文件設定」，雕刻解析度選「${res}」。`,
-      O.style === "gray" ? "點照片，把「漸層」打開（灰階交給 Beam Studio 轉成點點）。" : "點照片，把「漸層」關掉（點點已經轉好了）。",
-      "照片的圖層用「木板 - 雕刻」，紅線的圖層用「木板 - 3mm 切割」；雕刻的圖層要放在切割上面，先刻再切。",
-      "第一次先刻一張 40 mm 的試試看：太黑就把網頁的亮度調高，或在 Beam Studio 把速度加快。",
-    ].map(t => h("li", null, t)));
+      h("dt", null, "類型"), h("dd", null, `${SHAPES[O.shape]}${KINDS[O.kind]}${G.hole ? "（含吊孔）" : ""}`),
+      h("dt", null, "尺寸"), h("dd", null, size),
+      h("dt", null, "預估時間"), h("dd", null, `約 ${min} 分鐘（雕刻與切割，粗估）`),
+      h("dt", null, "12 人合計"), h("dd", null, `約 ${Math.round(min * 12)} 分鐘`));
+    const C = cutPaths(G, 2), wood = lastWood.toDataURL("image/png");
+    thumb.replaceChildren(svgEl(`<svg viewBox="0 0 ${f2(C.W)} ${f2(C.H)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="輸出內容縮圖"><path d="${C.out[0]}${G.hole ? C.out[1] : ""}" fill="#ead2a8" fill-rule="evenodd" stroke="none"/>${G.base ? `<path d="${C.out[C.out.length - 2]}" fill="#ead2a8" stroke="none"/>` : ""}<image x="2" y="2" width="${f2(G.W)}" height="${f2(G.H)}" preserveAspectRatio="none" href="${wood}"/><g fill="none" stroke="#e0301e" stroke-width="0.5">${C.out.map(d => `<path d="${d}"/>`).join("")}</g></svg>`));
   }
 
-  /* 頁首、步驟、頁尾 */
+  /* ---------- 步驟、頁尾 ---------- */
   const stepNav = h("nav", { class: "pt-steps", "aria-label": "步驟" });
-  const stepHint = h("p", { class: "note", role: "status" });
+  const stepHint = h("p", { class: "note stephint", role: "status" });
   function drawSteps() {
     stepNav.replaceChildren(...[[1, "照片"], [2, "調整"], [3, "下載"]].map(([n, t]) => h("button", {
       type: "button", "aria-current": step === n ? "step" : null, "aria-disabled": n > 1 && !IMG ? "true" : null,
-      onclick: () => { if (n > 1 && !IMG) { stepHint.textContent = "先拍照或選一張照片。"; return; } stepHint.textContent = ""; go(n); }
+      onclick: () => { if (n > 1 && !IMG) { stepHint.textContent = "請先拍攝或選擇照片。"; return; } stepHint.textContent = ""; go(n); }
     }, h("i", null, n), t)));
   }
-  const work = h("div", { class: "work", hidden: true }, pv, h("div", null, c2, c3));
   function go(n) {
-    step = n; s1.hidden = n !== 1; work.hidden = n === 1; c2.hidden = n !== 2; c3.hidden = n !== 3; work.dataset.step = String(n);
+    if (sheet) closeSheet();
+    step = n; document.body.dataset.step = String(n);
+    s1.hidden = n !== 1; s2.hidden = n !== 2; s3.hidden = n !== 3;
     drawSteps(); scrollTo(0, 0);
-    if (n > 1) requestAnimationFrame(() => schedule(false));
+    if (n === 2) requestAnimationFrame(() => { layoutEditor(); schedule(false); });
+    if (n === 3) refreshSummary();
   }
   function foot() {
-    const dark = (themeGet() || (window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")) === "dark";
+    const dark = (themeGet() || (mq("(prefers-color-scheme: light)").matches ? "light" : "dark")) === "dark";
     return h("footer", { class: "foot" },
-      h("span", null, "照片只在這台電腦處理，不會上傳，也不會存下來。"),
-      h("span", null, `v${VERSION} 試用版・© 2026 Ken Chen・有問題請用 LINE 告訴陳老師`),
-      h("div", null, h("button", { type: "button", class: "chip", onclick: () => { themeSet(dark ? "light" : "dark"); applyTheme(); footSlot.replaceChildren(foot()); schedule(false); } }, dark ? "換成大地色" : "換成深色")));
+      h("span", null, "照片僅在本機處理，不會上傳或儲存。"),
+      h("span", null, `v${VERSION} 試用版・© 2026 Ken Chen・問題回報：LINE 聯絡陳老師`),
+      h("div", null, h("button", { type: "button", class: "chip", onclick: () => { themeSet(dark ? "light" : "dark"); applyTheme(); footSlot.replaceChildren(foot()); schedule(false); } }, dark ? "切換為大地色" : "切換為深色")));
   }
-  const footSlot = h("div");
 
-  /* ---------- 用鏡頭拍 ---------- */
-  let camOpen = false;
+  /* ---------- 拍攝照片 ---------- */
+  let camOpen = false, closeCam = () => {};
   async function openCamera() {
     if (camOpen) return;
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { say(startMsg, "這個瀏覽器不能直接用鏡頭，請改用「選一張照片」。", true); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { say(startMsg, "此瀏覽器無法直接使用鏡頭，請改用「選擇照片」。", true); return; }
     let facing = "user", stream = null;
-    const video = h("video", { autoplay: true, playsinline: true, muted: true });
-    const camMsg = h("p", { class: "msg", role: "status" });
+    const video = h("video", { autoplay: true, playsinline: true, muted: true }), camMsg = h("p", { class: "msg", role: "status" });
     const start = async () => {
       if (stream) stream.getTracks().forEach(t => t.stop());
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
       video.srcObject = stream; video.classList.toggle("mirror", facing === "user");
     };
-    try { await start(); } catch (e) { say(startMsg, "鏡頭打不開。請按「允許」使用鏡頭，或改用「選一張照片」。在 LINE 裡面打開的話，請改用 Chrome。", true); return; }
+    try { await start(); } catch (e) { say(startMsg, "無法開啟鏡頭。請允許使用鏡頭，或改用「選擇照片」；若在 LINE 內開啟，請改用 Chrome 或 Safari。", true); return; }
     camOpen = true;
+    let pushed = false; try { history.pushState({ photoLayer: "cam" }, ""); pushed = true; } catch (e) { pushed = false; }
     const last0 = document.activeElement;
-    const close = () => { if (stream) stream.getTracks().forEach(t => t.stop()); sheet.remove(); camOpen = false; removeEventListener("keydown", onKey); if (last0 && last0.focus) last0.focus(); };
-    const shoot = () => {
-      if (!video.videoWidth) { say(camMsg, "鏡頭還在準備，等一下再按。", true); return; }
-      const c = canvas(video.videoWidth, video.videoHeight); c.getContext("2d").drawImage(video, 0, 0);
-      close(); setImage(c, c.width, c.height, false);
+    closeCam = fromPop => {
+      if (!camOpen) return; camOpen = false;
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      layer.remove(); if (!fromPop && pushed) history.back();
+      if (last0 && last0.focus && document.contains(last0)) last0.focus();
     };
-    const onKey = e => { if (e.key === "Escape") close(); };
-    addEventListener("keydown", onKey);
-    const sheet = h("div", { class: "sheet", role: "dialog", "aria-modal": "true", "aria-label": "用鏡頭拍" },
-      h("div", { class: "sheet-bar" }, h("b", null, "用鏡頭拍"), h("button", { type: "button", class: "hbtn", onclick: close }, "取消")),
-      h("div", { class: "sheet-v" }, video),
-      h("div", { class: "sheet-foot" }, camMsg,
-        h("div", { class: "row" },
-          h("button", { type: "button", class: "hbtn", onclick: async () => { facing = facing === "user" ? "environment" : "user"; try { await start(); } catch (e) { say(camMsg, "沒有另一個鏡頭。", true); facing = "user"; try { await start(); } catch (e2) { /* 原本的鏡頭也打不開就算了 */ } } } }, "換鏡頭"),
-          h("button", { type: "button", class: "btn primary bigbtn shutter", onclick: shoot }, "拍照"))));
-    document.body.append(sheet);
-    sheet.querySelector(".shutter").focus();
+    const shoot = () => {
+      if (!video.videoWidth) { say(camMsg, "鏡頭尚未就緒，請稍候再試。", true); return; }
+      const c = canvas(video.videoWidth, video.videoHeight); c.getContext("2d").drawImage(video, 0, 0);
+      closeCam(); setImage(c, c.width, c.height, false);
+    };
+    const switchCam = async () => { facing = facing === "user" ? "environment" : "user"; try { await start(); } catch (e) { say(camMsg, "沒有其他鏡頭。", true); facing = "user"; try { await start(); } catch (e2) { /* 原本的鏡頭也無法開啟 */ } } };
+    const layer = h("div", { class: "cam", role: "dialog", "aria-modal": "true", "aria-label": "拍攝照片" },
+      h("div", { class: "cam-bar" }, h("b", null, "拍攝照片"), h("button", { type: "button", class: "hbtn", onclick: () => closeCam() }, "取消")),
+      h("div", { class: "cam-v" }, video),
+      h("div", { class: "cam-foot" }, camMsg,
+        h("div", { class: "row" }, h("button", { type: "button", class: "hbtn", onclick: switchCam }, "切換鏡頭"), h("button", { type: "button", class: "btn primary bigbtn shutter", onclick: shoot }, "拍攝"))));
+    document.body.append(layer);
+    layer.querySelector(".shutter").focus();
   }
 
-  /* ---------- 怎麼用 ---------- */
+  /* ---------- 使用說明 ---------- */
   const HELP = [
-    ["選照片", "「用鏡頭拍」用 Chromebook 或手機的鏡頭；「選一張照片」從電腦或手機裡挑。臉拍大一點、背景簡單、光線亮，刻出來最清楚。"],
-    ["移動和放大", "在照片上拖曳可以移動；兩指捏合、滑鼠滾輪或「放大」滑桿可以放大。切到「照片和切割線」，紅線裡面就是會切下來的形狀。"],
-    ["調亮度", "看「刻好的樣子」：臉太黑就把亮度調高；整張灰灰的就把對比調高。背景太亂可以勾「邊緣變淡」。"],
-    ["下載", "按「下載雷雕檔」，檔案裡有照片（雕刻）和紅色的切割線，交給老師用 Beam Studio 刻。"],
-    ["給老師", "雕刻解析度選「中」（250 DPI），照片的「漸層」關掉。換一種木板時，先刻一張試刻卡或 40 mm 小張，找出最適合的亮度。"],
+    ["選擇照片", "「拍攝照片」使用 Chromebook 或手機的鏡頭；「選擇照片」從裝置中選取。臉部約占畫面一半、背景單純、光線充足時，雕刻效果最清楚。"],
+    ["調整位置", "在預覽畫面上拖曳可移動照片；兩指、滑鼠滾輪或「位置」中的縮放可調整大小。切換為「照片與切割線」可確認切割範圍。"],
+    ["調整明暗", "在「明暗」中調整：臉部過暗時調高亮度，整體偏灰時調高對比；背景雜亂時可開啟「邊緣淡化」。"],
+    ["下載", "在「下載」步驟按「下載 SVG」。檔案包含照片（雕刻）與紅色切割線，交由老師以 Beam Studio 雕刻。"],
+    ["教師設定", "Beam Studio 的雕刻解析度選擇「中」（250 DPI），照片的「漸層」關閉。更換木板時，先雕刻試刻卡或 40 mm 試片，確認合適的亮度。"],
   ];
-  function openHelp() {
-    const last0 = document.activeElement;
-    const track = h("div", { class: "cards", tabindex: "0", role: "region", "aria-label": "怎麼用" },
+  function helpBody() {
+    const track = h("div", { class: "cards", tabindex: "0", role: "region", "aria-label": "使用說明" },
       ...HELP.map(([t, x], i) => h("article", { class: "hcard" }, h("span", { class: "num" }, `${i + 1} / ${HELP.length}`), h("h3", null, t), h("p", null, x))));
-    const goCard = d => track.scrollBy({ left: d * track.clientWidth, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-    const close = () => { dlg.remove(); removeEventListener("keydown", onKey); if (last0 && last0.focus) last0.focus(); };
-    const onKey = e => { if (e.key === "Escape") close(); if (e.key === "ArrowRight") goCard(1); if (e.key === "ArrowLeft") goCard(-1); };
-    addEventListener("keydown", onKey);
-    const closeBtn = h("button", { type: "button", class: "btn", onclick: close }, "關閉");
-    const dlg = h("div", { class: "dlg", role: "dialog", "aria-modal": "true", "aria-label": "怎麼用", onclick: e => { if (e.target === dlg) close(); } },
-      h("div", { class: "dlg-in" },
-        h("div", { class: "row dlg-top" }, h("h2", null, "怎麼用"), closeBtn),
-        h("div", { class: "seg", role: "group", "aria-label": "目錄" }, ...HELP.map(([t], i) => h("button", { type: "button", onclick: () => track.scrollTo({ left: i * track.clientWidth }) }, t))),
-        track,
-        h("div", { class: "row pager" }, h("button", { type: "button", class: "btn", onclick: () => goCard(-1) }, "‹ 上一張"), h("button", { type: "button", class: "btn", onclick: () => goCard(1) }, "下一張 ›"))));
-    document.body.append(dlg); closeBtn.focus();
+    const goCard = d => track.scrollBy({ left: d * track.clientWidth, behavior: reduced() ? "auto" : "smooth" });
+    track.addEventListener("keydown", e => { if (e.key === "ArrowRight") goCard(1); if (e.key === "ArrowLeft") goCard(-1); });
+    return [
+      h("div", { class: "toc" }, ...HELP.map(([t], i) => h("button", { type: "button", class: "chip", onclick: () => track.scrollTo({ left: i * track.clientWidth, behavior: reduced() ? "auto" : "smooth" }) }, t))),
+      track,
+      h("div", { class: "row pager" }, h("button", { type: "button", class: "btn", onclick: () => goCard(-1) }, "‹ 上一則"), h("button", { type: "button", class: "btn", onclick: () => goCard(1) }, "下一則 ›")),
+      h("p", { class: "note" }, `版本 v${VERSION} 試用版`)];
   }
 
   root.replaceChildren(
     h("header", { class: "top" }, h("div", { class: "top-in" },
-      h("a", { class: "brand", href: "../courses/" }, svgEl(LOGO), h("span", null, h("b", null, "照片雷雕"), h("small", null, "東港 7–12 歲 Play 基地・照片變成木頭上的點點"))),
-      h("nav", { "aria-label": "主要" }, h("a", { class: "hbtn pill", href: "../courses/" }, "‹ 課程工具箱")),
-      h("button", { type: "button", class: "hbtn", onclick: openHelp }, "怎麼用"))),
-    h("main", { class: "main" },
-      h("header", { class: "page-head" }, h("h1", null, "照片怎麼變成木頭上的點點？"),
-        h("p", { class: "lead" }, "拍一張照片，網頁會裁成你要的形狀，轉成雷射刻得出來的小點點，再下載給雷切機刻。")),
-      stepNav, stepHint, s1, work, footSlot));
+      h("a", { class: "hbtn backbtn", href: "../courses/", "aria-label": "返回課程工具箱" }, "‹", h("span", { class: "wide-only" }, " 課程工具箱")),
+      h("div", { class: "brand" }, svgEl(LOGO), h("span", null, h("b", null, "照片雷雕"), h("small", { class: "wide-only" }, "東港 7–12 歲 Play 基地・照片轉雷雕檔"))),
+      h("button", { type: "button", class: "hbtn", onclick: () => openSheet("help") }, "使用說明"))),
+    h("main", { class: "main" }, stepNav, stepHint, s1, s2, s3));
+  document.body.append(scrim, sheetEl);
   footSlot.replaceChildren(foot());
-  drawSteps(); go(1);
-  window.PHOTO = { O, geom, compute: G => compute(G || geom(), O.dpi), buildSVG: () => { const G = geom(); return buildSVG(G, exportCanvas(G).toDataURL("image/png")); }, testCard, VERSION, crop };
+  toolbarRedraw(); drawSteps(); go(1);
+  window.PHOTO = { O, geom, compute: G => compute(G || geom(), O.dpi), buildSVG: () => { const G = geom(); return buildSVG(G, exportCanvas(G).toDataURL("image/png")); }, testCard, VERSION, crop, openSheet, closeSheet };
 })();
 
 </script>
