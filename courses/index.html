@@ -1,0 +1,1503 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>東港創客課程工具箱</title>
+<meta name="description" content="東港 7–12 歲 Play 基地的 3D 列印與雷射切割課程：課程清單、每堂的準備和上課資料、機器設定和測試檔。">
+<meta name="theme-color" content="#16324a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="課程工具箱">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="../icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="東港創客小工具">
+<meta property="og:title" content="東港創客課程工具箱">
+<meta property="og:description" content="3D 列印與雷射切割課程清單、每堂的準備和上課資料、機器設定和測試檔。">
+<meta property="og:url" content="https://kenchen0728.github.io/dongang-maker/courses/">
+<meta property="og:image" content="https://kenchen0728.github.io/dongang-maker/icons/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+/* Layout: the same maker's bench as 線稿轉檔小幫手. Home = course cards grouped by machine and level; course page = header + four tabs; machine page = two calibration cards. */
+:root{
+  color-scheme:dark;
+  --bg:#171b16; --grid:rgba(214,226,190,.045); --panel:#1f241d; --surface:#262c24; --surface-2:#2f362c; --line:#3b4337; --line-2:#4c5646;
+  --ink:#ece7da; --muted:#a6a894; --faint:#7d806f;
+  --accent:#e2803d; --accent-ink:#1d1006; --accent-text:#f0a06a; --leaf-ink:#8fb36a; --accent-soft:#3b2a1c; --accent-line:#8d5228;
+  --leaf:#8fb36a; --leaf-soft:#26321e; --sea:#79a7e0; --sea-soft:#1f2a38;
+  --warn-bg:#3a3120; --warn-ink:#f2d690;
+  --paper:#f7f1e6; --paper-ink:#3a3122;
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px -14px rgba(0,0,0,.6);
+  --f-display:"Chiron GoRound TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  color-scheme:light;
+  --bg:#e6dccb; --grid:rgba(90,70,40,.07); --panel:#efe7d9; --surface:#f6f1e7; --surface-2:#ebe2d2; --line:#d2c3a8; --line-2:#bba98b;
+  --ink:#2a271f; --muted:#5f5644; --faint:#5f5644;
+  --accent:#b5561c; --accent-ink:#fff8f0; --accent-text:#9a4614; --leaf-ink:#3f6324; --accent-soft:#f1dcc6; --accent-line:#d99a6c;
+  --leaf:#4f7a2c; --leaf-soft:#dde6cd; --sea:#2f5fa8; --sea-soft:#dbe4f1;
+  --warn-bg:#f6e6bd; --warn-ink:#5d4300;
+  --paper:#fffaf2; --paper-ink:#3a3122;
+  --shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 24px -16px rgba(80,60,30,.45);
+}}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#e6dccb; --grid:rgba(90,70,40,.07); --panel:#efe7d9; --surface:#f6f1e7; --surface-2:#ebe2d2; --line:#d2c3a8; --line-2:#bba98b;
+  --ink:#2a271f; --muted:#5f5644; --faint:#5f5644;
+  --accent:#b5561c; --accent-ink:#fff8f0; --accent-text:#9a4614; --leaf-ink:#3f6324; --accent-soft:#f1dcc6; --accent-line:#d99a6c;
+  --leaf:#4f7a2c; --leaf-soft:#dde6cd; --sea:#2f5fa8; --sea-soft:#dbe4f1;
+  --warn-bg:#f6e6bd; --warn-ink:#5d4300;
+  --paper:#fffaf2; --paper-ink:#3a3122;
+  --shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 24px -16px rgba(80,60,30,.45);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);line-height:1.6;padding:0 16px 48px}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent-text)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:pretty;letter-spacing:.01em}
+p{margin:0}
+#app{max-width:1180px;margin:0 auto}
+
+/* top bar */
+.top{position:relative;z-index:20;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:12px 0;background:linear-gradient(var(--bg) 75%,transparent)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;text-decoration:none;color:inherit;min-width:0;flex:1 1 0}
+.brand > span{min-width:0}
+.brand{min-height:44px}
+.brand svg{flex:none;color:var(--accent)}
+.brand b{display:block;font-family:var(--f-display);font-size:1.15rem;line-height:1.25}
+.brand small{display:block;color:var(--muted);font-size:.78rem;line-height:1.3}
+.top nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+@media (min-width:760px){.top{position:sticky;top:0}}
+@media (max-width:759px){.top nav{order:3;width:100%}}
+.iconbtn{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:1.05rem;font-weight:700;text-decoration:none;flex:none}
+.tools-r{display:flex;gap:8px}
+.iconbtn:hover{border-color:var(--accent-line)}
+.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:6px 16px;min-height:44px;font-size:.92rem;color:var(--ink);text-decoration:none}
+.chip:hover{border-color:var(--accent-line)}
+.chip[aria-current="page"]{border-color:var(--accent);background:var(--accent-soft)}
+
+/* shared bits */
+.page-head{display:grid;gap:8px;margin:18px 0 12px}
+.page-head h1{font-size:clamp(1.6rem,4.5vw,2.2rem)}
+.lead{color:var(--muted);max-width:62ch}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.note{color:var(--muted);font-size:.86rem}
+.pending{color:var(--muted)}
+.seg{display:inline-flex;gap:3px;background:var(--panel);border:1px solid var(--line);padding:3px;border-radius:12px;flex-wrap:wrap;max-width:100%}
+.seg button{border:0;background:transparent;color:var(--muted);padding:6px 14px;border-radius:9px;min-height:44px;font-weight:500;line-height:1.3}
+.seg button:hover{color:var(--ink)}
+/* 選中的用墨色加 ✓，橘色只留給下一步要按的按鈕 */
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button[aria-pressed="true"]::before{content:"✓ "}
+.tag{display:inline-block;font-size:.76rem;line-height:1.5;padding:1px 9px;border-radius:999px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
+.st{display:inline-block;font-size:.76rem;line-height:1.5;padding:1px 9px;border-radius:999px;font-weight:700;white-space:nowrap}
+.st.todo{background:var(--surface-2);color:var(--muted)}
+.st.trying{background:var(--warn-bg);color:var(--warn-ink)}
+.st.ready{background:var(--leaf-soft);color:var(--leaf-ink)}
+.tier-s{--tc:var(--leaf)} .tier-b{--tc:var(--sea)} .tier-a{--tc:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 16px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink);text-decoration:none;font-weight:700}
+.btn:hover{border-color:var(--accent-line)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.foot{margin-top:40px;color:var(--muted);font-size:.8rem;display:grid;gap:2px}
+
+/* list */
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.filters{display:grid;gap:8px;margin:14px 0 6px}
+.frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.frow > span{color:var(--muted);font-size:.86rem;min-width:2.6em}
+.mach{display:flex;align-items:baseline;gap:10px;margin:26px 0 4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.mach h2{font-size:1.4rem}
+.tier-h{display:flex;align-items:center;gap:8px;margin:14px 0 8px;font-weight:700;font-size:.95rem}
+.tier-h i{width:10px;height:10px;border-radius:50%;background:var(--tc)}
+.tier-h span{color:var(--muted);font-weight:400}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.card{position:relative;display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:start;padding:12px 12px 12px 15px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:inherit;text-decoration:none;box-shadow:var(--shadow)}
+.card::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--tc)}
+.card:hover{border-color:var(--accent-line)}
+.ico{width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:var(--panel);color:var(--tc);border:1px solid var(--line)}
+.card .txt{display:block;min-width:0}
+.num{display:block;font-family:var(--f-mono);font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.card b{display:block;font-family:var(--f-display);font-size:1rem;line-height:1.4;margin:2px 0;text-wrap:pretty}
+.prod{display:block;color:var(--muted);font-size:.9rem}
+.card .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.open{margin-left:auto;font-size:.82rem;font-weight:700;color:var(--accent-text);white-space:nowrap}
+
+/* course page */
+.back{margin-top:8px}
+.chead{display:grid;gap:14px;margin:10px 0 16px}
+@media (min-width:760px){.chead{grid-template-columns:1fr 260px;align-items:start}}
+.meta{color:var(--muted);font-size:.88rem}
+.chead h1{font-size:clamp(1.5rem,4.2vw,2.1rem);line-height:1.35;margin:4px 0 10px}
+.prodname{font-weight:700}
+.hero{margin:0;display:grid;place-items:center;gap:4px;padding:16px;border:1px dashed var(--line-2);border-radius:var(--r);background:var(--panel);color:var(--tc);text-align:center}
+.hero small{color:var(--muted);font-size:.78rem}
+@media (max-width:759px){.hero{grid-template-columns:auto 1fr;justify-items:start;text-align:left;gap:12px;padding:10px 14px}.hero svg{width:64px;height:64px}}
+.sec{display:grid;gap:12px;margin-top:14px}
+@media (min-width:900px){.sec.two{display:block;columns:2;column-gap:12px}.sec.two > .box{break-inside:avoid;margin:0 0 12px}}
+.box{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:14px 16px;min-width:0}
+.box h3{font-size:1.02rem;margin-bottom:8px}
+.box > * + *{margin-top:8px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
+.kv dt{color:var(--muted);white-space:nowrap}
+.kv dd{margin:0}
+ol.list,ul.list{margin:0;padding-left:1.4em;display:grid;gap:6px}
+.levels{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.levels li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.lv{font-family:var(--f-mono);font-size:.78rem;border:1px solid var(--accent-line);background:var(--accent-soft);border-radius:6px;padding:1px 8px;white-space:nowrap}
+.tbl-wrap{overflow-x:auto}
+table.tbl{border-collapse:collapse;width:100%}
+.tbl th,.tbl td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{color:var(--muted);font-weight:500;font-size:.85rem}
+.tbl td.t{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--muted)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td:not(:last-child){white-space:nowrap}
+
+/* machine page */
+.cols{display:grid;gap:14px}
+@media (min-width:980px){.cols{grid-template-columns:1fr 1fr;align-items:start}}
+.panel{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:16px;display:grid;gap:14px;min-width:0;box-shadow:var(--shadow)}
+.panel h2{font-size:1.2rem}
+.panel h3{font-size:.98rem}
+.fields{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.field{display:grid;gap:4px;align-content:start}
+.field > label,.flabel{font-size:.86rem;color:var(--muted)}
+.uw{display:flex;align-items:center;gap:6px}
+.uw input{flex:1;min-width:0}
+.uw span{color:var(--muted);font-size:.86rem}
+input[type=number],input[type=text],textarea{background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;min-height:46px;width:100%;font-variant-numeric:tabular-nums}
+textarea{font-family:var(--f-mono);font-size:.78rem;min-height:70px;resize:vertical;word-break:break-all}
+.calc{display:grid;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.calc .out{font-weight:700}
+.check{display:flex;align-items:center;gap:8px;min-height:44px}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+.preview{background:var(--paper);color:var(--paper-ink);border-radius:10px;padding:10px;overflow-x:auto;border:1px solid var(--line)}
+.preview svg{display:block;width:100%;height:auto}
+.preview .lz path{vector-effect:non-scaling-stroke;stroke-width:1.1px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--paper-ink);margin-top:6px}
+.legend i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:4px}
+ol.howto{margin:0;padding-left:1.4em;display:grid;gap:6px}
+.msg{font-size:.86rem;color:var(--leaf-ink)}
+.msg.bad{color:var(--accent-text)}
+.empty{padding:20px}
+
+/* machine page steps */
+.step h3{display:flex;align-items:center;gap:8px}
+.stepn{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);border:1px solid var(--accent-line);font-family:var(--f-mono);font-size:.85rem;flex:none}
+.mtabs{margin:4px 0 2px}
+/* help */
+.cards{display:grid;grid-auto-flow:column;grid-auto-columns:100%;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin-top:12px;max-width:640px}
+.cards::-webkit-scrollbar{display:none}
+.hcard{scroll-snap-align:start;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:18px 20px;display:grid;gap:8px;align-content:start;min-height:180px}
+.hcard h3{font-size:1.15rem}
+.pager{margin-top:12px;max-width:640px;justify-content:space-between}
+
+</style>
+</head>
+<body>
+<div id="app"><p style="padding:24px">載入中…</p></div>
+<noscript><p style="padding:24px">這個網站需要開啟 JavaScript。</p></noscript>
+<script>
+"use strict";
+/* ===== polygon triangulation (algorithm after mapbox/earcut, ISC license) — used when the CDN copy is unavailable ===== */
+const EARCUT = (() => {
+  function earcut(data, holeIndices, dim) {
+    dim = dim || 2;
+    const hasHoles = holeIndices && holeIndices.length, outerLen = hasHoles ? holeIndices[0] * dim : data.length;
+    let outerNode = linkedList(data, 0, outerLen, dim, true); const triangles = [];
+    if (!outerNode || outerNode.next === outerNode.prev) return triangles;
+    if (hasHoles) outerNode = eliminateHoles(data, holeIndices, outerNode, dim);
+    earcutLinked(outerNode, triangles, dim, 0);
+    return triangles;
+  }
+  function linkedList(data, start, end, dim, clockwise) {
+    let i, last;
+    if (clockwise === (signedArea(data, start, end, dim) > 0)) { for (i = start; i < end; i += dim) last = insertNode(i, data[i], data[i + 1], last); }
+    else { for (i = end - dim; i >= start; i -= dim) last = insertNode(i, data[i], data[i + 1], last); }
+    if (last && equals(last, last.next)) { removeNode(last); last = last.next; }
+    return last;
+  }
+  function filterPoints(start, end) {
+    if (!start) return start; if (!end) end = start;
+    let p = start, again;
+    do {
+      again = false;
+      if (!p.steiner && (equals(p, p.next) || area(p.prev, p, p.next) === 0)) { removeNode(p); p = end = p.prev; if (p === p.next) break; again = true; }
+      else p = p.next;
+    } while (again || p !== end);
+    return end;
+  }
+  function earcutLinked(ear, triangles, dim, pass) {
+    if (!ear) return;
+    let stop = ear, prev, next, guard = 0;
+    while (ear.prev !== ear.next) {
+      if (++guard > 5e6) break;
+      prev = ear.prev; next = ear.next;
+      if (isEar(ear)) {
+        triangles.push(prev.i / dim | 0, ear.i / dim | 0, next.i / dim | 0);
+        removeNode(ear); ear = next.next; stop = next.next; continue;
+      }
+      ear = next;
+      if (ear === stop) {
+        if (!pass) earcutLinked(filterPoints(ear), triangles, dim, 1);
+        else if (pass === 1) { ear = cureLocalIntersections(filterPoints(ear), triangles, dim); earcutLinked(ear, triangles, dim, 2); }
+        else if (pass === 2) splitEarcut(ear, triangles, dim);
+        break;
+      }
+    }
+  }
+  function isEar(ear) {
+    const a = ear.prev, b = ear, c = ear.next;
+    if (area(a, b, c) >= 0) return false;
+    const x0 = Math.min(a.x, b.x, c.x), y0 = Math.min(a.y, b.y, c.y), x1 = Math.max(a.x, b.x, c.x), y1 = Math.max(a.y, b.y, c.y);
+    let p = c.next;
+    while (p !== a) {
+      if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1 && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) && area(p.prev, p, p.next) >= 0) return false;
+      p = p.next;
+    }
+    return true;
+  }
+  function cureLocalIntersections(start, triangles, dim) {
+    let p = start;
+    do {
+      const a = p.prev, b = p.next.next;
+      if (!equals(a, b) && intersects(a, p, p.next, b) && locallyInside(a, b) && locallyInside(b, a)) {
+        triangles.push(a.i / dim | 0, p.i / dim | 0, b.i / dim | 0);
+        removeNode(p); removeNode(p.next); p = start = b;
+      }
+      p = p.next;
+    } while (p !== start);
+    return filterPoints(p);
+  }
+  function splitEarcut(start, triangles, dim) {
+    let a = start;
+    do {
+      let b = a.next.next;
+      while (b !== a.prev) {
+        if (a.i !== b.i && isValidDiagonal(a, b)) {
+          let c = splitPolygon(a, b);
+          a = filterPoints(a, a.next); c = filterPoints(c, c.next);
+          earcutLinked(a, triangles, dim, 0); earcutLinked(c, triangles, dim, 0);
+          return;
+        }
+        b = b.next;
+      }
+      a = a.next;
+    } while (a !== start);
+  }
+  function eliminateHoles(data, holeIndices, outerNode, dim) {
+    const queue = [];
+    for (let i = 0, len = holeIndices.length; i < len; i++) {
+      const start = holeIndices[i] * dim, end = i < len - 1 ? holeIndices[i + 1] * dim : data.length, list = linkedList(data, start, end, dim, false);
+      if (list === list.next) list.steiner = true;
+      queue.push(getLeftmost(list));
+    }
+    queue.sort((a, b) => a.x - b.x);
+    for (let i = 0; i < queue.length; i++) outerNode = eliminateHole(queue[i], outerNode);
+    return outerNode;
+  }
+  function eliminateHole(hole, outerNode) {
+    const bridge = findHoleBridge(hole, outerNode);
+    if (!bridge) return outerNode;
+    const bridgeReverse = splitPolygon(bridge, hole);
+    filterPoints(bridgeReverse, bridgeReverse.next);
+    return filterPoints(bridge, bridge.next);
+  }
+  function findHoleBridge(hole, outerNode) {
+    let p = outerNode, hx = hole.x, hy = hole.y, qx = -Infinity, m;
+    do {
+      if (hy <= p.y && hy >= p.next.y && p.next.y !== p.y) {
+        const x = p.x + (hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y);
+        if (x <= hx && x > qx) { qx = x; m = p.x < p.next.x ? p : p.next; if (x === hx) return m; }
+      }
+      p = p.next;
+    } while (p !== outerNode);
+    if (!m) return null;
+    const stop = m, mx = m.x, my = m.y; let tanMin = Infinity, tan;
+    p = m;
+    do {
+      if (hx >= p.x && p.x >= mx && hx !== p.x && pointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y)) {
+        tan = Math.abs(hy - p.y) / (hx - p.x);
+        if (locallyInside(p, hole) && (tan < tanMin || (tan === tanMin && (p.x > m.x || (p.x === m.x && sectorContainsSector(m, p)))))) { m = p; tanMin = tan; }
+      }
+      p = p.next;
+    } while (p !== stop);
+    return m;
+  }
+  function sectorContainsSector(m, p) { return area(m.prev, m, p.prev) < 0 && area(p.next, m, m.next) < 0; }
+  function getLeftmost(start) { let p = start, leftmost = start; do { if (p.x < leftmost.x || (p.x === leftmost.x && p.y < leftmost.y)) leftmost = p; p = p.next; } while (p !== start); return leftmost; }
+  function pointInTriangle(ax, ay, bx, by, cx, cy, px, py) { return (cx - px) * (ay - py) >= (ax - px) * (cy - py) && (ax - px) * (by - py) >= (bx - px) * (ay - py) && (bx - px) * (cy - py) >= (cx - px) * (by - py); }
+  function isValidDiagonal(a, b) {
+    return a.next.i !== b.i && a.prev.i !== b.i && !intersectsPolygon(a, b) &&
+      (locallyInside(a, b) && locallyInside(b, a) && middleInside(a, b) && (area(a.prev, a, b.prev) || area(a, b.prev, b)) || equals(a, b) && area(a.prev, a, a.next) > 0 && area(b.prev, b, b.next) > 0);
+  }
+  function area(p, q, r) { return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y); }
+  function equals(p1, p2) { return p1.x === p2.x && p1.y === p2.y; }
+  function intersects(p1, q1, p2, q2) {
+    const o1 = sign(area(p1, q1, p2)), o2 = sign(area(p1, q1, q2)), o3 = sign(area(p2, q2, p1)), o4 = sign(area(p2, q2, q1));
+    if (o1 !== o2 && o3 !== o4) return true;
+    if (o1 === 0 && onSegment(p1, p2, q1)) return true; if (o2 === 0 && onSegment(p1, q2, q1)) return true;
+    if (o3 === 0 && onSegment(p2, p1, q2)) return true; if (o4 === 0 && onSegment(p2, q1, q2)) return true;
+    return false;
+  }
+  function onSegment(p, q, r) { return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) && q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y); }
+  function sign(num) { return num > 0 ? 1 : num < 0 ? -1 : 0; }
+  function intersectsPolygon(a, b) { let p = a; do { if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i && intersects(p, p.next, a, b)) return true; p = p.next; } while (p !== a); return false; }
+  function locallyInside(a, b) { return area(a.prev, a, a.next) < 0 ? area(a, b, a.next) >= 0 && area(a, a.prev, b) >= 0 : area(a, b, a.prev) < 0 || area(a, a.next, b) < 0; }
+  function middleInside(a, b) { let p = a, inside = false; const px = (a.x + b.x) / 2, py = (a.y + b.y) / 2; do { if (((p.y > py) !== (p.next.y > py)) && p.next.y !== p.y && (px < (p.next.x - p.x) * (py - p.y) / (p.next.y - p.y) + p.x)) inside = !inside; p = p.next; } while (p !== a); return inside; }
+  function splitPolygon(a, b) {
+    const a2 = new Node(a.i, a.x, a.y), b2 = new Node(b.i, b.x, b.y), an = a.next, bp = b.prev;
+    a.next = b; b.prev = a; a2.next = an; an.prev = a2; b2.next = a2; a2.prev = b2; bp.next = b2; b2.prev = bp;
+    return b2;
+  }
+  function insertNode(i, x, y, last) { const p = new Node(i, x, y); if (!last) { p.prev = p; p.next = p; } else { p.next = last.next; p.prev = last; last.next.prev = p; last.next = p; } return p; }
+  function removeNode(p) { p.next.prev = p.prev; p.prev.next = p.next; }
+  function Node(i, x, y) { this.i = i; this.x = x; this.y = y; this.prev = null; this.next = null; this.steiner = false; }
+  function signedArea(data, start, end, dim) { let sum = 0; for (let i = start, j = end - dim; i < end; i += dim) { sum += (data[j] - data[i]) * (data[i + 1] + data[j + 1]); j = i; } return sum; }
+  return earcut;
+})();
+
+/* ===== geometry: polygons, shapes, gears, jigsaw, finger-joint boxes, triangulation ===== */
+const GM = (() => {
+  const TAU = Math.PI * 2;
+  function area(l) { let s = 0; for (let i = 0; i < l.length; i++) { const a = l[i], b = l[(i + 1) % l.length]; s += a[0] * b[1] - b[0] * a[1]; } return s / 2; }
+  function inside(p, poly) { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if (((a[1] > p[1]) !== (b[1] > p[1])) && (p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0])) c = !c; } return c; }
+  function bounds(loops) { let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const l of loops) for (const p of l) { if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1]; } return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0 }; }
+  const move = (loops, dx, dy) => loops.map(l => l.map(p => [p[0] + dx, p[1] + dy]));
+  const scale = (loops, k) => loops.map(l => l.map(p => [p[0] * k, p[1] * k]));
+  const flipX = loops => loops.map(l => l.map(p => [-p[0], p[1]]).reverse());
+  const rotPt = (p, a) => [p[0] * Math.cos(a) - p[1] * Math.sin(a), p[0] * Math.sin(a) + p[1] * Math.cos(a)];
+  function circle(cx, cy, r, n) { n = n || Math.max(24, Math.min(160, Math.round(r * 6))); const p = []; for (let i = 0; i < n; i++) { const t = i / n * TAU; p.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]); } return p; }
+  function rect(cx, cy, w, h) { return [[cx - w / 2, cy - h / 2], [cx + w / 2, cy - h / 2], [cx + w / 2, cy + h / 2], [cx - w / 2, cy + h / 2]]; }
+  function roundRect(cx, cy, w, h, r) {
+    r = Math.min(r, w / 2, h / 2); const p = [], seg = 10;
+    const cs = [[cx + w / 2 - r, cy - h / 2 + r, -Math.PI / 2], [cx + w / 2 - r, cy + h / 2 - r, 0], [cx - w / 2 + r, cy + h / 2 - r, Math.PI / 2], [cx - w / 2 + r, cy - h / 2 + r, Math.PI]];
+    for (const [x, y, a0] of cs) for (let i = 0; i <= seg; i++) { const t = a0 + i / seg * Math.PI / 2; p.push([x + r * Math.cos(t), y + r * Math.sin(t)]); }
+    return p;
+  }
+  /* nesting: depth even = solid, odd = hole; returns [{outer, holes[]}] */
+  function nest(loops) {
+    const L = loops.filter(l => l.length >= 3).map(l => ({ l, a: Math.abs(area(l)), d: 0, parent: null })).filter(o => o.a > 1e-6);
+    L.sort((a, b) => b.a - a.a);
+    for (let i = 0; i < L.length; i++) {
+      const p = L[i].l[0];
+      for (let j = i - 1; j >= 0; j--) if (L[j].a > L[i].a && inside(p, L[j].l)) { L[i].parent = L[j]; L[i].d = L[j].d + 1; break; }
+    }
+    const out = [];
+    for (const o of L) if (o.d % 2 === 0) { o.holes = []; out.push(o); }
+    for (const o of L) if (o.d % 2 === 1 && o.parent) o.parent.holes.push(o.l);
+    return out.map(o => ({ outer: o.l, holes: o.holes }));
+  }
+  function loopsArea(loops) { let s = 0; for (const g of nest(loops)) { s += Math.abs(area(g.outer)); for (const h of g.holes) s -= Math.abs(area(h)); } return s; }
+  function loopsLength(loops, closed) { let s = 0; for (const l of loops) { for (let i = 0; i < l.length - (closed === false ? 1 : 0); i++) { const a = l[i], b = l[(i + 1) % l.length]; s += Math.hypot(b[0] - a[0], b[1] - a[1]); } } return s; }
+
+  /* ---------- frame shapes, drawn as canvas paths in mm, centred on 0,0 ---------- */
+  function heartPts(w, h) { const p = []; for (let i = 0; i < 200; i++) { const t = i / 200 * TAU, s = Math.sin(t); p.push([16 * s * s * s, -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))]); } return fitPts(p, w, h); }
+  function starPts(w, h, n, inner) { n = n || 5; inner = inner || .47; const p = []; for (let i = 0; i < 2 * n; i++) { const r = i % 2 ? inner : 1, t = -Math.PI / 2 + i * Math.PI / n; p.push([r * Math.cos(t), r * Math.sin(t)]); } return fitPts(p, w, h); }
+  function polyN(w, h, n, rot) { const p = []; for (let i = 0; i < n; i++) { const t = (rot || 0) + i / n * TAU; p.push([Math.cos(t), Math.sin(t)]); } return fitPts(p, w, h, true); }
+  function flowerPts(w, h, petals, depth) { const p = []; for (let i = 0; i < 360; i++) { const t = i / 360 * TAU, r = 1 - depth + depth * Math.abs(Math.cos(petals * t / 2)); p.push([r * Math.cos(t - Math.PI / 2), r * Math.sin(t - Math.PI / 2)]); } return fitPts(p, w, h, true); }
+  function fitPts(p, w, h, keep) {
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (const q of p) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); }
+    let kx = w / (x1 - x0), ky = h / (y1 - y0); if (keep) kx = ky = Math.min(kx, ky);
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; return p.map(q => [(q[0] - cx) * kx, (q[1] - cy) * ky]);
+  }
+  const FRAMES = {
+    circle: { name: "圓形", path: (c, w, h) => { c.ellipse(0, 0, w / 2, h / 2, 0, 0, TAU); } },
+    square: { name: "方形", path: (c, w, h) => { pathPts(c, roundRect(0, 0, w, h, Math.min(w, h) * .16)); } },
+    rect: { name: "長方形", path: (c, w, h) => { pathPts(c, roundRect(0, 0, w, h, Math.min(w, h) * .18)); } },
+    star: { name: "星星", path: (c, w, h) => { pathPts(c, starPts(w, h)); } },
+    heart: { name: "愛心", path: (c, w, h) => { pathPts(c, heartPts(w, h)); } },
+    cloud: { name: "雲朵", path: (c, w, h) => { const k = w / 100, kh = h / 70; for (const [x, y, r] of [[-28, 8, 22], [-4, -10, 28], [24, -2, 22], [36, 14, 14], [-40, 18, 12], [8, 14, 20]]) { c.moveTo(x * k + r * k, y * kh); c.ellipse(x * k, y * kh, r * k, r * kh, 0, 0, TAU); } c.rect(-40 * k, 8 * kh, 76 * k, 22 * kh); } , union: true },
+    shield: { name: "盾牌", path: (c, w, h) => { c.moveTo(-w / 2, -h / 2); c.lineTo(w / 2, -h / 2); c.lineTo(w / 2, -h * .05); c.quadraticCurveTo(w / 2, h * .32, 0, h / 2); c.quadraticCurveTo(-w / 2, h * .32, -w / 2, -h * .05); c.closePath(); } },
+    hexagon: { name: "六角形", path: (c, w, h) => { pathPts(c, polyN(w, h, 6, 0)); } },
+    flower: { name: "花朵", path: (c, w, h) => { pathPts(c, flowerPts(w, h, 8, .14)); } },
+    scallop: { name: "花邊", path: (c, w, h) => { pathPts(c, flowerPts(w, h, 16, .06)); } },
+    arch: { name: "拱門", path: (c, w, h) => { const r = w / 2; c.moveTo(-w / 2, h / 2); c.lineTo(-w / 2, -h / 2 + r); c.arc(0, -h / 2 + r, r, Math.PI, 0); c.lineTo(w / 2, h / 2); c.closePath(); } },
+    tag: { name: "標籤", path: (c, w, h) => { const k = Math.min(w, h) * .16; c.moveTo(-w / 2 + k, -h / 2); c.lineTo(w / 2 - k * 1.6, -h / 2); c.lineTo(w / 2, 0); c.lineTo(w / 2 - k * 1.6, h / 2); c.lineTo(-w / 2 + k, h / 2); c.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - k); c.lineTo(-w / 2, -h / 2 + k); c.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + k, -h / 2); c.closePath(); } }
+  };
+  function pathPts(c, p) { p.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); }
+  function frameMask(G, kind, w, h, round) {
+    const f = FRAMES[kind] || FRAMES.circle;
+    let m = R.maskDraw(G, c => { c.beginPath(); f.path(c, w, h); c.fill("nonzero"); });
+    if (round) m = R.smoothMask(G, m, round);
+    return m;
+  }
+
+  /* ---------- involute spur gear ---------- */
+  function gear(mod, z, cx, cy) {
+    const pa = 20 * Math.PI / 180, rp = mod * z / 2, rb = rp * Math.cos(pa), ra = rp + mod, rf = Math.max(rp - 1.25 * mod, mod);
+    const inv = a => Math.tan(a) - a, alpha = r => Math.acos(Math.min(1, rb / r));
+    const psi = r => Math.PI / (2 * z) + inv(pa) - inv(alpha(Math.max(r, rb)));
+    const r0 = Math.max(rb, rf), steps = 8, pts = [];
+    for (let k = 0; k < z; k++) {
+      const th = k * TAU / z, half = Math.PI / z;
+      const ps0 = psi(r0);
+      // root arc from previous gap centre to start of flank
+      const rootStart = th - half, rootEnd = th - ps0;
+      for (let i = 0; i <= 3; i++) { const t = rootStart + (rootEnd - rootStart) * i / 3; pts.push([rf * Math.cos(t), rf * Math.sin(t)]); }
+      for (let i = 0; i <= steps; i++) { const r = r0 + (ra - r0) * i / steps, t = th - psi(r); pts.push([r * Math.cos(t), r * Math.sin(t)]); }
+      const pa_ = psi(ra); for (let i = 1; i < 3; i++) { const t = th - pa_ + 2 * pa_ * i / 3; pts.push([ra * Math.cos(t), ra * Math.sin(t)]); }
+      for (let i = steps; i >= 0; i--) { const r = r0 + (ra - r0) * i / steps, t = th + psi(r); pts.push([r * Math.cos(t), r * Math.sin(t)]); }
+      const rs = th + ps0, re = th + half; for (let i = 0; i <= 3; i++) { const t = rs + (re - rs) * i / 3; pts.push([rf * Math.cos(t), rf * Math.sin(t)]); }
+    }
+    const out = []; for (const p of pts) { const q = [p[0] + cx, p[1] + cy], l = out[out.length - 1]; if (!l || Math.hypot(l[0] - q[0], l[1] - q[1]) > 1e-4) out.push(q); }
+    return { pts: out, rp, ra, rf };
+  }
+
+  /* ---------- jigsaw edges ---------- */
+  function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+  /* knob polyline from A to B, bump to the side given by dir (+1 left of travel, -1 right) */
+  function knobEdge(A, B, dir, rnd, size) {
+    const dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, nx = -uy * dir, ny = ux * dir;
+    const j = () => (rnd() - .5) * .04, c = .5 + j(), s = size || 1;
+    const P = (u, v) => [A[0] + ux * u * L + nx * v * L * s, A[1] + uy * u * L + ny * v * L * s];
+    const out = [P(0, 0)], push = p => out.push(p);
+    const bez = (p0, p1, p2, p3, n) => { for (let i = 1; i <= n; i++) { const t = i / n, a = (1 - t) ** 3, b = 3 * (1 - t) ** 2 * t, d = 3 * (1 - t) * t * t, e = t ** 3; push([a * p0[0] + b * p1[0] + d * p2[0] + e * p3[0], a * p0[1] + b * p1[1] + d * p2[1] + e * p3[1]]); } };
+    const hcx = c, hcy = .17, r = .105 + j() / 2;
+    const aL = Math.atan2(-.085, -.055), aR = Math.atan2(-.085, .055) - TAU, nArc = 22;
+    const arcPt = t => [hcx + r * Math.cos(t), hcy + r * Math.sin(t)];
+    const s0 = arcPt(aL), s1 = arcPt(aR);
+    bez(P(0, 0), P(.2, 0), P(c - .12, 0), P(s0[0], s0[1]), 6);
+    for (let i = 1; i <= nArc; i++) { const t = aL + (aR - aL) * i / nArc, q = arcPt(t); push(P(q[0], q[1])); }
+    bez(P(s1[0], s1[1]), P(c + .12, 0), P(.8, 0), P(1, 0), 6);
+    return out;
+  }
+  /* returns internal cut polylines (mm) for rows×cols over rect w×h centred */
+  function jigsawLines(w, h, rows, cols, seed) {
+    const rnd = rng(seed || 7), lines = [], x0 = -w / 2, y0 = -h / 2, cw = w / cols, ch = h / rows;
+    for (let c = 1; c < cols; c++) { const x = x0 + c * cw; let pl = []; for (let r = 0; r < rows; r++) { const e = knobEdge([x, y0 + r * ch], [x, y0 + (r + 1) * ch], rnd() < .5 ? 1 : -1, rnd, .9); pl = pl.length ? pl.concat(e.slice(1)) : e; } lines.push(pl); }
+    for (let r = 1; r < rows; r++) { const y = y0 + r * ch; let pl = []; for (let c = 0; c < cols; c++) { const e = knobEdge([x0 + c * cw, y], [x0 + (c + 1) * cw, y], rnd() < .5 ? 1 : -1, rnd, .9); pl = pl.length ? pl.concat(e.slice(1)) : e; } lines.push(pl); }
+    return lines;
+  }
+  function densify(pl, step) { const o = [pl[0]]; for (let i = 1; i < pl.length; i++) { const a = pl[i - 1], b = pl[i], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.ceil(L / step)); for (let k = 1; k <= n; k++) o.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]); } return o; }
+  /* split polyline into the parts where inFn(p) is true */
+  function clipPolyline(pl, inFn, step) {
+    const d = densify(pl, step || .4), out = []; let cur = null;
+    for (const p of d) { if (inFn(p)) { if (!cur) { cur = []; out.push(cur); } cur.push(p); } else cur = null; }
+    return out.filter(l => l.length >= 2);
+  }
+
+  /* ---------- finger-joint box (outer dims W×D×H, thickness t) ---------- */
+  function segs(len, t, ends, fw) {
+    // odd number of segments of ~fw width; returns lengths; first/last segment belong to "ends" owner
+    let n = Math.max(3, Math.round(len / fw)); if (n % 2 === 0) n += (len / n > fw ? 1 : -1); n = Math.max(3, n);
+    const L = len / n, a = []; for (let i = 0; i < n; i++) a.push([L, i % 2 === 0 ? ends : !ends]); return a;
+  }
+  /* walk one edge: from P0 along d (unit) for given segs; keep=true → material to the edge, false → notch depth t (inward normal n) */
+  function edgePts(P0, d, n, sg, t) {
+    const pts = []; let s = 0;
+    for (const [L, keep] of sg) { const off = keep ? 0 : t; pts.push([P0[0] + d[0] * s + n[0] * off, P0[1] + d[1] * s + n[1] * off]); s += L; pts.push([P0[0] + d[0] * s + n[0] * off, P0[1] + d[1] * s + n[1] * off]); }
+    return pts;
+  }
+  /* panel w×h (y down); edges: [top,right,bottom,left] each null (flat) or segs list (ordered along clockwise travel) */
+  function panel(w, h, edges, t) {
+    const P = [[0, 0], [w, 0], [w, h], [0, h]], D = [[1, 0], [0, 1], [-1, 0], [0, -1]], N = [[0, 1], [-1, 0], [0, -1], [1, 0]];
+    const E = edges.map((sg, i) => sg ? edgePts(P[i], D[i], N[i], sg, t) : [P[i], [P[i][0] + D[i][0] * (i % 2 ? h : w), P[i][1] + D[i][1] * (i % 2 ? h : w)]]);
+    const firstOff = i => edges[i] && !edges[i][0][1] ? t : 0, lastOff = i => edges[i] && !edges[i][edges[i].length - 1][1] ? t : 0;
+    const out = [];
+    for (let i = 0; i < 4; i++) {
+      const pts = E[i].slice(), prev = (i + 3) % 4, next = (i + 1) % 4;
+      // pull first point along d by previous edge's last inset, last point back by next edge's first inset
+      const a = pts[0], b = pts[pts.length - 1], di = D[i];
+      pts[0] = [a[0] + di[0] * lastOff(prev), a[1] + di[1] * lastOff(prev)];
+      pts[pts.length - 1] = [b[0] - di[0] * firstOff(next), b[1] - di[1] * firstOff(next)];
+      for (const p of pts) { const l = out[out.length - 1]; if (!l || Math.hypot(l[0] - p[0], l[1] - p[1]) > 1e-6) out.push(p); }
+    }
+    if (Math.hypot(out[0][0] - out[out.length - 1][0], out[0][1] - out[out.length - 1][1]) < 1e-6) out.pop();
+    // drop collinear
+    const c = []; for (let i = 0; i < out.length; i++) { const a = out[(i - 1 + out.length) % out.length], b = out[i], d = out[(i + 1) % out.length]; if (Math.abs((b[0] - a[0]) * (d[1] - b[1]) - (b[1] - a[1]) * (d[0] - b[0])) > 1e-6) c.push(b); }
+    return c;
+  }
+  /* offset an axis-aligned polygon outward by k (kerf compensation) */
+  function offsetOrtho(poly, k) {
+    if (!k) return poly; const s = Math.sign(area(poly)) || 1, n = poly.length, out = [];
+    for (let i = 0; i < n; i++) {
+      const a = poly[(i - 1 + n) % n], b = poly[i], c = poly[(i + 1) % n];
+      const e1 = [b[0] - a[0], b[1] - a[1]], e2 = [c[0] - b[0], c[1] - b[1]], l1 = Math.hypot(...e1) || 1, l2 = Math.hypot(...e2) || 1;
+      // outward normal for positive-area (in y-down coords, clockwise on screen) polygon: (dy,-dx)
+      const n1 = [e1[1] / l1 * s, -e1[0] / l1 * s], n2 = [e2[1] / l2 * s, -e2[0] / l2 * s];
+      out.push([b[0] + (n1[0] + n2[0]) * k, b[1] + (n1[1] + n2[1]) * k]);
+    }
+    return out;
+  }
+  function box(W, D, H, t, opt) {
+    opt = opt || {}; const fw = opt.finger || Math.max(8, t * 3), lid = !!opt.lid;
+    // Front/back own their ends; left/right own ends against bottom; seams between left/right and bottom run inside D-2t
+    const FB = { top: lid ? segs(W, t, true, fw) : null, side: segs(H, t, true, fw), bottom: segs(W, t, true, fw) };
+    const front = panel(W, H, [FB.top, FB.side.slice().map(x => x), FB.bottom, FB.side.slice().reverse()], t);
+    // Left/right panel: width D, height H. Edges against front/back are complementary; against bottom use inner seam
+    const comp = sg => sg.map(([L, k]) => [L, !k]);
+    const inner = segs(D - 2 * t, t, true, fw), LRb = [[t, false]].concat(inner).concat([[t, false]]);
+    const LRt = lid ? [[t, false]].concat(inner).concat([[t, false]]) : null;
+    const side = panel(D, H, [LRt, comp(FB.side), LRb, comp(FB.side).slice().reverse()], t);
+    // bottom W×D: edges against front/back complementary of FB.bottom; against sides complementary of inner, ends notched (front/back own corners)
+    const BS = [[t, false]].concat(comp(inner)).concat([[t, false]]);
+    const bottom = panel(W, D, [comp(FB.bottom), BS, comp(FB.bottom).slice().reverse(), BS.slice().reverse()], t);
+    const parts = [{ name: "正面", poly: front, w: W, h: H }, { name: "背面", poly: front.map(p => p.slice()), w: W, h: H }, { name: "左側", poly: side, w: D, h: H }, { name: "右側", poly: side.map(p => p.slice()), w: D, h: H }, { name: "底板", poly: bottom, w: W, h: D }];
+    if (lid) parts.push({ name: "上蓋", poly: bottom.map(p => p.slice()), w: W, h: D });
+    return parts;
+  }
+
+  /* ---------- notch: cut an axis-aligned slot into the bottom (dir=+1) or top (dir=-1) edge of an outer loop ---------- */
+  function notch(loop, xc, w, depth, dir) {
+    const xL = xc - w / 2, xR = xc + w / 2;
+    const hits = x => { const h = []; for (let i = 0; i < loop.length; i++) { const a = loop[i], b = loop[(i + 1) % loop.length]; if ((a[0] - x) * (b[0] - x) < 0 || (a[0] === x && b[0] !== x)) { const t = (x - a[0]) / (b[0] - a[0]); h.push({ i, t, y: a[1] + (b[1] - a[1]) * t }); } } return h; };
+    const pick = arr => arr.reduce((m, h) => (!m || (dir > 0 ? h.y > m.y : h.y < m.y)) ? h : m, null);
+    const L = pick(hits(xL)), Rr = pick(hits(xR)); if (!L || !Rr) return null;
+    const yEdge = dir > 0 ? Math.max(L.y, Rr.y) : Math.min(L.y, Rr.y), yTop = yEdge - dir * depth;
+    const n = loop.length, pL = [xL, L.y], pR = [xR, Rr.y];
+    // two arcs between L and R; the one to drop is the one whose points lie beyond (outside) along dir
+    const arc = (from, to) => { const o = []; let i = (from.i + 1) % n; while (true) { o.push(loop[i]); if (i === to.i) break; i = (i + 1) % n; if (o.length > n + 2) break; } return o; };
+    const a1 = arc(L, Rr), a2 = arc(Rr, L);
+    const score = a => a.length ? a.reduce((s, p) => s + p[1], 0) / a.length * dir : -1e9;
+    const notchPath = [[xL, yTop], [xR, yTop]];
+    let out;
+    if (score(a1) >= score(a2) && a1.length < n) out = [pL].concat(notchPath, [pR], a2); // drop a1 (L→R arc)
+    else out = [pR].concat(notchPath.slice().reverse(), [pL], a1);
+    return { loop: out, yEdge };
+  }
+
+  /* ---------- fallback triangulation: ear clipping with hole bridging ---------- */
+  function triangulate(outer, holes) {
+    let P = cleanRing(outer); if (P.length < 3) return [];
+    if (area(P) < 0) P.reverse();
+    const hs = (holes || []).map(cleanRing).filter(h => h.length >= 3).map(h => area(h) > 0 ? h.slice().reverse() : h);
+    hs.sort((a, b) => Math.max(...b.map(p => p[0])) - Math.max(...a.map(p => p[0])));
+    for (const h of hs) P = bridge(P, h);
+    return earclip(P);
+  }
+  function cleanRing(r) { const o = []; for (const p of r) { const l = o[o.length - 1]; if (!l || Math.hypot(l[0] - p[0], l[1] - p[1]) > 1e-7) o.push([p[0], p[1]]); } if (o.length > 1 && Math.hypot(o[0][0] - o[o.length - 1][0], o[0][1] - o[o.length - 1][1]) < 1e-7) o.pop(); return o; }
+  function segX(p, q, a, b) {
+    const d = (q[0] - p[0]) * (b[1] - a[1]) - (q[1] - p[1]) * (b[0] - a[0]); if (Math.abs(d) < 1e-12) return false;
+    const t = ((a[0] - p[0]) * (b[1] - a[1]) - (a[1] - p[1]) * (b[0] - a[0])) / d, u = ((a[0] - p[0]) * (q[1] - p[1]) - (a[1] - p[1]) * (q[0] - p[0])) / d;
+    return t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9;
+  }
+  function bridge(P, h) {
+    let mi = 0; for (let i = 1; i < h.length; i++) if (h[i][0] > h[mi][0]) mi = i;
+    const M = h[mi];
+    // candidate outer vertices sorted by distance, pick first whose segment crosses nothing
+    const cand = P.map((p, i) => ({ i, d: (p[0] >= M[0] - 1e-9 ? 0 : 1e6) + Math.hypot(p[0] - M[0], p[1] - M[1]) })).sort((a, b) => a.d - b.d);
+    let best = cand[0].i;
+    for (const c of cand.slice(0, 400)) {
+      const Q = P[c.i]; let ok = true;
+      for (let i = 0; i < P.length && ok; i++) if (segX(M, Q, P[i], P[(i + 1) % P.length])) ok = false;
+      for (let i = 0; i < h.length && ok; i++) if (segX(M, Q, h[i], h[(i + 1) % h.length])) ok = false;
+      if (ok) { best = c.i; break; }
+    }
+    const hr = h.slice(mi).concat(h.slice(0, mi + 1));
+    return P.slice(0, best + 1).concat(hr, [P[best]], P.slice(best + 1));
+  }
+  function earclip(P) {
+    const n = P.length, prev = new Int32Array(n), next = new Int32Array(n), tris = [];
+    for (let i = 0; i < n; i++) { prev[i] = (i - 1 + n) % n; next[i] = (i + 1) % n; }
+    const cross = (a, b, c) => (P[b][0] - P[a][0]) * (P[c][1] - P[a][1]) - (P[b][1] - P[a][1]) * (P[c][0] - P[a][0]);
+    const inTri = (a, b, c, p) => { const A = P[a], B = P[b], C = P[c], Q = P[p]; if ((Q[0] === A[0] && Q[1] === A[1]) || (Q[0] === B[0] && Q[1] === B[1]) || (Q[0] === C[0] && Q[1] === C[1])) return false; const d1 = (B[0] - A[0]) * (Q[1] - A[1]) - (B[1] - A[1]) * (Q[0] - A[0]), d2 = (C[0] - B[0]) * (Q[1] - B[1]) - (C[1] - B[1]) * (Q[0] - B[0]), d3 = (A[0] - C[0]) * (Q[1] - C[1]) - (A[1] - C[1]) * (Q[0] - C[0]); return d1 >= 0 && d2 >= 0 && d3 >= 0; };
+    let remaining = n, cur = 0, guard = 0;
+    while (remaining > 3 && guard < n * n) {
+      guard++;
+      const a = prev[cur], b = cur, c = next[cur]; let ear = cross(a, b, c) > 1e-12;
+      if (ear) { for (let p = next[c]; p !== a; p = next[p]) if (cross(prev[p], p, next[p]) <= 0 && inTri(a, b, c, p)) { ear = false; break; } }
+      if (ear) { tris.push([P[a], P[b], P[c]]); next[a] = c; prev[c] = a; remaining--; cur = c; guard = 0; }
+      else { cur = next[cur]; if (guard > remaining * 2) { // stuck: clip least-bad vertex
+          let bi = cur, bv = -1e18; let q = cur; for (let k = 0; k < remaining; k++) { const v = cross(prev[q], q, next[q]); if (v > bv) { bv = v; bi = q; } q = next[q]; }
+          const A = prev[bi], C = next[bi]; if (bv > 0) tris.push([P[A], P[bi], P[C]]); next[A] = C; prev[C] = A; remaining--; cur = C; guard = 0; } }
+    }
+    if (remaining === 3) { const a = prev[cur], c = next[cur]; if (cross(a, cur, c) > 0) tris.push([P[a], P[cur], P[c]]); }
+    return tris;
+  }
+
+  /* point deepest inside a set of loops (pole of inaccessibility, sampled) */
+  function pole(loops) {
+    const groups = nest(loops); if (!groups.length) return { x: 0, y: 0, r: 0 };
+    const big = groups.reduce((a, g) => Math.abs(area(g.outer)) > Math.abs(area(a.outer)) ? g : a, groups[0]), rings = [big.outer].concat(big.holes), b = bounds([big.outer]);
+    const distSeg = (p, a, c) => { const dx = c[0] - a[0], dy = c[1] - a[1], L = dx * dx + dy * dy || 1e-9; let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L; t = Math.max(0, Math.min(1, t)); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); };
+    const md = p => { let m = 1e9; for (const r of rings) for (let i = 0; i < r.length; i++) m = Math.min(m, distSeg(p, r[i], r[(i + 1) % r.length])); return m; };
+    const isIn = p => inside(p, big.outer) && !big.holes.some(h => inside(p, h));
+    let best = { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, r: -1 }, step = Math.max(b.w, b.h) / 24;
+    for (let y = b.y0 + step / 2; y < b.y1; y += step) for (let x = b.x0 + step / 2; x < b.x1; x += step) { const p = [x, y]; if (isIn(p)) { const d = md(p); if (d > best.r) best = { x, y, r: d }; } }
+    for (let it = 0; it < 3; it++) { step /= 3; const c = best; for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const p = [c.x + dx * step, c.y + dy * step]; if (isIn(p)) { const d = md(p); if (d > best.r) best = { x: p[0], y: p[1], r: d }; } } }
+    return best;
+  }
+  return { pole, TAU, area, inside, bounds, move, scale, flipX, rotPt, circle, rect, roundRect, nest, loopsArea, loopsLength, FRAMES, frameMask, pathPts, heartPts, starPts, fitPts, gear, rng, knobEdge, jigsawLines, densify, clipPolyline, box, offsetOrtho, notch, triangulate };
+})();
+
+/* ===== output: meshes (STL), laser SVG, zip, estimates ===== */
+const OUT = (() => {
+  /* ---------- triangulated prisms ---------- */
+  function triangulate(outer, holes) {
+    const ec = EARCUT;
+    {
+      const flat = [], hi = [];
+      for (const p of outer) flat.push(p[0], p[1]);
+      for (const h of holes) { hi.push(flat.length / 2); for (const p of h) flat.push(p[0], p[1]); }
+      const idx = ec(flat, hi.length ? hi : null), P = i => [flat[2 * i], flat[2 * i + 1]], t = [];
+      for (let k = 0; k < idx.length; k += 3) t.push([P(idx[k]), P(idx[k + 1]), P(idx[k + 2])]);
+      if (t.length) return t;
+    }
+    return GM.triangulate(outer, holes);
+  }
+  /* 2D loops are mm with y down; 3D uses y up (Y = -y) */
+  function prism(tris, tones, tone, outer, holes, z0, z1) {
+    const T = triangulate(outer, holes);
+    for (let [a, b, c] of T) {
+      if ((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]) > 0) { const s = b; b = c; c = s; } // make clockwise in y-down = ccw in y-up
+      tris.push([[a[0], -a[1], z1], [b[0], -b[1], z1], [c[0], -c[1], z1]], [[a[0], -a[1], z0], [c[0], -c[1], z0], [b[0], -b[1], z0]]); tones.push(tone, tone);
+    }
+    const ringWalls = (r, isHole) => {
+      const s = GM.area(r) > 0 ? 1 : -1, want = isHole ? -1 : 1, rr = s === want ? r : r.slice().reverse();
+      for (let i = 0; i < rr.length; i++) {
+        const p = rr[i], q = rr[(i + 1) % rr.length];
+        // outer ring positive area in y-down == clockwise on screen; outward normal faces outside
+        tris.push([[p[0], -p[1], z0], [q[0], -q[1], z1], [q[0], -q[1], z0]], [[p[0], -p[1], z0], [p[0], -p[1], z1], [q[0], -q[1], z1]]); tones.push(tone, tone);
+      }
+    };
+    ringWalls(outer, false); for (const h of holes) ringWalls(h, true);
+  }
+  function solid(tris, tones, loops, z0, z1, tone) { for (const g of GM.nest(loops)) prism(tris, tones, tone, g.outer, g.holes, z0, z1); }
+
+  /* heightfield over a grid region: hgt Float32Array per cell (mm, 0 = empty is not supported; full rectangle) */
+  function heightfield(tris, tones, tone, hf) {
+    const { nx, ny, cell, x0, y0, h } = hf, V = (i, j) => { let s = 0, n = 0; for (const [a, b] of [[i - 1, j - 1], [i, j - 1], [i - 1, j], [i, j]]) if (a >= 0 && b >= 0 && a < nx && b < ny) { s += h[b * nx + a]; n++; } return s / n; };
+    const vz = new Float32Array((nx + 1) * (ny + 1)); for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) vz[j * (nx + 1) + i] = V(i, j);
+    const P = (i, j) => [x0 + i * cell, -(y0 + j * cell), vz[j * (nx + 1) + i]], B = (i, j) => [x0 + i * cell, -(y0 + j * cell), 0];
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const a = P(i, j), b = P(i + 1, j), c = P(i + 1, j + 1), d = P(i, j + 1); tris.push([a, d, c], [a, c, b]); tones.push(tone, tone); }
+    // boundary loop (clockwise on screen): top edge left→right, right edge down, bottom edge right→left, left edge up
+    const loop = []; for (let i = 0; i < nx; i++) loop.push([i, 0]); for (let j = 0; j < ny; j++) loop.push([nx, j]); for (let i = nx; i > 0; i--) loop.push([i, ny]); for (let j = ny; j > 0; j--) loop.push([0, j]);
+    const C = [x0 + nx * cell / 2, -(y0 + ny * cell / 2), 0];
+    for (let k = 0; k < loop.length; k++) {
+      const [i1, j1] = loop[k], [i2, j2] = loop[(k + 1) % loop.length];
+      const t1 = P(i1, j1), t2 = P(i2, j2), b1 = B(i1, j1), b2 = B(i2, j2);
+      tris.push([b1, t2, b2], [b1, t1, t2]); tones.push(tone, tone);
+      tris.push([C, b1, b2]); tones.push(tone);
+    }
+  }
+  /* extrude a polygon drawn in the XZ plane (x right, z up) along y (3D, y up) from y0 to y1 */
+  function extrudeXZ(tris, tones, tone, outer, holes, y0, y1) {
+    const tmp = [], tt = [];
+    prism(tmp, tt, tone, outer, holes || [], y0, y1);
+    // (x, -z, w) → (x, w, z) is a proper rotation, winding stays valid
+    for (const t of tmp) { tris.push(t.map(([x, ny, zz]) => [x, zz, -ny])); tones.push(tone); }
+  }
+  function partMesh(part) {
+    const tris = [], tones = [];
+    for (const s of part.solids || []) solid(tris, tones, s.loops, s.z0, s.z1, s.tone || "base");
+    if (part.hf) heightfield(tris, tones, part.hf.tone || "base", part.hf);
+    for (const e of part.extrudes || []) extrudeXZ(tris, tones, e.tone || "base", e.outer, e.holes, e.y0, e.y1);
+    return { tris, tones };
+  }
+  function stl(tris) {
+    const buf = new ArrayBuffer(84 + 50 * tris.length), dv = new DataView(buf), hdr = "linework-helper";
+    for (let i = 0; i < hdr.length; i++) dv.setUint8(i, hdr.charCodeAt(i));
+    dv.setUint32(80, tris.length, true); let o = 84;
+    for (const [a, b, c] of tris) {
+      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+      let nx = u[1] * v[2] - u[2] * v[1], ny = u[2] * v[0] - u[0] * v[2], nz = u[0] * v[1] - u[1] * v[0]; const ln = Math.hypot(nx, ny, nz) || 1;
+      for (const val of [nx / ln, ny / ln, nz / ln, a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]]) { dv.setFloat32(o, val, true); o += 4; }
+      dv.setUint16(o, 0, true); o += 2;
+    }
+    return new Uint8Array(buf);
+  }
+  function meshVolume(tris) { let v = 0; for (const [a, b, c] of tris) v += (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6; return v; }
+  function meshBounds(tris) { const b = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9]; for (const t of tris) for (const p of t) for (let k = 0; k < 3; k++) { if (p[k] < b[k]) b[k] = p[k]; if (p[k] > b[k + 3]) b[k + 3] = p[k]; } return b; }
+
+  /* ---------- laser SVG ---------- */
+  const f2 = v => (Math.round(v * 100) / 100).toString();
+  const dLoops = (loops, closed) => { let d = ""; for (const l of loops) { if (!l.length) continue; d += "M" + l.map(p => f2(p[0]) + " " + f2(p[1])).join("L") + (closed === false ? "" : "Z"); } return d; };
+  function partBounds(p) { const all = [].concat(p.cut || [], p.engrave || [], p.score || [], p.cutOpen || []); for (const L of p.layers || []) all.push(...L.loops); return GM.bounds(all.length ? all : [[[0, 0]]]); }
+  /* shelf-pack parts into a sheet width; returns placed parts with dx,dy */
+  function layout(parts, sheetW, gap) {
+    gap = gap || 4; let x = 0, y = 0, rowH = 0, maxW = 0; const placed = [];
+    for (const p of parts) {
+      const b = partBounds(p); if (x > 0 && x + b.w > sheetW) { x = 0; y += rowH + gap; rowH = 0; }
+      placed.push(Object.assign({}, p, { dx: x - b.x0, dy: y - b.y0 })); x += b.w + gap; rowH = Math.max(rowH, b.h); maxW = Math.max(maxW, x - gap);
+    }
+    return { placed, W: Math.max(1, maxW), H: Math.max(1, y + rowH) };
+  }
+  function laserSVG(L) {
+    const m = 2, lay = layout(L.parts, L.sheetW || 290), W = lay.W + 2 * m, H = lay.H + 2 * m;
+    let eng = "", cut = "", score = "", extra = {};
+    for (const p of lay.placed) {
+      const mv = loops => GM.move(loops, p.dx + m, p.dy + m);
+      if (p.engrave && p.engrave.length) eng += dLoops(mv(p.engrave));
+      if (p.score && p.score.length) score += dLoops(mv(p.score), false);
+      if (p.cut && p.cut.length) cut += dLoops(mv(p.cut));
+      if (p.cutOpen && p.cutOpen.length) cut += dLoops(mv(p.cutOpen), false);
+      for (const Ly of p.layers || []) (extra[Ly.color] = extra[Ly.color] || []).push(dLoops(mv(Ly.loops)));
+    }
+    let s = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${f2(W)}mm" height="${f2(H)}mm" viewBox="0 0 ${f2(W)} ${f2(H)}">\n`;
+    for (const c in extra) s += `<g data-layer="${c}"><path fill="${c}" fill-rule="evenodd" d="${extra[c].join("")}"/></g>\n`;
+    if (eng) s += `<g id="engrave" data-layer="雕刻"><path fill="#000000" fill-rule="evenodd" d="${eng}"/></g>\n`;
+    if (score) s += `<g id="score" data-layer="線刻"><path fill="none" stroke="#0000FF" stroke-width="0.1" d="${score}"/></g>\n`;
+    if (cut) s += `<g id="cut" data-layer="切割"><path fill="none" stroke="#FF0000" stroke-width="0.1" d="${cut}"/></g>\n`;
+    return { svg: s + "</svg>\n", W, H, lay };
+  }
+
+  /* ---------- zip (store) ---------- */
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(d) { let c = 0xFFFFFFFF; for (let i = 0; i < d.length; i++) c = CRC[(c ^ d[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    const parts = [], cds = []; let off = 0; const enc = new TextEncoder();
+    for (const f of files) {
+      const nm = enc.encode(f.name), data = typeof f.data === "string" ? enc.encode(f.data) : f.data, crc = crc32(data), sz = data.length;
+      const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true);
+      const ch = new DataView(new ArrayBuffer(46)); ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+      parts.push(lh.buffer, nm, data); cds.push(ch.buffer, nm); off += 30 + nm.length + sz;
+    }
+    let cdSize = 0; for (const p of cds) cdSize += p.byteLength;
+    const end = new DataView(new ArrayBuffer(22)); end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
+    return new Blob(parts.concat(cds, [end.buffer]), { type: "application/zip" });
+  }
+
+  /* ---------- estimates (rough; teacher can calibrate) ---------- */
+  function printEstimate(meshes, cal) {
+    let vol = 0, maxZ = 0, area = 0;
+    for (const m of meshes) { vol += Math.abs(meshVolume(m.tris)); const b = meshBounds(m.tris); maxZ = Math.max(maxZ, b[5]); area += (b[3] - b[0]) * (b[4] - b[1]); }
+    const k = cal.print || 1, eff = vol * 0.72, rate = 7; // mm³/s effective incl. travel and acceleration (calibrate after a real print)
+    const sec = (eff / rate + (maxZ / 0.2) * 2.5 + 120) * k;
+    return { minutes: Math.max(3, Math.round(sec / 60)), grams: Math.max(1, Math.round(eff / 1000 * 1.24 * 10) / 10), vol, maxZ };
+  }
+  function laserEstimate(L, cal) {
+    let eng = 0, cut = 0, score = 0;
+    for (const p of L.parts) { if (p.engrave) eng += GM.loopsArea(p.engrave); if (p.cut) cut += GM.loopsLength(p.cut); if (p.cutOpen) cut += GM.loopsLength(p.cutOpen, false); if (p.score) score += GM.loopsLength(p.score, false); for (const Ly of p.layers || []) eng += GM.loopsArea(Ly.loops); }
+    const k = cal.laser || 1, sec = (eng / 7 + cut / 6 + score / 30 + 20) * k;
+    return { minutes: Math.max(1, Math.round(sec / 60 * 10) / 10), engrave: eng, cut, score };
+  }
+
+  return { triangulate, solid, heightfield, extrudeXZ, partMesh, stl, meshVolume, meshBounds, dLoops, f2, layout, laserSVG, partBounds, zip, printEstimate, laserEstimate };
+})();
+
+/* ===== 東港創客課程工具箱：課程清單、每堂頁面、機器設定（測試檔）、給 Betty 的清單 ===== */
+(() => {
+  /* ---------- 小工具 ---------- */
+  function h(tag, attrs, ...kids) {
+    const e = document.createElement(tag);
+    if (attrs) for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === "class") e.className = v;
+      else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? "" : v);
+    }
+    for (const k of kids.flat(Infinity)) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+    return e;
+  }
+  const svgEl = markup => { const t = document.createElement("template"); t.innerHTML = markup.trim(); return t.content.firstChild; };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* 私密模式等情況存不了，不影響使用 */ } }
+  };
+  const f = n => String(Math.round(n * 1000) / 1000);
+
+  const VERSION = "1.0.0";
+  /* 線稿轉檔小幫手目前放在 Claude 上（要登入老師的帳號）；之後要給小朋友用時再放上這個網站 */
+  const HELPER_URL = "https://claude.ai/artifact/QX7YJMzmsG7KVZirnSMxmJ";
+  const HELPER_NOTE = "小幫手目前放在 Claude 上，要用老師的帳號登入才打得開。";
+
+  /* ---------- 名稱 ---------- */
+  const MACH = { "3d": "3D 列印", laser: "雷射切割" };
+  const MACH_SHORT = { "3d": "3D", laser: "雷切" };
+  const TIERS = { s: ["小小創客", "1–2 年級"], b: ["初階", "3–6 年級"], a: ["進階", "3–6 年級，上過初階"] };
+  const TYPES = { kit: "材料包", draw: "自己畫", mix: "混合" };
+  const STATUS = { todo: "還沒試做", trying: "試做中", ready: "可以開課" };
+
+  /* ---------- 示意圖示（64×64，線條） ---------- */
+  const dot = (x, y, r = 1.6) => `<circle cx="${x}" cy="${y}" r="${r}" fill="currentColor" stroke="none"/>`;
+  const ICONS = {
+    clay: `<rect x="8" y="42" width="48" height="12" rx="6"/><path d="M14 25c6-9 19-11 27-4l8-6v18l-8-5c-8 7-21 5-27-3z"/>${dot(21, 24)}<path d="M31 32v6m-3-3 3 3 3-3"/>`,
+    fishing: `<path d="M6 12 42 6M42 6v20"/><rect x="38" y="26" width="8" height="5" rx="1.5"/><path d="M14 46c6-8 18-9 25-3l8-6v16l-8-5c-7 6-19 5-25-2z"/>${dot(21, 45)}`,
+    roly: `<path d="M14 36a18 18 0 0 0 36 0z"/><circle cx="32" cy="24" r="10"/>${dot(28.5, 23, 1.4)}${dot(35.5, 23, 1.4)}<path d="M29 28q3 2 6 0M8 48l-2 5M56 48l2 5"/>`,
+    tuna: `<path d="M6 32c8-10 26-13 38-8 4 2 7 5 9 8-2 3-5 6-9 8-12 5-30 2-38-8z"/><path d="M52 32l8-10-2 10 2 10z"/>${dot(14, 30)}<circle cx="28" cy="15" r="3.5"/><path d="M28 18.5v4M22 33h18"/>`,
+    stamp: `<circle cx="32" cy="13" r="6"/><path d="M28 19v10h8V19"/><rect x="15" y="29" width="34" height="10" rx="2.5"/><path d="M18 48h28M22 54h20"/>`,
+    soapboat: `<path d="M12 22h30l12 10-12 10H12v-6h7v-8h-7z"/><circle cx="15.5" cy="32" r="2"/><path d="M6 52q5-4 10 0t10 0 10 0 10 0 10 0"/>`,
+    top: `<path d="M32 6v10"/><ellipse cx="32" cy="24" rx="20" ry="6"/><ellipse cx="32" cy="33" rx="13" ry="4.5"/><path d="M22 37l10 19 10-19"/>`,
+    copter: `<path d="M32 26v30"/><path d="M32 22c-7-6-18-6-26-2 7 5 19 5 26 2zM32 22c7 3 19 3 26-2-8-4-19-4-26 2z"/><circle cx="32" cy="23" r="2.5"/>`,
+    keycap: `<path d="M12 30l20-9 20 9-20 9z"/><path d="M12 30v9l20 9 20-9v-9M32 39v9M27 29h10"/><path d="M50 12l4-4M54 18h5M45 9l1-5"/>`,
+    shrimp: `<path d="M14 44c-2-15 9-27 24-27 9 0 15 6 14 13"/><path d="M22 46c0-11 7-19 17-19 5 0 9 3 9 7"/><path d="M21 24l5 7M29 19l3 9M38 17l1 9M46 21l-3 8M14 44l-7 4M14 44l-3 8M18 46l1 8M52 30c4 2 8 0 9-5M50 32c4 3 9 2 11-1"/>${dot(47, 25, 1.5)}`,
+    stand: `<path d="M14 24c6-9 19-10 26-4l8-6v18l-8-5c-7 6-20 5-26-3z"/>${dot(21, 23)}<path d="M27 31v13M35 31v13"/><rect x="12" y="44" width="40" height="8" rx="2.5"/>`,
+    puppet: `<circle cx="10" cy="18" r="4"/><path d="M16 18h5M15 12l4-3M15 24l4 3"/><circle cx="38" cy="15" r="5"/><path d="M38 20v16M38 25l-9 6M38 25l9 4M38 36l-6 11M38 36l6 11"/>${dot(38, 25, 1.3)}${dot(38, 36, 1.3)}<path d="M28 57h22" stroke-dasharray="3 3"/>`,
+    whirl: `<circle cx="32" cy="32" r="14"/><path d="M32 18a14 14 0 0 1 14 14H32zM32 46a14 14 0 0 1-14-14h14z" fill="currentColor" fill-opacity=".28" stroke="none"/><circle cx="29" cy="32" r="1.6"/><circle cx="35" cy="32" r="1.6"/><path d="M4 29c8-2 16 1 25 3M35 32c9 2 17 1 25-3"/>`,
+    bone: `<path d="M10 32h40M18 24v16M26 21v22M34 21v22M42 24v16"/><path d="M50 23c9 2 9 16 0 18z"/>${dot(53, 30, 1.4)}<path d="M10 32l-6-8M10 32l-6 8"/>`,
+    nightlight: `<rect x="19" y="8" width="26" height="36" rx="2"/><path d="M24 31c3-7 6-7 8 0s5 7 8 0"/><path d="M32 14l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z"/><rect x="13" y="44" width="38" height="9" rx="2.5"/><path d="M11 16l-5-2M53 16l5-2M11 28H5M53 28h6"/>`,
+    rocker: `<path d="M8 46q24 14 48 0"/><path d="M20 51V30l5-7 4 7h8l4-7 5 7v21"/>${dot(28, 35, 1.3)}${dot(36, 35, 1.3)}<path d="M6 38l-3-4M58 38l3-4"/>`,
+    crank: `<rect x="16" y="30" width="32" height="24" rx="2.5"/><circle cx="32" cy="42" r="5"/><path d="M48 42h7v8M32 30v-8"/><ellipse cx="32" cy="18" rx="8" ry="4.5"/><path d="M24 16c-5-3-6-9-1-11 2 3 1 6 4 8M40 16c5-3 6-9 1-11-2 3-1 6-4 8"/>`,
+    kingboat: `<path d="M8 40h48l-7 11H15z"/><path d="M8 40l-3-8M56 40l3-8M32 40V9"/><path d="M32 12l14 10-14 10"/><path d="M32 9l8-3-8-3"/>${dot(15, 45, 1.5)}<path d="M4 58q6-4 12 0t12 0 12 0 12 0 12 0"/>`,
+    maze: `<circle cx="32" cy="34" r="22"/><path d="M32 20a14 14 0 1 1-14 14"/><path d="M32 27a7 7 0 1 0 7 7"/><path d="M32 12v8M46 34h8"/>${dot(44, 44, 2.6)}<path d="M50 8a28 28 0 0 1 8 10M58 18l1-6M58 18l-6-1"/>`,
+    walker: `<path d="M4 36l56 12"/><rect x="18" y="12" width="20" height="11" rx="4"/><circle cx="43" cy="14" r="4.5"/><path d="M23 23l-3 16M33 23l3 19M14 8l4 4M10 14h5"/>`,
+  };
+  const LOGO = `<svg viewBox="0 0 100 100" width="36" height="36" aria-hidden="true"><path fill="currentColor" d="M6 50C16 34 38 30 60 33C70 35 77 43 80 50C77 57 70 65 60 67C38 70 16 66 6 50ZM76 46Q86 40 98 18Q92 36 91 50Q92 64 98 82Q86 60 76 54Z"/><circle cx="20" cy="47" r="3.2" fill="var(--bg)"/><path d="M28 56Q44 61 62 56" fill="none" stroke="var(--bg)" stroke-width="3" stroke-linecap="round"/></svg>`;
+  const icon = (name, size = 40) => svgEl(`<svg viewBox="0 0 64 64" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ""}</svg>`);
+
+  /* ---------- 20 堂課（2027 課程規劃 v3） ---------- */
+  const C = [
+    { id: "clay", m: "3d", t: "s", n: 1, icon: "clay", type: "draw", status: "todo",
+      q: "怎麼一下子做出好多個一樣的形狀？", name: "魔法黏土模具",
+      how: "孩子在紙上畫一個形狀，大人拍照轉檔，印成模具壓黏土；等印的時候先用預印的模具玩。",
+      levels: ["壓出一隻完整的魚", "壓出三隻一模一樣的魚", "用兩種顏色的黏土做雙色魚"],
+      ans: "模具可以把同一個形狀複製很多次，工廠就是這樣量產的。",
+      two: "模具只有薄牆，應該來得及當堂印出來（需實測）。", three: "用全班的黏土作品排成一座小漁港。",
+      take: "自己的模具和黏土作品", notes: [["在地", "黑鮪魚、櫻花蝦造型"]],
+      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "選「黏土模具」，拍照或上傳孩子的畫。", "模具會自動左右相反，壓出來的黏土方向和孩子畫的一樣。", "試做時確認模具的大小、牆的厚度和列印時間。"] } },
+    { id: "fishing", m: "3d", t: "s", n: 2, icon: "fishing", type: "kit", status: "todo",
+      q: "磁鐵隔著塑膠也吸得到嗎？", name: "磁鐵釣魚樂",
+      how: "替預印的魚上色（肚子裡已經藏好鐵片），組好釣竿就開始釣魚。",
+      levels: ["釣到 3 條魚", "只釣黑鮪魚", "1 分鐘比賽"],
+      ans: "磁力可以穿過塑膠。",
+      two: "材料包，2 小時就夠。", three: "自己畫一條魚，印到一半暫停，親手放進鐵片。",
+      take: "魚和釣竿", notes: [["安全", "只有釣竿上有磁鐵，而且事先黏牢。"], ["在地", "東港漁港"]], safety: ["磁鐵：上課前後都清點數量"] },
+    { id: "roly", m: "3d", t: "s", n: 3, icon: "roly", type: "mix", status: "todo",
+      q: "不倒翁為什麼推不倒？", name: "海洋不倒翁",
+      how: "底座是預印的半球（材料包），孩子把油土壓進底座；上半身自己畫一隻海洋動物，大人拍照轉成薄片，插在油土上。",
+      levels: ["推倒後會自己站回來", "比誰最快站好", "放在斜板上也站得住"],
+      ans: "重心很低，推倒了也會被拉回來。上面畫什麼都可以；畫太高站不回來，就多塞一點油土。",
+      two: "上半身是薄片，應該來得及當堂印（需實測）；來不及就先替預印的上半身上色，自己畫的課後再印。", three: "再畫一隻，做第二個上半身，可以換著玩。",
+      take: "不倒翁", notes: [["材料", "要用油土，輕黏土太輕；不夠重可以再塞幾顆螺帽。"], ["為什麼用 3D", "雷切只能做平的，底部只會前後搖；3D 印得出真正的半球，從哪個方向推都會站回來。"]] },
+    { id: "tuna", m: "3d", t: "b", n: 4, icon: "tuna", type: "draw", status: "trying",
+      q: "3D 印表機怎麼一層一層蓋出名字？", name: "黑鮪魚雙色名牌",
+      how: "打自己的名字，印到一半換線，名字就變成另一個顏色。",
+      levels: null, testTitle: "等待活動", test: "紙上 3D 列印：用色紙一層一層疊出自己的名字，體會印表機是怎麼一層一層蓋上去的。",
+      ans: "印表機一層一層往上堆，暫停時換顏色。",
+      two: "65 mm 大小約 8 分鐘一件（網頁估計），應該來得及當堂印完（需實測）。", three: "再畫一個小圖案，做第二個吊飾。",
+      take: "名牌吊飾", notes: [["在地", "黑鮪魚"]],
+      detail: {
+        mats: [
+          ["PLA 線材", "2 色", "底色和字的顏色，例如深藍底、白字"],
+          ["鑰匙圈", "14 個", "多 2 個備用"],
+          ["色紙", "每人 4 張", "等待活動用"],
+          ["口紅膠", "6 支", "兩人一支"],
+        ],
+        before: [
+          "先印 2 個樣品（55 mm、75 mm），貼上實際列印時間，上課給孩子看。",
+          "確認兩台 ARCO 都能在指定高度暫停換線。",
+          "跟基地確認 Chromebook 的檔案怎麼傳到老師筆電（共用雲端資料夾或隨身碟）。",
+        ],
+        steps: [
+          "打開黑鮪魚名牌網頁，點一下「打名字」的框，打自己的名字（2～3 個字最清楚）。",
+          "選「字的樣子」。",
+          "選「大小」，看下載鈕上面的提示；字不清楚就按「放大到…」。",
+          "看到「字很清楚」，按下載，再舉手告訴老師。",
+        ],
+        timeline: [
+          ["0:00", "問題：3D 印表機怎麼一層一層蓋出名字？看樣品、講安全"],
+          ["0:10", "打名字、選字的樣子和大小（網頁會檢查字清不清楚）"],
+          ["0:25", "老師收檔、切片；0:30 前兩台都開始印（一盤 6 件，整盤在同一個高度換線）"],
+          ["0:30", "等待活動：紙上 3D 列印；換線時讓孩子在旁邊看"],
+          ["1:20", "取件、裝鑰匙圈"],
+          ["1:40", "分享、拍照；沒印完的發領取單"],
+        ],
+        tool: { href: "../tuna/", label: "打開黑鮪魚名牌網頁" },
+        toolNotes: [
+          "網頁右上角的「老師看」有實際大小、列印時間和換色高度。",
+          "下載的 zip 裡有 STL 和換色說明，照說明的高度在切片軟體加暫停；檔名有名字和顏色。",
+          "整盤用同一個高度換線，一次換完。",
+          "孩子的 Chromebook 用 Chrome 直接打開這個網頁；在 LINE 裡面打開可能不能下載。",
+        ],
+      } },
+    { id: "stamp", m: "3d", t: "b", n: 5, icon: "stamp", type: "draw", status: "todo",
+      q: "印章上的字為什麼要反過來？", name: "東港印章＋明信片",
+      how: "畫圖或打名字，網頁會自動左右翻轉；印出印章面，裝上雷切做的十字握把，再蓋明信片。",
+      levels: ["蓋出清楚的圖", "換一種顏色蓋", "全班互相蓋章，集滿一張集章卡"],
+      ans: "印章要刻成左右相反，蓋出來才是正的。",
+      two: "印章面當堂印（需實測）。", three: "設計第二個印章，跟同學交換蓋。",
+      take: "印章、明信片、集章卡", notes: [["在地", "王船、黑鮪魚、櫻花蝦；月份可以換成生肖、聖誕"]],
+      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "選「印章」：可以選圓形或方形、陽刻或陰刻，網頁會自動左右翻轉。", "現在的手柄是木棒凹槽；改成雷切十字握把，試做時一起改。"] } },
+    { id: "soapboat", m: "3d", t: "b", n: 6, icon: "soapboat", type: "mix", status: "todo",
+      q: "肥皂為什麼能推小船前進？", name: "肥皂動力小漁船",
+      how: "先替預印的船上色、比賽，再畫自己的船（很薄，印得快）。",
+      levels: ["船自己跑起來", "跑到終點", "兩艘船比賽"],
+      ans: "肥皂讓船尾的水拉力變小，船就被前面的水拉著走。",
+      two: "自己畫的船很薄，應該來得及當堂印（需實測）。", three: "改船的形狀，再比一次。",
+      take: "小漁船", notes: [["在地", "東港漁船"]] },
+    { id: "top", m: "3d", t: "a", n: 7, icon: "top", type: "kit", status: "todo",
+      q: "陀螺怎麼轉得最久？", name: "疊疊陀螺大賽",
+      how: "替預印的圓盤上色，疊在螺絲軸上，用螺帽鎖緊。",
+      levels: ["轉 10 秒", "轉 30 秒", "陀螺對戰"],
+      ans: "重量集中在外圈的陀螺轉得比較久（讓孩子自己比比看）。",
+      two: "材料包，2 小時就夠。", three: "用萬花筒模式畫自己的圓盤，當堂印出來。",
+      take: "一組陀螺", notes: [],
+      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "「3 小時加」畫自己的圓盤，可以先用小幫手的「陀螺」（可以開萬花筒）。", "小幫手的陀螺是插竹籤的；改成螺絲軸，試做時一起改。"] } },
+    { id: "copter", m: "3d", t: "a", n: 8, icon: "copter", type: "kit", status: "todo",
+      q: "竹蜻蜓為什麼會飛？", name: "竹蜻蜓飛高賽",
+      how: "替預印的葉片上色（準備 2～3 種形狀），插上竹籤。",
+      levels: ["飛起來", "飛過一條繩子", "降落在呼拉圈裡"],
+      ans: "葉片是斜的，轉起來會把空氣往下推，就產生升力。",
+      two: "材料包，2 小時就夠。", three: "在網頁上改葉片長度、畫花紋，當堂印出來。",
+      take: "竹蜻蜓", notes: [] },
+    { id: "keycap", m: "3d", t: "a", n: 9, icon: "keycap", type: "mix", status: "todo",
+      q: "按鍵為什麼會喀喀響？", name: "喀喀按鍵鑰匙圈",
+      how: "底座和機械軸用材料包；鍵帽打名字或畫圖（雙色）。",
+      levels: ["按出喀喀聲", "閉上眼睛猜是哪一種軸", "10 秒連按比賽"],
+      ans: "彈簧把按鍵推回來；青軸裡多一個會「喀」一聲的小零件。",
+      two: "鍵帽來不及印的話，先替空白鍵帽上色，自己設計的鍵帽課後再印。", three: "做第二顆鍵帽，換上不同的軸比比看。",
+      take: "按鍵鑰匙圈", notes: [["材料", "機械軸（青軸、茶軸、紅軸）要先買"]] },
+    { id: "shrimp", m: "3d", t: "a", n: 10, icon: "shrimp", type: "kit", status: "todo",
+      q: "蝦子的身體為什麼一節一節的？", name: "會彎的櫻花蝦",
+      how: "替預印好、關節會動的蝦身上色（一次印好關節就能動，平面做不到）。",
+      levels: null, testTitle: "測試", test: "讓蝦子扭起來、彎成一圈。",
+      ans: "外殼一節一節的，身體才能彎。",
+      two: "材料包，2 小時就夠。", three: "自己設計蝦頭和尾扇，當堂印出來。",
+      take: "會彎的櫻花蝦", notes: [["在地", "東港三寶"]] },
+
+    { id: "stand", m: "laser", t: "s", n: 1, icon: "stand", type: "draw", status: "todo",
+      q: "平平的木片怎麼站起來？", name: "海洋動物站起來＋小漁港",
+      how: "畫一隻海洋動物，大人拍照後網頁會自動加上插腳；切出來插上底座、上色。",
+      levels: ["站得穩", "用扇子吹也不倒", "全班排成一座漁港"],
+      ans: "底面積大、有兩個支點，才站得穩。",
+      two: "只切外形，2 小時來得及。", three: "再畫一隻，做成一對。",
+      take: "動物立板和底座", notes: [["在地", "漁港、燈塔、王船"], ["共用功能", "自動加插腳和 3D「海洋不倒翁」是同一個功能。"]] },
+    { id: "puppet", m: "laser", t: "s", n: 2, icon: "puppet", type: "kit", status: "todo",
+      q: "影子是怎麼變出來的？", name: "紙偶影子劇場",
+      how: "替預切零件上色，用雙腳釘組成會動的紙偶。",
+      levels: ["讓手腳動起來", "讓影子變大、變小", "三個人一起演一段"],
+      ans: "光走直線，被擋住就有影子；離燈越近，影子越大。",
+      two: "材料包，2 小時就夠。", three: "自己畫一個頭，大人當場切。",
+      take: "關節紙偶", notes: [["延伸", "台灣皮影戲"]] },
+    { id: "whirl", m: "laser", t: "s", n: 3, icon: "whirl", type: "kit", status: "todo",
+      q: "轉起來，顏色為什麼混在一起？", name: "炫光陀螺＋變色轉盤",
+      how: "在木圓片上畫顏色、穿繩做成拉線陀螺；再做一個雙層的變色轉盤。",
+      levels: ["拉得起來", "轉出新的顏色", "比誰轉得最久"],
+      ans: "轉得太快，眼睛分不開，顏色就混在一起。",
+      two: "材料包，2 小時就夠。", three: "畫第二片圓盤，比較哪一種圖案最好看。",
+      take: "兩個轉轉玩具", notes: [] },
+    { id: "bone", m: "laser", t: "b", n: 4, icon: "bone", type: "mix", status: "todo",
+      q: "同一道雷射，為什麼有的刻、有的切斷？", name: "黑鮪魚骨架杯墊",
+      how: "骨架用材料包；自己畫杯墊圖案，雕在杯墊上（也可以先塗色再雕刻）。",
+      levels: null, testTitle: "測試", test: "杯墊插回骨架，整條魚站得起來。",
+      ans: "雷射的功率和速度決定刻多深，夠強就會切斷。",
+      two: "只雕線條，2 小時來得及（需實測）。", three: "多畫幾片杯墊，整組都是自己的圖。",
+      take: "骨架杯墊組", notes: [["在地", "黑鮪魚"]],
+      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "孩子畫的杯墊圖案，可以先用小幫手的「海洋杯墊」轉成雷切檔；要先塗色再雕刻，就選「先塗色再雕刻」。", "骨架零件和杯墊的尺寸，試做時一起定。"] } },
+    { id: "nightlight", m: "laser", t: "b", n: 5, icon: "nightlight", type: "draw", status: "todo",
+      q: "為什麼刻線的地方會發光？", name: "發光壓克力小夜燈",
+      how: "畫圖，雕在透明壓克力上，插進 LED 底座。",
+      levels: null, testTitle: "測試", test: "關燈，看線條亮起來。",
+      ans: "光在壓克力裡面反彈著前進，刻痕會把光放出來。",
+      two: "只雕線條，2 小時來得及（需實測）。", three: "再做一片壓克力，可以換著插。",
+      take: "小夜燈", notes: [["在地／月份", "燈塔、海洋動物；聖誕樹、燈籠"], ["材料", "LED 底座要先買樣品試"]] },
+    { id: "rocker", m: "laser", t: "b", n: 6, icon: "rocker", type: "mix", status: "todo",
+      q: "它為什麼搖來搖去都不會倒？", name: "搖搖動物筆架",
+      how: "搖椅底座用材料包；自己畫一隻動物，切出來插上去。",
+      levels: ["推了會搖回來", "插滿筆也不倒", "比誰搖得最久"],
+      ans: "重心在弧形底的下方，推了就會搖回來。",
+      two: "來不及的話，改成替預切的動物上色。", three: "再畫一隻動物，可以換著插。",
+      take: "筆架", notes: [] },
+    { id: "crank", m: "laser", t: "a", n: 7, icon: "crank", type: "kit", status: "todo",
+      q: "轉一轉，招潮蟹為什麼會夾？", name: "手搖機關",
+      how: "零件全部預切、刻好編號，照步驟卡組裝、上色。",
+      levels: ["搖得動", "讓招潮蟹夾住一顆毛球", "換一顆凸輪，讓動作變快或變高"],
+      ans: "凸輪把轉圈圈變成上下動。",
+      two: "材料包，2 小時應該夠（組裝時間要先實測）。", three: "自己畫角色，當堂切出來。",
+      take: "手搖機關", notes: [["在地", "招潮蟹、黑鮪魚"], ["連接", "曲柄軸用十字木軸；會擺動的關節用螺絲加螺帽；盒子用插槽。"]] },
+    { id: "kingboat", m: "laser", t: "a", n: 8, icon: "kingboat", type: "kit", status: "todo",
+      q: "王船為什麼不會翻？", name: "王船下水",
+      how: "船體、帆、旗子都預切好，組裝、上色。",
+      levels: ["放進水裡不會翻", "用扇子把船吹到對岸", "把漁獲（小魚片）運回漁港"],
+      ans: "浮力把船托起來；船底又重又寬，所以不容易翻；風推著帆，船就會前進。",
+      two: "材料包，2 小時就夠。", three: "自己設計旗子，當堂雕出來。",
+      take: "王船", notes: [["在地", "東港迎王；做成玩具下水前，先問問在地人的意見。"]] },
+    { id: "maze", m: "laser", t: "a", n: 9, icon: "maze", type: "kit", status: "todo",
+      q: "怎麼轉，彈珠才會走出迷宮？", name: "旋轉迷宮",
+      how: "迷宮、轉盤、透明蓋都預切好，組裝、上色。",
+      levels: ["走出迷宮", "30 秒內走完", "兩顆彈珠同時走完"],
+      ans: "轉動迷宮時，彈珠會被重力拉著往低的地方滾。",
+      two: "材料包，2 小時就夠。", three: "自己畫迷宮蓋子的圖案。",
+      take: "旋轉迷宮", notes: [["來源", "卷木森活館的影片"]] },
+    { id: "walker", m: "laser", t: "a", n: 10, icon: "walker", type: "kit", status: "todo",
+      q: "它為什麼會自己走下坡？", name: "下坡走路動物",
+      how: "沿用國圖冬季講堂的設計，組裝、上色；前後移動騎士調整重心，才走得好。",
+      levels: ["走完斜坡", "走更陡的坡", "兩隻比賽"],
+      ans: "重力加上身體擺動，讓腳一步一步往前走。",
+      two: "材料包，2 小時就夠。", three: "自己畫騎士或動物，當堂切出來。",
+      take: "下坡走路動物", notes: [["來源", "國圖冬季講堂「逐步下坡玩具」"]] },
+  ];
+
+  const ROLES = [
+    ["老師", "開場、示範；顧機器（收檔、切片或排版、換線、排隊）；主持闖關"],
+    ["基地人員", "發材料包、陪孩子畫圖和拍照、帶組裝和上色桌、關卡計時、裝袋、發領取單"],
+  ];
+  const SAFETY = {
+    laser: ["老師按開始", "手不伸進機器", "隔著窗看", "濾煙機先開", "只用老師給的材料"],
+    "3d": ["不碰噴頭和平台", "等冷卻再拿", "用刮刀取件"],
+  };
+  function timeline(c) {
+    if (c.detail && c.detail.timeline) return c.detail.timeline;
+    const open = "問題：" + c.q + " 看成品、講安全";
+    if (c.type === "kit") return [["0:00", open], ["0:10", "照步驟卡組裝"], ["0:50", "塗色"], ["1:20", "測試、闖關"], ["1:50", "分享、收拾"]];
+    if (c.m === "3d") return [["0:00", open], ["0:10", "畫圖或打字，大人拍照轉檔（20 分鐘內完成）"], ["0:30", "送印；等印的時候先玩預製品" + (c.type === "mix" ? "、組裝材料包" : "")], ["1:20", "取件、測試、闖關"], ["1:50", "分享；沒印完的發領取單"]];
+    return [["0:00", open], ["0:10", "畫圖，大人拍照轉檔；先畫好的 3～4 人合併切一次"], ["0:50", (c.type === "mix" ? "組裝材料包、" : "") + "塗色；機器同時切剩下的"], ["1:20", "測試、闖關"], ["1:50", "分享、收拾"]];
+  }
+  const pickup = c => c.m === "laser" ? "雷切作品當天帶走。"
+    : c.type === "kit" ? "作品當天帶回家。"
+    : "當天帶回家；沒印完的貼上名字放待領架，用 LINE 通知家長 14 天內來領。";
+  function makePlan(c) {
+    const out = [];
+    if (c.type !== "kit") out.push(["手繪轉檔", "孩子在紙上畫，大人拍照，網頁自動轉成" + (c.m === "3d" ? " 3D 列印檔（STL）。" : "雷切檔（SVG）。")]);
+    if (c.type !== "draw") out.push(["零件檔", "在「機器設定」填好公差後，一鍵下載整組" + (c.m === "3d" ? "要先印的零件。" : "要先切的零件。")]);
+    return out;
+  }
+
+  /* ---------- 機器設定（學校、基地各一組，存在這台電腦的瀏覽器） ---------- */
+  const CAL_KEY = "courses:machine";
+  const PROF = { school: "學校", base: "基地" };
+  /* s3、s5：最剛好的插槽寬度；q3、q5：50 mm 方塊實際量到的尺寸（雷射公差 = 50 − 量到的）；tL、t3：上次修改日期 */
+  const CAL_DEF = { s3: 3.0, s5: 5.0, q3: null, q5: null, bump: false, bumpD: 1.0, cRound: 0.2, cRect: 0.3, tL: "", t3: "" };
+  function sanitize(o) {
+    const out = { active: o && PROF[o.active] ? o.active : "school", p: {} };
+    for (const k of Object.keys(PROF)) {
+      const src = (o && o.p && o.p[k]) || {}; out.p[k] = {};
+      for (const [key, dv] of Object.entries(CAL_DEF)) {
+        const v = src[key];
+        if (typeof dv === "boolean") out.p[k][key] = typeof v === "boolean" ? v : dv;
+        else if (typeof dv === "string") out.p[k][key] = typeof v === "string" ? v.slice(0, 10) : dv;
+        else out.p[k][key] = v !== "" && v != null && isFinite(+v) ? +v : dv;
+      }
+    }
+    return out;
+  }
+  let CAL = sanitize(store.get(CAL_KEY, null));
+  const calSave = () => store.set(CAL_KEY, CAL);
+  const cur = () => CAL.p[CAL.active];
+  const kerfOf = q => q == null || !isFinite(q) ? null : Math.round((50 - q) * 1000) / 1000;
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  /* 設定碼：DGM1_現在用哪組_學校_基地；每組依序是 s3,s5,q3,q5,bumpD,cRound,cRect（×100）、凸點開關、兩個修改日期（YYMMDD） */
+  const NUMK = ["s3", "s5", "q3", "q5", "bumpD", "cRound", "cRect"];
+  const enc1 = p => [...NUMK.map(k => p[k] == null ? "" : Math.round(p[k] * 100)), p.bump ? 1 : 0, (p.tL || "").replace(/-/g, "").slice(2), (p.t3 || "").replace(/-/g, "").slice(2)].join(",");
+  const codeOf = () => `DGM1_${CAL.active === "base" ? "b" : "s"}_${enc1(CAL.p.school)}_${enc1(CAL.p.base)}`;
+  function fromCode(str) {
+    const parts = String(str).replace(/\s+/g, "").split("_");
+    if (parts.length !== 4 || parts[0] !== "DGM1" || !/^[sb]$/.test(parts[1])) throw new Error("bad code");
+    const dec = part => {
+      const a = part.split(",");
+      if (a.length !== 10 || a.slice(0, 8).some(x => x !== "" && !/^-?\d+$/.test(x))) throw new Error("bad code");
+      const o = {}; NUMK.forEach((k, i) => { o[k] = a[i] === "" ? null : +a[i] / 100; }); o.bump = a[7] === "1";
+      const d = x => /^\d{6}$/.test(x) ? `20${x.slice(0, 2)}-${x.slice(2, 4)}-${x.slice(4)}` : "";
+      o.tL = d(a[8]); o.t3 = d(a[9]); return o;
+    };
+    return sanitize({ active: parts[1] === "b" ? "base" : "school", p: { school: dec(parts[2]), base: dec(parts[3]) } });
+  }
+
+
+  /* ---------- 雷切測試尺（黑色雕刻、紅色切割，單位 mm） ---------- */
+  const GL = {
+    "0": [[[1, 0], [3, 0], [4, 1], [4, 5], [3, 6], [1, 6], [0, 5], [0, 1], [1, 0]]],
+    "1": [[[1, 1], [2, 0], [2, 6]], [[1, 6], [3, 6]]],
+    "2": [[[0, 1], [1, 0], [3, 0], [4, 1], [4, 2], [0, 6], [4, 6]]],
+    "3": [[[0, 0], [4, 0], [2, 2.5], [3, 2.5], [4, 3.5], [4, 5], [3, 6], [1, 6], [0, 5]]],
+    "4": [[[3, 6], [3, 0], [0, 4], [4, 4]]],
+    "5": [[[4, 0], [0, 0], [0, 2.5], [3, 2.5], [4, 3.5], [4, 5], [3, 6], [0, 6]]],
+    "6": [[[3.5, 0], [1, 0], [0, 1.5], [0, 5], [1, 6], [3, 6], [4, 5], [4, 3.8], [3, 2.8], [0, 2.8]]],
+    "7": [[[0, 0], [4, 0], [1.5, 6]]],
+    "8": [[[1, 0], [3, 0], [4, 1], [4, 2], [3, 3], [1, 3], [0, 2], [0, 1], [1, 0]], [[1, 3], [3, 3], [4, 4], [4, 5], [3, 6], [1, 6], [0, 5], [0, 4], [1, 3]]],
+    "9": [[[4, 3.2], [1, 3.2], [0, 2.2], [0, 1], [1, 0], [3, 0], [4, 1], [4, 4.5], [2.5, 6], [0.5, 6]]],
+    ".": [[[0.2, 4.9], [1.4, 4.9], [1.4, 6], [0.2, 6], [0.2, 4.9]]],
+    "M": [[[0, 6], [0, 0], [2, 3], [4, 0], [4, 6]]],
+  };
+  const adv = ch => ch === "." ? 2 : 5;
+  function textPaths(str, x, y, hgt, align) {
+    const k = hgt / 6; let w = -1; for (const ch of str) w += adv(ch); w *= k;
+    let cx = align === "center" ? x - w / 2 : x; const out = [];
+    for (const ch of str) { for (const pl of GL[ch] || []) out.push("M" + pl.map(([a, b]) => f(cx + a * k) + " " + f(y + b * k)).join("L")); cx += adv(ch) * k; }
+    return out;
+  }
+  const rrPath = (x, y, w, hh, r) => `M${f(x + r)} ${f(y)}H${f(x + w - r)}A${f(r)} ${f(r)} 0 0 1 ${f(x + w)} ${f(y + r)}V${f(y + hh - r)}A${f(r)} ${f(r)} 0 0 1 ${f(x + w - r)} ${f(y + hh)}H${f(x + r)}A${f(r)} ${f(r)} 0 0 1 ${f(x)} ${f(y + hh - r)}V${f(y + r)}A${f(r)} ${f(r)} 0 0 1 ${f(x + r)} ${f(y)}Z`;
+  const circlePath = (cx, cy, r) => `M${f(cx - r)} ${f(cy)}a${f(r)} ${f(r)} 0 1 0 ${f(2 * r)} 0a${f(r)} ${f(r)} 0 1 0 ${f(-2 * r)} 0`;
+  /* 插槽：w 寬（板厚方向）、L 長；d > 0 時在左邊長邊中間加一個直徑 d 的半圓凸點，往槽裡面凸 */
+  function slotPath(cx, y, w, L, d) {
+    const x1 = cx - w / 2, x2 = cx + w / 2, y2 = y + L;
+    if (!d) return `M${f(x1)} ${f(y)}H${f(x2)}V${f(y2)}H${f(x1)}Z`;
+    const r = d / 2, ym = y + L / 2;
+    return `M${f(x1)} ${f(y)}H${f(x2)}V${f(y2)}H${f(x1)}V${f(ym + r)}A${f(r)} ${f(r)} 0 0 0 ${f(x1)} ${f(ym - r)}Z`;
+  }
+  function laserSheet(t, bumpD) {
+    bumpD = Math.max(0, Math.min(2, +bumpD || 0));
+    const n = t < 4 ? 7 : 9, w0 = t < 4 ? t - 0.3 : t - 0.4, pitch = 12, x0 = 16, L = 15;
+    const ws = Array.from({ length: n }, (_, i) => Math.round((w0 + i * 0.1) * 10) / 10);
+    const stripW = x0 + n * pitch + 2, stripH = 56, cut = [], eng = [];
+    cut.push(rrPath(0, 0, stripW, stripH, 3));
+    [[10, 0], [37, bumpD]].forEach(([y, d]) => ws.forEach((w, i) => {
+      const cx = x0 + pitch * i + pitch / 2;
+      cut.push(slotPath(cx, y, w, L, d));
+      eng.push(...textPaths(w.toFixed(1), cx, y - 5.6, 3, "center"));
+    }));
+    eng.push(...textPaths(t + "MM", 3, 3, 3));
+    eng.push(`M5 ${f(10 + L / 2)}H11`);          // 上排：沒有凸點
+    eng.push(circlePath(8, 37 + L / 2, 1.5));     // 下排：有凸點
+    const ix = stripW + 6; cut.push(rrPath(ix, 0, 14, 42, 2)); eng.push(...textPaths(String(t), ix + 7, 4, 3, "center"));
+    const sx = ix + 20; cut.push(`M${f(sx)} 0H${f(sx + 50)}V50H${f(sx)}Z`); eng.push(...textPaths("50", sx + 25, 22, 6, "center"));
+    const W = sx + 54, H = stripH + 4;
+    const g = (col, ds) => `<g fill="none" stroke="${col}" stroke-width="0.1">${ds.map(d => `<path d="${d}"/>`).join("")}</g>`;
+    const inner = `<g transform="translate(2 2)">${g("#000000", eng)}${g("#FF0000", cut)}</g>`;
+    return {
+      name: `雷切測試尺_${t}mm.svg`, W, H, widths: ws, inner,
+      svg: `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="0 0 ${f(W)} ${f(H)}">${inner}</svg>\n`,
+    };
+  }
+
+  /* ---------- 3D 間隙測試片（單位 mm） ---------- */
+  function clearanceModel() {
+    const circ = (cx, cy, r, n = 72) => Array.from({ length: n }, (_, i) => [cx + r * Math.cos(2 * Math.PI * i / n), cy + r * Math.sin(2 * Math.PI * i / n)]);
+    const rect = (x, y, w, hh) => [[x, y], [x + w, y], [x + w, y + hh], [x, y + hh]];
+    const rr = (x, y, w, hh, r, n = 6) => {
+      const pts = [], arc = (cx, cy, a0) => { for (let i = 0; i <= n; i++) { const a = a0 + Math.PI / 2 * i / n; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } };
+      arc(x + w - r, y + r, -Math.PI / 2); arc(x + w - r, y + hh - r, 0); arc(x + r, y + hh - r, Math.PI / 2); arc(x + r, y + r, Math.PI); return pts;
+    };
+    const cs = [0.1, 0.2, 0.3, 0.4, 0.5], D = 6, TW = 8, TT = 3, plate = [rr(0, 0, 84, 36, 3)], dots = [];
+    cs.forEach((c, i) => {
+      const cx = 12 + 15 * i;
+      plate.push(circ(cx, 11, (D + c) / 2));
+      plate.push(rect(cx - (TW + c) / 2, 26 - (TT + c) / 2, TW + c, TT + c));
+      for (let j = 0; j <= i; j++) dots.push(circ(cx + (j - i / 2) * 2.2, 19, 0.75, 24));
+    });
+    return { cs, D, TW, TT, plate, dots, key: [rr(0, 44, 26, 12, 3)], peg: [circ(7, 50, D / 2)], tab: [rr(32, 46, 30, TW, 1)] };
+  }
+  function clearanceSTL() {
+    const m = clearanceModel(), tris = [], tones = [];
+    OUT.solid(tris, tones, m.plate, 0, 4, "base");
+    for (const d of m.dots) OUT.solid(tris, tones, [d], 3.8, 4.6, "base");
+    OUT.solid(tris, tones, m.key, 0, 3, "base");
+    OUT.solid(tris, tones, m.peg, 2.8, 11, "base");
+    OUT.solid(tris, tones, m.tab, 0, m.TT, "base");
+    return { data: OUT.stl(tris), tris: tris.length, name: "3D間隙測試片.stl" };
+  }
+  function clearancePreview() {
+    const m = clearanceModel(), d = L => OUT.dLoops(L), fillA = "#e7d8bf", line = "#6b5a3e";
+    const labels = m.cs.map((c, i) => `<text x="${12 + 15 * i}" y="41" font-size="3.8" text-anchor="middle" fill="${line}" font-family="sans-serif">+${c}</text>`).join("");
+    return `<svg viewBox="-3 -3 90 62" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3D 間隙測試片俯視圖"><path d="${d(m.plate)}" fill="${fillA}" fill-rule="evenodd" stroke="${line}" stroke-width=".4"/>${m.dots.map(x => `<path d="${d([x])}" fill="${line}"/>`).join("")}${labels}<path d="${d(m.key)}" fill="${fillA}" stroke="${line}" stroke-width=".4"/><path d="${d(m.peg)}" fill="#cfae7e" stroke="${line}" stroke-width=".4"/><path d="${d(m.tab)}" fill="${fillA}" stroke="${line}" stroke-width=".4"/></svg>`;
+  }
+
+  /* ---------- 下載 ---------- */
+  function download(name, data, type) {
+    const blob = data instanceof Blob ? data : new Blob([data], { type: type || "application/octet-stream" });
+    const url = URL.createObjectURL(blob), a = h("a", { href: url, download: name, style: "display:none" });
+    document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 4000);
+  }
+
+  /* ---------- 共用畫面元件 ---------- */
+  const app = document.getElementById("app");
+  const box = (title, ...kids) => h("section", { class: "box" }, h("h3", null, title), ...kids);
+  const para = (text, cls) => h("p", { class: cls || null }, text);
+  const dl = pairs => h("dl", { class: "kv" }, ...pairs.flatMap(([k, v]) => [h("dt", null, k), h("dd", null, v)]));
+  const ol = items => h("ol", { class: "list" }, ...items.map(x => h("li", null, x)));
+  const ul = items => h("ul", { class: "list" }, ...items.map(x => h("li", null, x)));
+  const table = (heads, rows, timeCol) => h("div", { class: "tbl-wrap" }, h("table", { class: "tbl" },
+    h("thead", null, h("tr", null, ...heads.map(x => h("th", { scope: "col" }, x)))),
+    h("tbody", null, ...rows.map(r => h("tr", null, ...r.map((x, i) => h("td", { class: timeCol && i === 0 ? "t" : null }, x)))))));
+  const statusPill = c => h("span", { class: "st " + c.status }, STATUS[c.status]);
+  /* 深色／大地色：和黑鮪魚名牌網頁共用同一個設定 */
+  const THEME_KEY = "tuna:theme";
+  const themeGet = () => { try { return JSON.parse(localStorage.getItem(THEME_KEY) || '""'); } catch (e) { return ""; } };
+  const themeSet = v => { try { localStorage.setItem(THEME_KEY, JSON.stringify(v)); } catch (e) { /* 存不了也沒關係 */ } };
+  function applyTheme() { const t = themeGet(); if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
+  applyTheme();
+  function topbar(active, helpTopic) {
+    const dark = (themeGet() || (window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")) === "dark";
+    return h("header", { class: "top" },
+      h("a", { class: "brand", href: "#" }, svgEl(LOGO), h("span", null, h("b", null, "東港創客課程工具箱"), h("small", null, "東港 7–12 歲 Play 基地・3D 列印 × 雷射切割"))),
+      h("nav", { "aria-label": "主要" }, ...[["#", "課程清單", "list"], ["#machine", "機器設定", "machine"], ["#betty", "給 Betty 的清單", "betty"]]
+        .map(([href, t, k]) => h("a", { class: "chip", href, "aria-current": active === k ? "page" : null }, t))),
+      h("div", { class: "tools-r" },
+        h("a", { class: "iconbtn", href: "#help-" + (helpTopic || "list"), "aria-label": "怎麼用", title: "怎麼用" }, "？"),
+        h("button", { type: "button", class: "iconbtn", "aria-label": dark ? "換成大地色" : "換成深色", title: dark ? "大地色" : "深色",
+          onclick: () => { themeSet(dark ? "light" : "dark"); applyTheme(); route(); } }, dark ? "☀" : "☾")));
+  }
+  const foot = () => h("footer", { class: "foot" },
+    h("span", null, "課程規劃 v3 草案（2026 年 11 月），試做後會陸續更新。"),
+    h("span", null, `v${VERSION}・© 2026 Ken Chen・有問題請用 LINE 告訴陳老師`));
+
+  /* ---------- 課程清單 ---------- */
+  const F = Object.assign({ m: "all", t: "all", ty: "all" }, store.get("courses:filter", {}));
+  function card(c) {
+    return h("a", { class: "card tier-" + c.t, href: "#c-" + c.id },
+      h("span", { class: "ico" }, icon(c.icon, 52)),
+      h("span", { class: "txt" },
+        h("span", { class: "num" }, `${MACH_SHORT[c.m]} ${String(c.n).padStart(2, "0")}`),
+        h("b", null, c.q),
+        h("span", { class: "prod" }, c.name),
+        h("span", { class: "tags" }, h("span", { class: "tag" }, TYPES[c.type]), statusPill(c), h("span", { class: "open", "aria-hidden": "true" }, "打開 ›"))));
+  }
+  function viewList() {
+    const counts = { todo: 0, trying: 0, ready: 0 }; C.forEach(c => counts[c.status]++);
+    const frow = (label, key, opts) => h("div", { class: "frow" }, h("span", null, label),
+      h("div", { class: "seg", role: "group", "aria-label": label }, ...opts.map(([v, txt]) =>
+        h("button", { type: "button", "aria-pressed": String(F[key] === v), onclick: () => { F[key] = v; store.set("courses:filter", F); viewList(); } }, txt))));
+    const list = h("div");
+    app.replaceChildren(topbar("list", "list"),
+      h("header", { class: "page-head" },
+        h("h1", null, "課程清單"),
+        h("p", { class: "lead" }, "3D 列印、雷射切割各 10 堂。每堂一頁：介紹、課前準備、上課用、做檔案；試做完會換上成品照片。"),
+        h("div", { class: "stats" }, ...Object.keys(STATUS).map(k => h("span", { class: "st " + k }, `${STATUS[k]} ${counts[k]} 堂`))),
+        h("div", { class: "row" }, h("span", { class: "note" }, "做好的工具："), h("a", { class: "chip", href: "../tuna/" }, "黑鮪魚名牌網頁 ›"))),
+      h("div", { class: "filters" },
+        frow("機器", "m", [["all", "全部"], ["3d", "3D 列印"], ["laser", "雷射切割"]]),
+        frow("年級", "t", [["all", "全部"], ["s", "小小創客"], ["b", "初階"], ["a", "進階"]]),
+        frow("課型", "ty", [["all", "全部"], ["kit", "材料包"], ["draw", "自己畫"], ["mix", "混合"]])),
+      list, foot());
+    const show = C.filter(c => (F.m === "all" || c.m === F.m) && (F.t === "all" || c.t === F.t) && (F.ty === "all" || c.type === F.ty));
+    if (!show.length) { list.append(para("沒有符合條件的課，換個篩選試試看。", "pending")); return; }
+    for (const m of ["3d", "laser"]) {
+      const ms = show.filter(c => c.m === m); if (!ms.length) continue;
+      list.append(h("div", { class: "mach" }, h("h2", null, MACH[m]), h("span", { class: "note" }, ms.length + " 堂")));
+      for (const t of ["s", "b", "a"]) {
+        const ts = ms.filter(c => c.t === t); if (!ts.length) continue;
+        list.append(h("div", { class: "tier-h tier-" + t }, h("i"), TIERS[t][0], h("span", null, TIERS[t][1])), h("div", { class: "grid" }, ...ts.map(card)));
+      }
+    }
+  }
+
+  /* ---------- 每堂一頁 ---------- */
+  function viewCourse(c) {
+    const d = c.detail || null;
+    const tabs = [["intro", "介紹"], ["prep", "課前準備"], ["class", "上課用"], ["make", "做檔案"]];
+    let tab = "intro";
+    const seg = h("div", { class: "seg", role: "group", "aria-label": "這堂課的內容" }), body = h("div", { class: "sec" });
+    const parts = {
+      intro: () => [
+        box("孩子做什麼", para(c.how)),
+        box("答案", para(c.ans)),
+        box("時間", dl([["2 小時", c.two], ["3 小時加", c.three]])),
+        box("帶回家", para(c.take)),
+        c.notes.length ? box("其他", dl(c.notes)) : null],
+      prep: () => d ? [
+        box("材料（12 人份）", table(["材料", "數量", "備註"], d.mats)),
+        box("課前要做", ol(d.before))] : [
+        box("課前準備", para("試做時補上：12 人份材料清單、要先切或先印的零件檔。", "pending")),
+        ...c.notes.filter(([k]) => k.startsWith("材料")).map(([k, v]) => box(k, para(v)))],
+      class: () => [
+        box("2 小時流程", table(["時間", "做什麼"], timeline(c), true)),
+        box("排 3 小時", para("2 小時的內容做完後，再加 1 小時：" + c.three)),
+        d && d.steps ? box("步驟卡（孩子看的）", ol(d.steps)) : box("步驟卡（孩子看的）", para("試做時補上。", "pending")),
+        c.levels ? box("關卡", h("ol", { class: "levels" }, ...c.levels.map((x, i) => h("li", null, h("span", { class: "lv" }, "關卡 " + (i + 1)), x)))) : box(c.testTitle || "測試", para(c.test)),
+        box("兩人分工", dl(ROLES)),
+        box("安全", ul(SAFETY[c.m].concat(c.safety || []))),
+        box("作品領取", para(pickup(c)))],
+      make: () => d && d.tool ? [
+        box("做檔案", h("div", { class: "row" }, h("a", { class: "btn primary", href: d.tool.href }, d.tool.label)), ul(d.toolNotes))] : [
+        c.toolNow ? box("現在可以先用", h("div", { class: "row" }, h("a", { class: "btn primary", href: c.toolNow.href }, c.toolNow.label)), ul(c.toolNow.notes)) : null,
+        box(c.toolNow ? "之後要做的" : "做檔案", dl(makePlan(c)), para(c.toolNow ? "這堂專用的工具，試做時一起做。" : "這堂的工具還沒做好，試做時一起做。", "pending")),
+        c.type !== "draw" ? box("機器設定", para("零件檔會自動套用「機器設定」裡的公差。"), h("div", { class: "row" }, h("a", { class: "btn", href: "#machine" }, "打開機器設定"))) : null],
+    };
+    const draw = () => {
+      seg.replaceChildren(...tabs.map(([k, t]) => h("button", { type: "button", "aria-pressed": String(tab === k), onclick: () => { tab = k; draw(); } }, t)));
+      body.className = "sec" + (tab === "class" || tab === "intro" ? " two" : "");
+      body.replaceChildren(...parts[tab]().filter(Boolean));
+    };
+    app.replaceChildren(topbar("list", "course"),
+      h("a", { class: "chip back", href: "#" }, "‹ 課程清單"),
+      h("header", { class: "chead" },
+        h("div", null,
+          h("div", { class: "meta" }, `${MACH[c.m]}・${TIERS[c.t][0]}（${TIERS[c.t][1]}）・第 ${c.n} 堂`),
+          h("h1", null, c.q),
+          h("div", { class: "row" }, h("span", { class: "prodname" }, c.name), h("span", { class: "tag" }, TYPES[c.type]), statusPill(c))),
+        h("figure", { class: "hero tier-" + c.t }, icon(c.icon, 104), h("figcaption", null, h("small", null, "示意圖，試做後換成成品照")))),
+      seg, body, foot());
+    draw();
+  }
+
+  /* ---------- 機器設定（分三頁：雷切、3D 列印、帶到別台電腦；每頁照 1 下載 → 2 測 → 3 填 的順序） ---------- */
+  let machineTab = "laser";
+  function viewMachine() {
+    const P = cur();
+    const codeBox = h("textarea", { id: "code", readonly: true, rows: "2", "aria-label": "這台電腦的設定碼" });
+    const stampL = h("p", { class: "note" }), stamp3 = h("p", { class: "note" });
+    const showStamps = () => {
+      stampL.textContent = P.tL ? "上次修改：" + P.tL : "還沒填，現在是預設值。";
+      stamp3.textContent = P.t3 ? "上次修改：" + P.t3 : "還沒填，現在是預設值。";
+      codeBox.value = codeOf();
+    };
+    const changed = which => { P[which] = today(); calSave(); showStamps(); };
+    const num = (id, label, key, step, unit, which, after) => h("div", { class: "field" }, h("label", { for: id }, label),
+      h("div", { class: "uw" }, h("input", { id, type: "number", step, inputmode: "decimal", value: P[key] == null ? "" : String(P[key]),
+        onchange: e => {
+          const raw = e.target.value.trim(), v = parseFloat(raw);
+          if (raw === "" && CAL_DEF[key] === null) P[key] = null;
+          else if (isFinite(v)) P[key] = v;
+          else { e.target.value = P[key] == null ? "" : String(P[key]); return; }
+          changed(which); if (after) after();
+        } }), h("span", null, unit)));
+    const board = t => {
+      const sk = "s" + t, qk = "q" + t, out = h("p", { class: "note", role: "status" });
+      const show = v => {
+        const k = kerfOf(v);
+        if (k == null) { out.className = "note"; out.textContent = "還沒量：零件檔先不補公差。"; return; }
+        const bad = k < 0 || k > 0.6;
+        out.className = bad ? "msg bad" : "msg";
+        out.textContent = bad ? `算出來是 ${f(k)} mm，不太合理，再量一次看看。` : `雷射公差 = 50 − ${f(v)} = ${f(k)} mm`;
+      };
+      const qField = num("q" + t, "50 mm 方塊實際量到", qk, "0.01", "mm", "tL", () => show(P[qk]));
+      qField.querySelector("input").addEventListener("input", e => show(parseFloat(e.target.value)));
+      show(P[qk]);
+      return h("div", { class: "calc" }, h("h3", null, t + " mm 板"),
+        h("div", { class: "fields" }, num("s" + t, "最剛好的插槽寬度", sk, "0.1", "mm", "tL"), qField), out);
+    };
+    const step = (n, title, ...kids) => h("section", { class: "box step" }, h("h3", null, h("span", { class: "stepn" }, n), title), ...kids);
+    showStamps();
+    let body;
+    if (machineTab === "laser") {
+      const prev = h("div", { class: "preview" });
+      const drawPrev = () => {
+        const s = laserSheet(3, P.bumpD);
+        prev.replaceChildren(svgEl(`<svg class="lz" viewBox="0 0 ${f(s.W)} ${f(s.H)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3 mm 雷切測試尺預覽">${s.inner}</svg>`),
+          h("div", { class: "legend" }, h("span", null, "預覽：3 mm 測試尺"), h("span", null, h("i", { style: "border-color:#FF0000" }), "紅線切割"), h("span", null, h("i", { style: "border-color:#000" }), "黑線刻字")));
+      };
+      drawPrev();
+      body = h("div", { class: "sec two" },
+        step("1", "下載測試尺",
+          h("div", { class: "row" },
+            h("button", { type: "button", class: "btn primary", onclick: () => { const s = laserSheet(3, P.bumpD); download(s.name, s.svg, "image/svg+xml"); } }, "下載 3 mm 測試尺"),
+            h("button", { type: "button", class: "btn", onclick: () => { const s = laserSheet(5, P.bumpD); download(s.name, s.svg, "image/svg+xml"); } }, "下載 5 mm 測試尺")),
+          prev),
+        step("2", "切好之後怎麼測", ol([
+          "用 3 mm 板切「3 mm 測試尺」：紅色用切割，黑色（數字）用低功率刻線。",
+          "量 50 mm 方塊，填進下面的「50 mm 方塊實際量到」，公差會自動算好。",
+          "拿插片一格一格插：上排沒有凸點，下排有凸點。找出插得進去、拿起來不會掉的那一格，把那一格的數字填進「最剛好的插槽寬度」。",
+          "下排比較剛好的話，就勾「長邊中間加半圓凸點」。",
+          "5 mm 板照同樣的方法再做一次。兩種板子的公差不一樣，要分開量。",
+        ])),
+        step("3", "把結果填進來", board(3), board(5),
+          h("div", { class: "fields" },
+            h("div", { class: "field" }, h("span", { class: "flabel" }, "插槽加凸點"),
+              h("label", { class: "check" }, h("input", { type: "checkbox", checked: P.bump, onchange: e => { P.bump = e.target.checked; changed("tL"); } }), "長邊中間加半圓凸點")),
+            num("bumpD", "凸點直徑", "bumpD", "0.1", "mm", "tL", drawPrev)),
+          stampL));
+    } else if (machineTab === "3d") {
+      const prev3d = h("div", { class: "preview" }); prev3d.replaceChildren(svgEl(clearancePreview()));
+      body = h("div", { class: "sec two" },
+        step("1", "下載間隙測試片",
+          h("div", { class: "row" }, h("button", { type: "button", class: "btn primary", onclick: () => { const s = clearanceSTL(); download(s.name, s.data, "model/stl"); } }, "下載 3D 間隙測試片")),
+          prev3d),
+        step("2", "印好之後怎麼測", ol([
+          "用 PLA 印一次（底板、圓柱鑰匙、扁片在同一個檔案裡）。",
+          "點點的數目就是間隙：1 點是 0.1 mm，5 點是 0.5 mm。",
+          "把圓柱鑰匙一格一格插進圓孔，找出插得進去、轉得動、又不會晃的那一格。",
+          "扁片插進方孔，同樣找最剛好的一格。",
+          "換一台印表機或換一種線材，就再印一次。",
+        ]), h("p", { class: "note" }, "會卡在一起的零件才用得到這些數字，例如鍵帽、不倒翁的上半身、陀螺的軸孔、櫻花蝦的關節；名牌、模具這種單片的不用。")),
+        step("3", "把結果填進來",
+          h("div", { class: "fields" },
+            num("cRound", "圓孔最剛好的間隙", "cRound", "0.05", "mm", "t3"),
+            num("cRect", "方孔最剛好的間隙", "cRect", "0.05", "mm", "t3")),
+          stamp3));
+    } else {
+      const codeMsg = h("span", { class: "msg", role: "status" });
+      const pasteBox = h("textarea", { id: "paste", rows: "2", placeholder: "貼上從別台電腦複製來的設定碼" });
+      body = h("div", { class: "sec two" },
+        step("1", "在這台電腦複製",
+          h("p", { class: "note" }, "數字存在這台電腦的瀏覽器裡，學校、基地兩組都在設定碼裡。"),
+          h("label", { class: "flabel", for: "code" }, "這台電腦的設定碼"), codeBox,
+          h("div", { class: "row" }, h("button", { type: "button", class: "btn primary", onclick: async () => {
+            try { await navigator.clipboard.writeText(codeBox.value); codeMsg.className = "msg"; codeMsg.textContent = "已經複製，可以用 LINE 傳給自己。"; }
+            catch (e) { codeBox.focus(); codeBox.select(); codeMsg.className = "msg"; codeMsg.textContent = "已經選好，請按複製。"; } } }, "複製設定碼"), codeMsg)),
+        step("2", "在另一台電腦貼上",
+          h("label", { class: "flabel", for: "paste" }, "貼上設定碼"), pasteBox,
+          h("div", { class: "row" }, h("button", { type: "button", class: "btn", onclick: () => {
+            try { if (!pasteBox.value.trim()) throw new Error("empty"); CAL = fromCode(pasteBox.value); calSave(); viewMachine(); }
+            catch (e) { codeMsg.className = "msg bad"; codeMsg.textContent = "設定碼看不懂，請確認有完整複製。"; } } }, "載入設定碼")),
+          h("p", { class: "note" }, "載入後，這台電腦原本的數字會被換掉。")));
+    }
+    const mt = [["laser", "雷切（beamo）"], ["3d", "3D 列印（ARCO）"], ["code", "帶到別台電腦"]];
+    app.replaceChildren(topbar("machine", "machine"),
+      h("header", { class: "page-head" },
+        h("h1", null, "機器設定"),
+        h("p", { class: "lead" }, "先切一把雷切測試尺、印一片 3D 間隙測試片，把結果填進來。之後的零件檔都照這裡的數字做，換板子或換機器只要改數字。"),
+        h("div", { class: "row" }, h("span", { class: "note" }, "現在用："),
+          h("div", { class: "seg", role: "group", "aria-label": "設定組" }, ...Object.entries(PROF).map(([k, t]) =>
+            h("button", { type: "button", "aria-pressed": String(CAL.active === k), onclick: () => { CAL.active = k; calSave(); viewMachine(); } }, t + "的機器"))))),
+      h("div", { class: "seg mtabs", role: "group", "aria-label": "機器" }, ...mt.map(([k, t]) =>
+        h("button", { type: "button", "aria-pressed": String(machineTab === k), onclick: () => { machineTab = k; viewMachine(); } }, t))),
+      body, foot());
+  }
+
+  /* ---------- 怎麼用（每頁右上角的 ？） ---------- */
+  const HELP = {
+    list: ["課程清單", [
+      ["看所有的課", "3D 列印、雷射切割各 10 堂，照年級分組。每張卡片是一堂課：上面是課程問題，下面是作品名稱。"],
+      ["篩選", "用「機器」「年級」「課型」三排按鈕篩選，例如只看雷射切割的材料包。選擇會記在這台電腦。"],
+      ["看狀態", "卡片上的小標籤寫著還沒試做、試做中或可以開課。可以開課的課，才會出現在「給 Betty 的清單」。"],
+      ["打開一堂課", "點卡片（右下角寫「打開 ›」），就會看到這堂課的頁面。"]]],
+    course: ["每堂課的頁面", [
+      ["四個分頁", "介紹：孩子做什麼、答案、時間、帶回家。課前準備：材料和要先做的事。上課用：流程、步驟卡、關卡、分工、安全。做檔案：產生檔案的工具。"],
+      ["2 小時和 3 小時", "「上課用」先排 2 小時的流程；排 3 小時的話，再照「排 3 小時」多加 1 小時的內容。"],
+      ["還沒試做的課", "寫著「試做時補上」的地方，試做完會補上材料、步驟卡和工具。"],
+      ["回到清單", "按左上角的「‹ 課程清單」。"]]],
+    machine: ["機器設定", [
+      ["先選哪一組", "上面選「學校的機器」或「基地的機器」，兩組數字分開存。"],
+      ["雷切", "下載測試尺，切好後照「怎麼測」量，把最剛好的插槽寬度和 50 mm 方塊的尺寸填進去。3 mm、5 mm 板要分開測。"],
+      ["3D 列印", "下載間隙測試片，印好後用圓柱鑰匙和扁片找最剛好的孔，把間隙填進去。"],
+      ["換電腦", "數字存在這台電腦的瀏覽器裡。到「帶到別台電腦」複製設定碼，在另一台貼上就好。"]]],
+    betty: ["給 Betty 的清單", [
+      ["只放可以開課的", "試做成功、有成品照片的課，才會出現在這一頁。"],
+      ["傳給 Betty", "把這一頁的網址用 LINE 傳給 Betty，她就能看到可以選的課。"]]],
+  };
+  let lastPage = { hash: "#", name: "課程清單" };
+  function viewHelp(topic) {
+    if (!HELP[topic]) topic = "list";
+    const [title, cards] = HELP[topic];
+    const track = h("div", { class: "cards", tabindex: "0", role: "region", "aria-label": title + "的說明" },
+      ...cards.map(([t, x], i) => h("article", { class: "hcard" }, h("span", { class: "num" }, `${i + 1} / ${cards.length}`), h("h3", null, t), h("p", null, x))));
+    const go = d => track.scrollBy({ left: d * track.clientWidth, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    track.addEventListener("keydown", e => { if (e.key === "ArrowRight") { e.preventDefault(); go(1); } if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); } });
+    app.replaceChildren(topbar(null, topic),
+      h("a", { class: "chip back", href: lastPage.hash }, "‹ " + lastPage.name),
+      h("header", { class: "page-head" }, h("h1", null, "怎麼用"),
+        h("div", { class: "seg", role: "group", "aria-label": "說明目錄" }, ...Object.keys(HELP).map(k =>
+          h("button", { type: "button", "aria-pressed": String(k === topic), onclick: () => { location.replace("#help-" + k); } }, HELP[k][0])))),
+      track,
+      h("div", { class: "row pager" },
+        h("button", { type: "button", class: "btn", onclick: () => go(-1) }, "‹ 上一張"),
+        h("button", { type: "button", class: "btn", onclick: () => go(1) }, "下一張 ›")),
+      foot());
+  }
+
+  /* ---------- 給 Betty 的清單 ---------- */
+  function viewBetty() {
+    const ready = C.filter(c => c.status === "ready");
+    const trying = C.filter(c => c.status === "trying").length, todo = C.filter(c => c.status === "todo").length;
+    const bettyCard = c => h("article", { class: "card tier-" + c.t },
+      h("span", { class: "ico" }, icon(c.icon, 52)),
+      h("span", { class: "txt" },
+        h("span", { class: "num" }, `${MACH[c.m]}・${TIERS[c.t][0]}（${TIERS[c.t][1]}）`),
+        h("b", null, c.q), h("span", { class: "prod" }, c.name + "・可以排 2 或 3 小時"),
+        h("span", { class: "prod" }, "帶回家：" + c.take)));
+    app.replaceChildren(topbar("betty", "betty"),
+      h("header", { class: "page-head" },
+        h("h1", null, "可以開課的課程"),
+        h("p", { class: "lead" }, "這一頁只放已經試做成功、有成品照片的課，可以直接把連結傳給 Betty 選。")),
+      ready.length ? h("div", { class: "grid" }, ...ready.map(bettyCard))
+        : h("div", { class: "box empty" }, para(`目前還沒有可以開課的課（試做中 ${trying} 堂、還沒試做 ${todo} 堂）。試做完、放上成品照片之後，就會出現在這裡。`)),
+      foot());
+  }
+
+  /* ---------- 切換頁面（#machine、#betty、#c-課程代號） ---------- */
+  function route() {
+    const k = location.hash.replace(/^#/, ""), course = k.startsWith("c-") ? C.find(c => c.id === k.slice(2)) : null;
+    if (k.startsWith("help-")) { viewHelp(k.slice(5)); return; }
+    if (k === "machine") { lastPage = { hash: "#machine", name: "機器設定" }; viewMachine(); }
+    else if (k === "betty") { lastPage = { hash: "#betty", name: "給 Betty 的清單" }; viewBetty(); }
+    else if (course) { lastPage = { hash: "#c-" + course.id, name: course.name }; viewCourse(course); }
+    else { lastPage = { hash: "#", name: "課程清單" }; viewList(); }
+  }
+  /* 字型：畫面先出來，字型好了再換上去；連不到就用裝置內建的字（和黑鮪魚名牌網頁用同一組，換頁時有快取） */
+  function loadFonts() {
+    for (const href of ["https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap", "https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap"]) {
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = href; document.head.append(l);
+    }
+  }
+  addEventListener("hashchange", () => { route(); scrollTo(0, 0); });
+  window.HUB = { C, laserSheet, clearanceSTL, clearanceModel, CAL: () => CAL, VERSION };
+  route();
+  requestAnimationFrame(() => setTimeout(loadFonts, 0));
+})();
+
+</script>
+</body>
+</html>
