@@ -805,10 +805,10 @@ const OUT = (() => {
   };
   const f = n => String(Math.round(n * 1000) / 1000);
 
-  const VERSION = "1.1.3";
-  /* 線稿轉檔小幫手目前放在 Claude 上（要登入老師的帳號）；之後要給小朋友用時再放上這個網站 */
-  const HELPER_URL = "https://claude.ai/artifact/QX7YJMzmsG7KVZirnSMxmJ";
-  const HELPER_NOTE = "小幫手目前放在 Claude 上，要用老師的帳號登入才打得開。";
+  const VERSION = "1.2.0";
+  /* 創客小幫手（原線稿轉檔小幫手）：不用登入，Chromebook、手機都能開；#作品代號直接打開那個作品 */
+  const MAKER = "https://kenchen0728.github.io/maker-helper/";
+  const HELPER_NOTE = "創客小幫手不用登入，Chromebook、手機都能開。";
 
   /* ---------- 名稱 ---------- */
   const MACH = { "3d": "3D 列印", laser: "雷射切割" };
@@ -853,7 +853,7 @@ const OUT = (() => {
       ans: "模具可以把同一個形狀複製很多次，工廠就是這樣量產的。",
       two: "模具只有薄牆，應該來得及當堂印出來（需實測）。", three: "用全班的黏土作品排成一座小漁港。",
       take: "自己的模具和黏土作品", notes: [["在地", "黑鮪魚、櫻花蝦造型"]],
-      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "選「黏土模具」，拍照或上傳孩子的畫。", "模具會自動左右相反，壓出來的黏土方向和孩子畫的一樣。", "試做時確認模具的大小、牆的厚度和列印時間。"] } },
+      toolNow: { href: MAKER + "#mold", label: "打開創客小幫手：模具", notes: [HELPER_NOTE, "拍照或上傳孩子的畫，也可以直接在網頁上畫。", "模具會自動左右相反，壓出來的黏土方向和孩子畫的一樣。", "試做時確認模具的大小、牆的厚度和列印時間。"] } },
     { id: "fishing", m: "3d", t: "s", n: 2, icon: "fishing", type: "kit", status: "todo",
       q: "磁鐵隔著塑膠也吸得到嗎？", name: "磁鐵釣魚樂",
       how: "替預印的魚上色（肚子裡已經藏好鐵片），組好釣竿就開始釣魚。",
@@ -916,7 +916,7 @@ const OUT = (() => {
       ans: "印章要刻成左右相反，蓋出來才是正的。",
       two: "印章面當堂印（需實測）。", three: "設計第二個印章，跟同學交換蓋。",
       take: "印章、明信片、集章卡", notes: [["在地", "王船、黑鮪魚、櫻花蝦；月份可以換成生肖、聖誕"]],
-      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "選「印章」：可以選圓形或方形、陽刻或陰刻，網頁會自動左右翻轉。", "現在的手柄是木棒凹槽；改成雷切十字握把，試做時一起改。"] } },
+      toolNow: { href: MAKER + "#stampW", label: "打開創客小幫手：印章", notes: [HELPER_NOTE, "可以選圓形或方形、陽刻或陰刻，網頁會自動左右翻轉。", "現在的手柄是木棒凹槽；改成雷切十字握把，試做時一起改。"] } },
     { id: "soapboat", m: "3d", t: "b", n: 6, icon: "soapboat", type: "mix", status: "todo",
       q: "肥皂為什麼能推小船前進？", name: "肥皂動力小漁船",
       how: "先替預印的船上色、比賽，再畫自己的船（很薄，印得快）。",
@@ -931,7 +931,7 @@ const OUT = (() => {
       ans: "重量集中在外圈的陀螺轉得比較久（讓孩子自己比比看）。",
       two: "材料包，2 小時就夠。", three: "用萬花筒模式畫自己的圓盤，當堂印出來。",
       take: "一組陀螺", notes: [],
-      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "「3 小時加」畫自己的圓盤，可以先用小幫手的「陀螺」（可以開萬花筒）。", "小幫手的陀螺是插竹籤的；改成螺絲軸，試做時一起改。"] } },
+      toolNow: { href: MAKER + "#spin", label: "打開創客小幫手：陀螺圓盤", notes: [HELPER_NOTE, "「3 小時加」畫自己的圓盤（可以開萬花筒）。", "現在的陀螺圓盤是插竹籤的；改成螺絲軸，試做時一起改。"] } },
     { id: "copter", m: "3d", t: "a", n: 8, icon: "copter", type: "kit", status: "todo",
       q: "竹蜻蜓為什麼會飛？", name: "竹蜻蜓飛高賽",
       how: "替預印的葉片上色（準備 2～3 種形狀），插上竹籤。",
@@ -982,7 +982,7 @@ const OUT = (() => {
       ans: "雷射的功率和速度決定刻多深，夠強就會切斷。",
       two: "只雕線條，2 小時來得及（需實測）。", three: "多畫幾片杯墊，整組都是自己的圖。",
       take: "骨架杯墊組", notes: [["在地", "黑鮪魚"]],
-      toolNow: { href: HELPER_URL, label: "打開線稿轉檔小幫手", notes: [HELPER_NOTE, "孩子畫的杯墊圖案，可以先用小幫手的「海洋杯墊」轉成雷切檔；要先塗色再雕刻，就選「先塗色再雕刻」。", "骨架零件和杯墊的尺寸，試做時一起定。"] } },
+      toolNow: { href: MAKER + "#engrave", label: "打開創客小幫手：雕刻圖案", notes: [HELPER_NOTE, "孩子畫的杯墊圖案，在「雕刻圖案」轉成雷切檔；先塗色再雕刻也可以，雕到的地方會露出木頭顏色。", "骨架零件和杯墊的尺寸，試做時一起定。"] } },
     { id: "nightlight", m: "laser", t: "b", n: 5, icon: "nightlight", type: "draw", status: "todo",
       q: "為什麼刻線的地方會發光？", name: "發光壓克力小夜燈",
       how: "畫圖，雕在透明壓克力上，插進 LED 底座。",
@@ -1248,7 +1248,7 @@ const OUT = (() => {
         h("h1", null, "課程清單"),
         h("p", { class: "lead" }, "3D 列印、雷射切割各 10 堂。每堂一頁：介紹、課前準備、上課用、做檔案；試做完會換上成品照片。"),
         h("div", { class: "stats" }, ...Object.keys(STATUS).map(k => h("span", { class: "st " + k }, `${STATUS[k]} ${counts[k]} 堂`))),
-        h("div", { class: "row" }, h("span", { class: "note" }, "做好的工具："), h("a", { class: "chip", href: "../tuna/" }, "黑鮪魚名牌網頁 ›"), h("a", { class: "chip", href: "https://kenchen0728.github.io/maker-helper/?out=laser" }, "照片雷雕 ›"), h("a", { class: "chip", href: "https://kenchen0728.github.io/maker-helper/?out=litho" }, "照片透光片 ›"))),
+        h("div", { class: "row" }, h("span", { class: "note" }, "做好的工具："), h("a", { class: "chip", href: "../tuna/" }, "黑鮪魚名牌網頁 ›"), h("a", { class: "chip", href: MAKER }, "創客小幫手 ›"), h("a", { class: "chip", href: MAKER + "photo/?out=laser" }, "照片雷雕 ›"), h("a", { class: "chip", href: MAKER + "photo/?out=litho" }, "照片透光片 ›"))),
       h("div", { class: "filters" },
         frow("機器", "m", [["all", "全部"], ["3d", "3D 列印"], ["laser", "雷射切割"]]),
         frow("年級", "t", [["all", "全部"], ["s", "小小創客"], ["b", "初階"], ["a", "進階"]]),
