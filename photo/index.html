@@ -72,6 +72,7 @@ p{margin:0}
 /* 版頭：深藍滿版，和黑鮪魚網頁一樣 */
 .top{background:var(--brand);color:#fff;position:relative;z-index:20}
 @media (min-width:760px){.top{position:sticky;top:0}}
+@media (max-height:500px){.top{position:relative}}  /* 手機橫放、放大很多倍時版頭不要黏住，空間留給內容 */
 .top-in{max-width:1180px;margin:0 auto;padding:10px 16px;min-height:64px;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0;flex:1 1 0;min-height:44px;color:#fff;text-decoration:none}
 .brand > span{min-width:0}
@@ -223,9 +224,20 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
 @media (max-width:420px){.start .row.big{grid-template-columns:1fr}}
 .bigbtn{min-height:64px;font-size:1.1rem;padding:10px 20px}
 .work{display:grid;gap:16px;margin-top:10px}
-@media (min-width:900px){.work{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}.work .pv{position:sticky;top:84px}}
-.pv{display:grid;gap:10px;min-width:0}
-.stage{display:grid;place-items:center;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);min-height:240px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pv{display:grid;gap:8px;min-width:0}
+.stage{display:grid;place-items:center;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);min-height:200px;touch-action:none;user-select:none;-webkit-user-select:none}
+/* 電腦、手機橫放、平板橫放：左右兩欄，預覽在左邊固定不動 */
+@media (min-width:900px),(min-width:640px) and (orientation:landscape){
+  .work{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}
+  .work .pv{position:sticky;top:84px}
+}
+@media (max-height:500px){.work .pv{top:8px}}
+/* 手機、平板直放：調整的時候預覽固定在最上面，往下滑也看得到調整後的樣子 */
+@media (max-width:899px) and (orientation:portrait),(max-width:639px){
+  .work[data-step="2"] .pv{position:sticky;top:0;z-index:15;margin:0 -16px;padding:8px 16px 10px;background:var(--bg);box-shadow:0 10px 14px -12px rgba(0,0,0,.55)}
+  .work[data-step="2"] .stage{min-height:0;padding:8px}
+  .work[data-step="3"] .pv{display:none}
+}
 .pvc{display:block;max-width:100%;cursor:grab;border-radius:6px}
 .pvc:active{cursor:grabbing}
 .hint{color:var(--muted);font-size:.88rem}
@@ -270,7 +282,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
 /* ===== 照片雷雕：拍照或選照片 → 裁成形狀 → 轉成雷射刻得出來的點點 → 下載雷雕檔（SVG：照片雕刻＋紅色切割線） =====
    照片只在這台電腦處理，不上傳、不存檔；記住的只有形狀、大小這些選項。 */
 (() => {
-  const VERSION = "0.1.1";
+  const VERSION = "0.1.2";
 
   /* ---------- 小工具 ---------- */
   function h(tag, attrs, ...kids) {
@@ -512,9 +524,13 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   const cv = h("canvas", { class: "pvc", tabindex: "0", role: "img", "aria-label": "預覽：拖曳可以移動照片" });
   let mode = "wood", rafId = 0, quickMode = false, last = null, lastWood = null;
   function schedule(q) { quickMode = !!q; if (rafId) return; rafId = requestAnimationFrame(() => { rafId = 0; drawPreview(); }); }
+  const MQ_STICKY = window.matchMedia ? matchMedia("(max-width: 899px) and (orientation: portrait), (max-width: 639px)") : null;
+  let tallH = innerHeight, lastW = innerWidth;
   function stageSize(G) {
-    const wrap = cv.parentElement, avail = Math.max(200, Math.min(560, (wrap ? wrap.clientWidth : 360) - 24));
-    let w = avail, hh = w * G.H / G.W; const maxH = Math.max(240, Math.min(560, innerHeight * 0.62));
+    const sticky = step === 2 && MQ_STICKY && MQ_STICKY.matches, wrap = cv.parentElement;
+    const avail = Math.max(200, Math.min(560, (wrap ? wrap.clientWidth : 360) - (sticky ? 16 : 24)));
+    const maxH = sticky ? Math.max(150, tallH * 0.3) : Math.max(240, Math.min(560, innerHeight * 0.62));
+    let w = avail, hh = w * G.H / G.W;
     if (hh > maxH) { hh = maxH; w = hh * G.W / G.H; }
     return { w: Math.round(w), h: Math.round(hh) };
   }
@@ -572,7 +588,10 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
     else if (e.key === "+" || e.key === "=") { crop.z = clamp(crop.z * 1.1, 1, 6); syncZoom(); schedule(false); }
     else if (e.key === "-") { crop.z = clamp(crop.z / 1.1, 1, 6); syncZoom(); schedule(false); }
   });
-  addEventListener("resize", () => schedule(false));
+  addEventListener("resize", () => {
+    if (innerWidth !== lastW) { lastW = innerWidth; tallH = innerHeight; schedule(false); }
+    else if (Math.abs(innerHeight - tallH) > 150) { tallH = innerHeight; schedule(false); }
+  });
 
   /* ---------- 檔案 ---------- */
   const dPoly = (pts, ox, oy) => "M" + pts.map(([x, y]) => f2(x + ox) + " " + f2(y + oy)).join("L") + "Z";
@@ -683,9 +702,8 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   /* 預覽（第 2、3 步共用） */
   const zoomIn = h("input", { type: "range", min: "100", max: "600", step: "1", value: "100", "aria-label": "放大", oninput: e => { crop.z = +e.target.value / 100; schedule(true); }, onchange: () => schedule(false) });
   const modeSeg = seg("預覽方式", () => [["wood", "刻好的樣子"], ["photo", "照片和切割線"]], () => mode, v => { mode = v; schedule(false); });
-  const pv = h("div", { class: "pv" },
-    modeSeg,
-    h("div", { class: "stage" }, cv),
+  const pv = h("div", { class: "pv" }, modeSeg, h("div", { class: "stage" }, cv));
+  const posGrp = h("div", { class: "grp" }, h("b", null, "照片位置"),
     h("div", { class: "range zoom" }, h("span", { class: "note" }, "放大"), zoomIn, h("button", { type: "button", class: "btn", onclick: rotateImage }, "轉 90°")),
     h("p", { class: "hint" }, "在照片上拖曳可以移動；兩指捏合、滑鼠滾輪或滑桿可以放大。"));
 
@@ -697,7 +715,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   orientRow.hidden = O.shape !== "rect";
   const sizeSeg = seg("大小", () => SIZES.map(s => [s, s + " mm"]), () => O.size, v => { O.size = v; changed(); });
   const c2 = h("section", { class: "ctl" },
-    grp("做成", kindSeg), grp("形狀", shapeSeg), orientRow, grp("大小", sizeSeg),
+    posGrp, grp("做成", kindSeg), grp("形狀", shapeSeg), orientRow, grp("大小", sizeSeg),
     range("bright", "亮度（太黑就調高）", "bright"), range("contrast", "對比（灰灰的就調高）", "contrast"),
     h("div", { class: "grp" }, check("邊緣變淡（背景比較亂的時候用）", "fade"), check("加一圈邊框", "frame")),
     h("div", { class: "row" }, h("button", { type: "button", class: "btn primary bigbtn", onclick: () => go(3) }, "下一步：下載")));
@@ -764,7 +782,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   }
   const work = h("div", { class: "work", hidden: true }, pv, h("div", null, c2, c3));
   function go(n) {
-    step = n; s1.hidden = n !== 1; work.hidden = n === 1; c2.hidden = n !== 2; c3.hidden = n !== 3;
+    step = n; s1.hidden = n !== 1; work.hidden = n === 1; c2.hidden = n !== 2; c3.hidden = n !== 3; work.dataset.step = String(n);
     drawSteps(); scrollTo(0, 0);
     if (n > 1) requestAnimationFrame(() => schedule(false));
   }

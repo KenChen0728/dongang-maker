@@ -72,6 +72,7 @@ p{margin:0}
 /* 版頭：深藍滿版，和黑鮪魚網頁一樣 */
 .top{background:var(--brand);color:#fff;position:relative;z-index:20}
 @media (min-width:760px){.top{position:sticky;top:0}}
+@media (max-height:500px){.top{position:relative}}  /* 手機橫放、放大很多倍時版頭不要黏住，空間留給內容 */
 .top-in{max-width:1180px;margin:0 auto;padding:10px 16px;min-height:64px;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0;flex:1 1 0;min-height:44px;color:#fff;text-decoration:none}
 .brand > span{min-width:0}
