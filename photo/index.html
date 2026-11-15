@@ -258,6 +258,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
 .dlg-top{justify-content:space-between}
 .dlg-top h2{font-size:1.3rem}
 @media (max-width:600px){.dlg{place-items:end stretch;padding:0}.dlg-in{width:100%;max-height:88vh;border-radius:16px 16px 0 0}}
+.warn{margin:0;padding:10px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn-ink);font-weight:700}
 
 </style>
 </head>
@@ -269,7 +270,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
 /* ===== 照片雷雕：拍照或選照片 → 裁成形狀 → 轉成雷射刻得出來的點點 → 下載雷雕檔（SVG：照片雕刻＋紅色切割線） =====
    照片只在這台電腦處理，不上傳、不存檔；記住的只有形狀、大小這些選項。 */
 (() => {
-  const VERSION = "0.1.0";
+  const VERSION = "0.1.1";
 
   /* ---------- 小工具 ---------- */
   function h(tag, attrs, ...kids) {
@@ -664,7 +665,10 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
   /* 第 1 步：選照片 */
   const fileIn = h("input", { type: "file", accept: "image/*", hidden: true, onchange: e => { loadFile(e.target.files[0]); e.target.value = ""; } });
   const startMsg = h("p", { class: "msg", role: "status" });
+  const inApp = /\bLine\//i.test(navigator.userAgent) || /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+  const isPhone = window.matchMedia && matchMedia("(pointer: coarse)").matches;
   const s1 = h("section", { class: "start" },
+    inApp ? h("p", { class: "warn" }, "你現在是在 LINE 或 Facebook 裡面打開，可能不能拍照或下載。請點右上角的選單，改用 Chrome 或 Safari 開啟。") : null,
     h("div", { class: "row big" },
       h("button", { type: "button", class: "btn primary bigbtn", onclick: openCamera }, "用鏡頭拍"),
       h("button", { type: "button", class: "btn bigbtn", onclick: () => fileIn.click() }, "選一張照片")),
@@ -707,6 +711,7 @@ textarea{font-family:var(--mono);font-size:.8rem;min-height:70px;resize:vertical
     h("div", { class: "grp" }, h("label", { for: "who" }, h("b", null, "名字（加在檔名上，老師收檔比較好認，可以不填）")), nameIn),
     h("div", { class: "row" }, h("button", { type: "button", class: "btn primary bigbtn", onclick: () => doDownload("svg") }, "下載雷雕檔")),
     dlMsg,
+    isPhone ? h("p", { class: "note" }, "手機下載的檔案：iPhone 在「檔案」App 的「下載項目」，Android 在「下載」資料夾。可以用 LINE 傳到老師的電腦。") : null,
     h("section", { class: "box" }, h("h3", null, "會刻出來的東西"), thumb, facts),
     h("section", { class: "box" }, h("h3", null, "老師：在 Beam Studio 這樣刻"), howList),
     h("details", { class: "box teacher" }, h("summary", null, h("h3", null, "老師設定")),
