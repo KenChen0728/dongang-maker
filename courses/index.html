@@ -805,7 +805,7 @@ const OUT = (() => {
   };
   const f = n => String(Math.round(n * 1000) / 1000);
 
-  const VERSION = "1.1.2";
+  const VERSION = "1.1.3";
   /* 線稿轉檔小幫手目前放在 Claude 上（要登入老師的帳號）；之後要給小朋友用時再放上這個網站 */
   const HELPER_URL = "https://claude.ai/artifact/QX7YJMzmsG7KVZirnSMxmJ";
   const HELPER_NOTE = "小幫手目前放在 Claude 上，要用老師的帳號登入才打得開。";
@@ -1248,7 +1248,7 @@ const OUT = (() => {
         h("h1", null, "課程清單"),
         h("p", { class: "lead" }, "3D 列印、雷射切割各 10 堂。每堂一頁：介紹、課前準備、上課用、做檔案；試做完會換上成品照片。"),
         h("div", { class: "stats" }, ...Object.keys(STATUS).map(k => h("span", { class: "st " + k }, `${STATUS[k]} ${counts[k]} 堂`))),
-        h("div", { class: "row" }, h("span", { class: "note" }, "做好的工具："), h("a", { class: "chip", href: "../tuna/" }, "黑鮪魚名牌網頁 ›"), h("a", { class: "chip", href: "../photo/?out=laser" }, "照片雷雕 ›"), h("a", { class: "chip", href: "../photo/?out=litho" }, "照片透光片 ›"))),
+        h("div", { class: "row" }, h("span", { class: "note" }, "做好的工具："), h("a", { class: "chip", href: "../tuna/" }, "黑鮪魚名牌網頁 ›"), h("a", { class: "chip", href: "https://kenchen0728.github.io/maker-helper/?out=laser" }, "照片雷雕 ›"), h("a", { class: "chip", href: "https://kenchen0728.github.io/maker-helper/?out=litho" }, "照片透光片 ›"))),
       h("div", { class: "filters" },
         frow("機器", "m", [["all", "全部"], ["3d", "3D 列印"], ["laser", "雷射切割"]]),
         frow("年級", "t", [["all", "全部"], ["s", "小小創客"], ["b", "初階"], ["a", "進階"]]),
