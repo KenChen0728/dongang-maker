@@ -16,3 +16,4 @@
 字型：Noto Sans TC、Chiron GoRound TC、LXGW WenKai TC（SIL Open Font License）。三角化演算法改寫自 [earcut](https://github.com/mapbox/earcut)（ISC License）。
 
 要退回加上課程工具箱之前的版本：用 `backup-before-courses-20261115` 分支。
+要退回課程工具箱改樣式之前的版本（v1.0.0）：用 `backup-before-courses-design-20261115` 分支。
